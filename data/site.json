@@ -165,7 +165,7 @@
   "free_shipping_above": 999,
   "razorpay_key_id": "",
   "footer_newsletter_text": "Enter your email below to be the first to know about new collections and product launches.",
-  "order_webhook_url": "https://script.google.com/macros/s/AKfycbyGThGXY6bGFjNd8ecNadM2dlCfCOPTB25r5kZTEgrJ_f4EPc4EfhPvzVN6J2zzEdZALQ/exec",
+  "order_webhook_url": "https://script.google.com/macros/s/AKfycbz50EsSTdNujoXdXu3TxJKxLxhfU5nY99IyLalb3yxHK7J8IInWHNFr7xvieToP76M2zQ/exec",
   "trending": [
     {
       "label": "Best sellers",
