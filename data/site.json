@@ -1,0 +1,47 @@
+{
+  "store_name": "ORVISH",
+  "tagline": "Genuine products, delivered across India",
+  "support_email": "support@orvish.com",
+  "currency_symbol": "₹",
+  "announcements": [
+    "Save 5% on Your First Order",
+    "Buy 3 & Get 30% Off"
+  ],
+  "menu": [
+    { "label": "Home", "url": "index.html" },
+    { "label": "Shop", "url": "shop.html" },
+    { "label": "About Us", "url": "page.html?p=about-us" },
+    { "label": "Contact Us", "url": "page.html?p=contact" }
+  ],
+  "slides": [
+    { "image": "images/slide-1.svg", "caption": "New arrivals are here", "button_label": "Shop", "button_link": "shop.html" },
+    { "image": "images/slide-2.svg", "caption": "Genuine products, easy replacement", "button_label": "Shop", "button_link": "shop.html" },
+    { "image": "images/slide-3.svg", "caption": "Express shipping across India", "button_label": "Shop", "button_link": "shop.html" }
+  ],
+  "ticker": [
+    { "icon": "refresh", "text": "Easy Replacement" },
+    { "icon": "shield", "text": "Buy Genuine Products Online in India" },
+    { "icon": "truck", "text": "Express Shipping" },
+    { "icon": "star", "text": "Rated 5 stars by 10,000+ customers" }
+  ],
+  "discount_codes": [
+    { "code": "FIRST5", "percent": 5, "min_items": 1 },
+    { "code": "BUY3", "percent": 30, "min_items": 3 }
+  ],
+  "footer_newsletter_text": "Enter your email below to be the first to know about new collections and product launches.",
+  "footer_explore": [
+    { "label": "Home", "url": "index.html" },
+    { "label": "Shop", "url": "shop.html" },
+    { "label": "About Us", "url": "page.html?p=about-us" },
+    { "label": "Contact Us", "url": "page.html?p=contact" }
+  ],
+  "footer_policies": [
+    { "label": "Privacy Policy", "url": "page.html?p=privacy-policy" },
+    { "label": "Return & Refund Policy", "url": "page.html?p=refund-policy" },
+    { "label": "Shipping Policy", "url": "page.html?p=shipping-policy" },
+    { "label": "Terms and Conditions", "url": "page.html?p=terms-of-service" }
+  ],
+  "razorpay_key_id": "",
+  "free_shipping_above": 999,
+  "shipping_fee": 49
+}

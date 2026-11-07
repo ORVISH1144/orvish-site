@@ -1,0 +1,196 @@
+{
+  "products": [
+    {
+      "id": "sample-product-1",
+      "title": "Sample Product One",
+      "price": 499,
+      "compare_at_price": 699,
+      "collection": "all",
+      "images": [
+        "images/product-1.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-2",
+      "title": "Sample Product Two",
+      "price": 799,
+      "compare_at_price": 0,
+      "collection": "all",
+      "images": [
+        "images/product-2.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-3",
+      "title": "Sample Product Three",
+      "price": 1299,
+      "compare_at_price": 1799,
+      "collection": "all",
+      "images": [
+        "images/product-3.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-4",
+      "title": "Sample Product Four",
+      "price": 349,
+      "compare_at_price": 0,
+      "collection": "all",
+      "images": [
+        "images/product-4.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-5",
+      "title": "Sample Product Five",
+      "price": 999,
+      "compare_at_price": 1299,
+      "collection": "all",
+      "images": [
+        "images/product-5.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-6",
+      "title": "Sample Product Six",
+      "price": 1499,
+      "compare_at_price": 0,
+      "collection": "all",
+      "images": [
+        "images/product-6.svg"
+      ],
+      "in_stock": false,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-7",
+      "title": "Sample Product Seven",
+      "price": 649,
+      "compare_at_price": 899,
+      "collection": "all",
+      "images": [
+        "images/product-7.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    },
+    {
+      "id": "sample-product-8",
+      "title": "Sample Product Eight",
+      "price": 2199,
+      "compare_at_price": 2999,
+      "collection": "all",
+      "images": [
+        "images/product-8.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
+      "short_description": "Replace this sample with your real product from the admin panel.",
+      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
+      "details": [
+        {
+          "title": "Shipping",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        },
+        {
+          "title": "Genuine Product",
+          "body": "Every product sold on ORVISH is genuine."
+        }
+      ]
+    }
+  ]
+}

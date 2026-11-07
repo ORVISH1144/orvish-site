@@ -1,0 +1,34 @@
+{
+  "pages": [
+    {
+      "slug": "about-us",
+      "title": "About Us",
+      "body": "## About ORVISH\n\nORVISH brings genuine products to customers across India with express shipping and easy replacement.\n\n*Edit this page from the admin panel.*"
+    },
+    {
+      "slug": "contact",
+      "title": "Contact Us",
+      "body": "## Get in touch\n\nEmail: [support@orvish.com](mailto:support@orvish.com)\n\nWe usually reply within one business day."
+    },
+    {
+      "slug": "privacy-policy",
+      "title": "Privacy Policy",
+      "body": "## Privacy Policy\n\nWe collect only the information needed to process your order (name, contact details, delivery address). We do not sell your data. Payments are processed securely by our payment partner; we never store card details.\n\nFor any privacy request, write to support@orvish.com.\n\n*Template text. Please review and edit before relying on it.*"
+    },
+    {
+      "slug": "refund-policy",
+      "title": "Return & Refund Policy",
+      "body": "## Return & Refund Policy\n\nIf your product arrives damaged, defective or incorrect, contact support@orvish.com within 7 days of delivery with photos. We will arrange a replacement or refund.\n\n*Template text. Please review and edit before relying on it.*"
+    },
+    {
+      "slug": "shipping-policy",
+      "title": "Shipping Policy",
+      "body": "## Shipping Policy\n\nWe ship across India. Orders are dispatched within 1-3 business days. Delivery typically takes 3-7 business days depending on location.\n\n*Template text. Please review and edit before relying on it.*"
+    },
+    {
+      "slug": "terms-of-service",
+      "title": "Terms and Conditions",
+      "body": "## Terms and Conditions\n\nBy placing an order you agree to provide accurate information and to pay the listed price. We may cancel orders in case of pricing errors or stock unavailability, with a full refund.\n\n*Template text. Please review and edit before relying on it.*"
+    }
+  ]
+}

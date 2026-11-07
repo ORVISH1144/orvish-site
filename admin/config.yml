@@ -1,0 +1,105 @@
+backend:
+  name: github
+  repo: OWNER/REPO        # replaced after the GitHub repo is created
+  branch: main
+site_url: https://www.orvish.com
+media_folder: images/uploads
+public_folder: /images/uploads
+collections:
+  - name: products
+    label: Products
+    files:
+      - name: products
+        label: All products (add, edit, delete)
+        file: data/products.json
+        format: json
+        fields:
+          - label: Products
+            name: products
+            widget: list
+            label_singular: Product
+            summary: "{{fields.title}} – ₹{{fields.price}}"
+            fields:
+              - { label: "ID (short, lowercase, no spaces – used in the web address)", name: id, widget: string, hint: "e.g. blue-water-bottle. Do not change after publishing." }
+              - { label: Title, name: title, widget: string }
+              - { label: Price (₹), name: price, widget: number, value_type: float, min: 0 }
+              - { label: "Original price (₹) – optional, shows a Sale badge", name: compare_at_price, widget: number, value_type: float, min: 0, required: false, default: 0 }
+              - { label: Collection, name: collection, widget: string, default: all, hint: "Used for the filter on the Shop page" }
+              - { label: Photos (first one is the main photo), name: images, widget: list, field: { label: Photo, name: image, widget: image } }
+              - { label: In stock, name: in_stock, widget: boolean, default: true }
+              - { label: Show on home page, name: featured, widget: boolean, default: true }
+              - { label: Short description, name: short_description, widget: string, required: false }
+              - { label: Full description, name: description, widget: text }
+              - label: Extra info sections (e.g. Shipping, Care)
+                name: details
+                widget: list
+                required: false
+                fields:
+                  - { label: Heading, name: title, widget: string }
+                  - { label: Text, name: body, widget: text }
+  - name: site
+    label: Store settings
+    files:
+      - name: site
+        label: Store settings (banner, slider, menu, footer, payment)
+        file: data/site.json
+        format: json
+        fields:
+          - { label: Store name, name: store_name, widget: string }
+          - { label: Tagline, name: tagline, widget: string }
+          - { label: Support email, name: support_email, widget: string }
+          - { label: Currency symbol, name: currency_symbol, widget: string }
+          - { label: Announcement bar messages, name: announcements, widget: list, field: { label: Message, name: message, widget: string } }
+          - label: Home page slider
+            name: slides
+            widget: list
+            fields:
+              - { label: Image, name: image, widget: image }
+              - { label: Caption, name: caption, widget: string, required: false }
+              - { label: Button text, name: button_label, widget: string, required: false }
+              - { label: Button link, name: button_link, widget: string, required: false }
+          - label: Scrolling ticker
+            name: ticker
+            widget: list
+            fields:
+              - { label: Icon, name: icon, widget: select, options: [refresh, shield, truck, star] }
+              - { label: Text, name: text, widget: string }
+          - label: Menu
+            name: menu
+            widget: list
+            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+          - label: Discount codes
+            name: discount_codes
+            widget: list
+            fields:
+              - { label: Code, name: code, widget: string }
+              - { label: Percent off, name: percent, widget: number }
+              - { label: Minimum items in cart, name: min_items, widget: number, default: 1 }
+          - { label: Shipping fee (₹), name: shipping_fee, widget: number }
+          - { label: Free shipping above (₹), name: free_shipping_above, widget: number }
+          - { label: "Razorpay Key ID (paste later to switch on online payment, starts with rzp_)", name: razorpay_key_id, widget: string, required: false }
+          - { label: Footer newsletter text, name: footer_newsletter_text, widget: string }
+          - label: Footer – Explore links
+            name: footer_explore
+            widget: list
+            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+          - label: Footer – Policy links
+            name: footer_policies
+            widget: list
+            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+  - name: pages
+    label: Pages & policies
+    files:
+      - name: pages
+        label: About, Contact and policy pages
+        file: data/pages.json
+        format: json
+        fields:
+          - label: Pages
+            name: pages
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "Slug (web address part)", name: slug, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Content, name: body, widget: markdown }
