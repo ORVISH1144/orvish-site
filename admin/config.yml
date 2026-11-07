@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: OWNER/REPO        # replaced after the GitHub repo is created
+  repo: ORVISH1144/orvish-site
   branch: main
 site_url: https://www.orvish.com
 media_folder: images/uploads
