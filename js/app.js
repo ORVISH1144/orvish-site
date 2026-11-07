@@ -157,7 +157,7 @@
       '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
       '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb"><div class="in"><input id="sq" placeholder="Search products" autocomplete="off"><button class="icon-btn" style="color:var(--ink)" id="close-search">' + ico('close') + '</button></div><div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>' +
       '<nav class="bnav" id="bnav"><a href="index.html">' + ico('home') + 'Home</a><a href="shop.html">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
-      (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + ico('whatsapp') + '</a>' : ''));
+      (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><img src="images/whatsapp.png" alt="WhatsApp"></a>' : ''));
     document.title = (document.title && document.title !== 'ORVISH' ? document.title + ' – ' : '') + (S.store_name || 'ORVISH');
     renderCart();
   }
@@ -256,7 +256,7 @@
       $('#buy').onclick = function () { addToCart(p.id, q); openCheckout(); };
     }
     var wl = waLink('Hi, I want to order: ' + p.title + ' (' + money(p.price) + ') ' + location.href);
-    if (wl) el.lastElementChild.insertAdjacentHTML('beforeend', '<a class="btn secondary block" style="margin:6px 0 16px" target="_blank" rel="noopener" href="' + wl + '"><span class="wa-i">' + ico('whatsapp') + '</span>Order on WhatsApp</a>');
+    if (wl) el.lastElementChild.insertAdjacentHTML('beforeend', '<a class="btn secondary block" style="margin:6px 0 16px" target="_blank" rel="noopener" href="' + wl + '"><img class="wa-i" src="images/whatsapp.png" alt="">Order on WhatsApp</a>');
     if (!so) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><div><div class="price" style="padding:0;font-size:16px">' + money(p.price) + '</div><div style="font:12px var(--font-accent);opacity:.7">' + esc(p.title) + '</div></div><button class="btn secondary" id="s-add">Add</button><button class="btn" id="s-buy">Buy now</button></div>');
       $('#s-add').onclick = function () { addToCart(p.id, q); openCart(true); }; $('#s-buy').onclick = function () { addToCart(p.id, q); openCheckout(); }; }
     var rel = P.filter(function (x) { return x.id !== p.id; }).slice(0, 4);
