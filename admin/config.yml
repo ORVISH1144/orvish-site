@@ -28,6 +28,28 @@ collections:
               - { label: Photos (first one is the main photo), name: images, widget: list, field: { label: Photo, name: image, widget: image } }
               - { label: In stock, name: in_stock, widget: boolean, default: true }
               - { label: Show on home page, name: featured, widget: boolean, default: true }
+              - { label: Gender, name: gender, widget: select, options: [{label: For Him, value: men},{label: For Her, value: women},{label: Unisex, value: unisex}], required: false }
+              - { label: Type (e.g. Eau de Parfum), name: type, widget: string, required: false }
+              - { label: Notes tags shown on the product card (e.g. Amber, Woody), name: notes, widget: list, required: false, field: { label: Note, name: note, widget: string } }
+              - { label: Show in Best Sellers, name: best_seller, widget: boolean, default: false }
+              - { label: Small badge text (optional, e.g. New), name: badge, widget: string, required: false }
+              - label: Sizes / options with their own price (optional)
+                name: variants
+                widget: list
+                required: false
+                fields:
+                  - { label: Name (e.g. 50 ml), name: label, widget: string }
+                  - { label: Price (₹), name: price, widget: number, value_type: float }
+                  - { label: Original price (₹), name: compare_at_price, widget: number, value_type: float, required: false }
+                  - { label: In stock, name: in_stock, widget: boolean, default: true }
+              - label: Fragrance notes (top / heart / base)
+                name: note_pyramid
+                widget: object
+                required: false
+                fields:
+                  - { label: Top notes, name: top, widget: string, required: false }
+                  - { label: Heart notes, name: heart, widget: string, required: false }
+                  - { label: Base notes, name: base, widget: string, required: false }
               - { label: Short description, name: short_description, widget: string, required: false }
               - { label: Full description, name: description, widget: text }
               - label: Extra info sections (e.g. Shipping, Care)
@@ -87,7 +109,14 @@ collections:
           - label: Menu
             name: menu
             widget: list
-            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Link, name: url, widget: string }
+              - label: Drop-down items (optional)
+                name: children
+                widget: list
+                required: false
+                fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
           - label: Discount codes
             name: discount_codes
             widget: list
@@ -101,14 +130,25 @@ collections:
           - { label: Free shipping above (₹), name: free_shipping_above, widget: number }
           - { label: "Razorpay Key ID (paste later to switch on online payment, starts with rzp_)", name: razorpay_key_id, widget: string, required: false }
           - { label: Footer newsletter text, name: footer_newsletter_text, widget: string, required: false }
-          - label: Footer – Explore links
-            name: footer_explore
+          - { label: Cash on delivery option, name: cod_enabled, widget: boolean, default: true }
+          - { label: Tagline (footer), name: tagline, widget: string, required: false }
+          - { label: Best sellers heading, name: best_sellers_title, widget: string, required: false }
+          - { label: Home text heading, name: home_text_title, widget: string, required: false }
+          - { label: Home text (bottom of home page), name: home_text, widget: text, required: false }
+          - label: Questions and answers on product pages
+            name: faq
             widget: list
-            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
-          - label: Footer – Policy links
-            name: footer_policies
+            required: false
+            fields: [ { label: Question, name: title, widget: string }, { label: Answer, name: body, widget: text } ]
+          - label: Footer columns
+            name: footer_columns
             widget: list
-            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+            fields:
+              - { label: Column title, name: title, widget: string }
+              - label: Links
+                name: links
+                widget: list
+                fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
   - name: pages
     label: Pages & policies
     files:

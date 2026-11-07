@@ -1,194 +1,106 @@
 {
   "products": [
     {
-      "id": "sample-product-1",
-      "title": "Sample Product One",
-      "price": 499,
-      "compare_at_price": 699,
-      "collection": "all",
+      "id": "amber-oud-edp",
+      "title": "Amber Oud – Eau de Parfum",
+      "price": 1499,
+      "compare_at_price": 1999,
+      "collection": "signature",
+      "gender": "men",
+      "type": "Eau de Parfum",
+      "notes": [
+        "Amber",
+        "Woody",
+        "Oud"
+      ],
       "images": [
-        "images/product-1.svg"
+        "images/perfume-1.svg",
+        "images/perfume-1b.svg"
       ],
       "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
+      "best_seller": true,
+      "badge": "",
+      "short_description": "SAMPLE LISTING – a warm, woody amber fragrance.",
+      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA warm and lasting fragrance that opens bright and settles into amber and oud.",
+      "note_pyramid": {
+        "top": "Bergamot, Saffron",
+        "heart": "Amber, Rose",
+        "base": "Oud, Vanilla, Musk"
+      },
+      "variants": [
         {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+          "label": "50 ml",
+          "price": 1499,
+          "compare_at_price": 1999,
+          "in_stock": true
         },
         {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
+          "label": "100 ml",
+          "price": 2299,
+          "compare_at_price": 2999,
+          "in_stock": true
+        }
+      ],
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
         }
       ]
     },
     {
-      "id": "sample-product-2",
-      "title": "Sample Product Two",
-      "price": 799,
-      "compare_at_price": 0,
-      "collection": "all",
-      "images": [
-        "images/product-2.svg"
-      ],
-      "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
-        {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        },
-        {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
-        }
-      ]
-    },
-    {
-      "id": "sample-product-3",
-      "title": "Sample Product Three",
+      "id": "rose-musk-edp",
+      "title": "Rose Musk – Eau de Parfum",
       "price": 1299,
       "compare_at_price": 1799,
-      "collection": "all",
+      "collection": "everyday",
+      "gender": "women",
+      "type": "Eau de Parfum",
+      "notes": [
+        "Floral",
+        "Musk",
+        "Fresh"
+      ],
       "images": [
-        "images/product-3.svg"
+        "images/perfume-2.svg",
+        "images/perfume-2b.svg"
       ],
       "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
+      "best_seller": true,
+      "badge": "",
+      "short_description": "SAMPLE LISTING – a soft floral musk fragrance.",
+      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA soft, clean floral fragrance with a creamy musk dry-down for everyday wear.",
+      "note_pyramid": {
+        "top": "Pear, Pink pepper",
+        "heart": "Rose, Jasmine",
+        "base": "White musk, Sandalwood"
+      },
+      "variants": [
         {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+          "label": "50 ml",
+          "price": 1299,
+          "compare_at_price": 1799,
+          "in_stock": true
         },
         {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
+          "label": "100 ml",
+          "price": 1999,
+          "compare_at_price": 2599,
+          "in_stock": true
         }
-      ]
-    },
-    {
-      "id": "sample-product-4",
-      "title": "Sample Product Four",
-      "price": 349,
-      "compare_at_price": 0,
-      "collection": "all",
-      "images": [
-        "images/product-4.svg"
       ],
-      "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
       "details": [
         {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
         },
         {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
-        }
-      ]
-    },
-    {
-      "id": "sample-product-5",
-      "title": "Sample Product Five",
-      "price": 999,
-      "compare_at_price": 1299,
-      "collection": "all",
-      "images": [
-        "images/product-5.svg"
-      ],
-      "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
-        {
-          "title": "Shipping",
+          "title": "Shipping and returns",
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        },
-        {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
-        }
-      ]
-    },
-    {
-      "id": "sample-product-6",
-      "title": "Sample Product Six",
-      "price": 1499,
-      "compare_at_price": 0,
-      "collection": "all",
-      "images": [
-        "images/product-6.svg"
-      ],
-      "in_stock": false,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
-        {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        },
-        {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
-        }
-      ]
-    },
-    {
-      "id": "sample-product-7",
-      "title": "Sample Product Seven",
-      "price": 649,
-      "compare_at_price": 899,
-      "collection": "all",
-      "images": [
-        "images/product-7.svg"
-      ],
-      "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
-        {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        },
-        {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
-        }
-      ]
-    },
-    {
-      "id": "sample-product-8",
-      "title": "Sample Product Eight",
-      "price": 2199,
-      "compare_at_price": 2999,
-      "collection": "all",
-      "images": [
-        "images/product-8.svg"
-      ],
-      "in_stock": true,
-      "featured": true,
-      "short_description": "Replace this sample with your real product from the admin panel.",
-      "description": "This is a sample listing. Open /admin, edit or delete it, and add your own products with photos, price and description.",
-      "details": [
-        {
-          "title": "Shipping",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        },
-        {
-          "title": "Genuine Product",
-          "body": "Every product sold on ORVISH is genuine."
         }
       ]
     }
