@@ -131,5 +131,5 @@
       "url": "/page?p=terms-of-service"
     }
   ],
-  "order_webhook_url": "https://flow.zoho.in/60095099397/flow/webhook/incoming?zapikey=1001.a1a662614521d78999ff6a0af10ca9d6.ced74ace70cf496696563cefb93b4238&isdebug=false"
+  "order_webhook_url": "https://script.google.com/macros/s/AKfycbyGThGXY6bGFjNd8ecNadM2dlCfCOPTB25r5kZTEgrJ_f4EPc4EfhPvzVN6J2zzEdZALQ/exec"
 }
