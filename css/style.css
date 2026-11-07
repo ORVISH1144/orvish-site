@@ -167,7 +167,8 @@ h1{font-size:clamp(34px,5vw,56px)} h2{font-size:clamp(28px,4vw,48px)} h3{font-si
 .plus svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
 .bnav,.sticky-buy,.wa{display:none}
 .wa{position:fixed;right:14px;bottom:20px;z-index:60;width:52px;height:52px;border-radius:50%;background:#25d366;color:#fff;place-items:center;box-shadow:0 4px 14px #0004}
-.wa svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:1.8}
+.wa svg{width:30px;height:30px;stroke:none;fill:#fff}
+.wa-i svg{width:18px;height:18px;fill:#25d366;stroke:none}
 .wa{display:grid}
 @media(max-width:820px){
   body{padding-bottom:64px}
@@ -199,7 +200,9 @@ h1{font-size:clamp(34px,5vw,56px)} h2{font-size:clamp(28px,4vw,48px)} h3{font-si
   .logo{font-size:24px}.logo-img{height:calc(var(--logo-h,38px)*.8)}
 }
 /* prevent off-screen panels widening the mobile viewport */
-html,body{overflow-x:hidden;max-width:100%}
 .drawer,.mobile-nav{visibility:hidden;transition:transform .35s,visibility 0s .35s}
 .drawer.open,.mobile-nav.open{visibility:visible;transition:transform .35s,visibility 0s}
 @media(max-width:820px){.gallery .main{aspect-ratio:1/1}}
+html{overflow-x:clip}
+.news input{min-width:0;width:100%}
+@media(max-width:820px){.f-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.f-grid>div:first-child,.f-grid>div:last-child{grid-column:1/-1}}
