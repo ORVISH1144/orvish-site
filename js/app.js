@@ -143,7 +143,8 @@
   /* shell */
   function shell() {
     var menu = (S.menu || []).map(function (m) { return '<a href="' + esc(m.url) + '">' + esc(m.label) + '</a>'; }).join('');
-    $('#announce').innerHTML = (S.announcements || []).map(function (a, i) { return '<span class="' + (i ? '' : 'on') + '">' + esc(a) + '</span>'; }).join('');
+    var anns = (S.announcements || []).filter(function (x) { return x && String(x).trim(); }); if (!anns.length) $('#announce').style.display = 'none';
+    $('#announce').innerHTML = anns.map(function (a, i) { return '<span class="' + (i ? '' : 'on') + '">' + esc(a) + '</span>'; }).join('');
     var ai = 0, sp = $$('#announce span'); if (sp.length > 1) setInterval(function () { sp[ai].classList.remove('on'); ai = (ai + 1) % sp.length; sp[ai].classList.add('on'); }, 4000);
     $('#header').innerHTML = '<div class="wrap"><div style="display:flex;align-items:center;gap:20px"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><nav class="nav">' + menu + '</nav></div>' +
       '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
@@ -206,7 +207,7 @@
       '<h5>' + esc(p.title) + '</h5><div class="price">' + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div></a>';
   }
   function home() {
-    var sl = S.slides || [];
+    var sl = S.slides || []; if (!sl.length) $('#slider').style.display = 'none';
     $('#slider').innerHTML = sl.map(function (s, i) {
       return '<div class="slide' + (i ? '' : ' active') + '"><img src="' + esc(s.image) + '" alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || '/shop') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
     }).join('') + (sl.length > 1 ? '<button class="s-arrow s-prev" aria-label="Previous">' + ico('left') + '</button><button class="s-arrow s-next" aria-label="Next">' + ico('right') + '</button><div class="dots">' + sl.map(function (_, i) { return '<button class="' + (i ? '' : 'on') + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
@@ -220,10 +221,11 @@
     }
     function auto() { clearInterval(timer); timer = setInterval(function () { go(cur + 1); }, 4000); }
     if (slides.length > 1) { $('.s-prev').onclick = function () { go(cur - 1); auto(); }; $('.s-next').onclick = function () { go(cur + 1); auto(); }; dots.forEach(function (d, i) { d.onclick = function () { go(i); auto(); }; }); auto(); }
+    if (!(S.ticker || []).length) $('#ticker').style.display = 'none';
     var items = (S.ticker || []).map(function (t) { return '<div class="t-item">' + ico(t.icon) + esc(t.text) + '</div>'; }).join('');
     $('#ticker').innerHTML = '<div class="track">' + items + items + items + items + '</div>';
     var feat = P.filter(function (p) { return p.featured !== false; }).slice(0, S.products_on_home || 8);
-    $('#home-heading').textContent = S.home_heading || 'Our products';
+    $('#home-heading').textContent = S.home_heading == null ? 'Our products' : S.home_heading;
     $('#featured').innerHTML = feat.length ? feat.map(cardHTML).join('') : '<p class="empty" style="grid-column:1/-1">No products yet.</p>';
   }
   function shop() {

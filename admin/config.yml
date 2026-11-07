@@ -62,15 +62,16 @@ collections:
               - { label: Sub-heading and button font, name: subheading_font, widget: select, options: [Andada Pro, Inter, Poppins, Montserrat, Lora, Roboto, Georgia] }
               - { label: Body text font, name: body_font, widget: select, options: [Georgia, Andada Pro, Inter, Poppins, Montserrat, Lora, Roboto] }
               - { label: Button roundness (0 = square, 30 = very round), name: button_radius, widget: number, min: 0, max: 30 }
-          - { label: Home page products heading, name: home_heading, widget: string }
+          - { label: Home page products heading, name: home_heading, widget: string, required: false }
           - { label: How many products on home page, name: products_on_home, widget: number, min: 1, max: 24 }
-          - { label: Tagline, name: tagline, widget: string }
-          - { label: Support email, name: support_email, widget: string }
+          - { label: Tagline, name: tagline, widget: string, required: false }
+          - { label: Support email, name: support_email, widget: string, required: false }
           - { label: Currency symbol, name: currency_symbol, widget: string }
-          - { label: Announcement bar messages, name: announcements, widget: list, field: { label: Message, name: message, widget: string } }
+          - { label: Announcement bar messages, name: announcements, widget: list, required: false, field: { label: Message, name: message, widget: string } }
           - label: Home page slider
             name: slides
             widget: list
+            required: false
             fields:
               - { label: Image, name: image, widget: image }
               - { label: Caption, name: caption, widget: string, required: false }
@@ -79,6 +80,7 @@ collections:
           - label: Scrolling ticker
             name: ticker
             widget: list
+            required: false
             fields:
               - { label: Icon, name: icon, widget: select, options: [refresh, shield, truck, star] }
               - { label: Text, name: text, widget: string }
@@ -89,6 +91,7 @@ collections:
           - label: Discount codes
             name: discount_codes
             widget: list
+            required: false
             fields:
               - { label: Code, name: code, widget: string }
               - { label: Percent off, name: percent, widget: number }
@@ -96,7 +99,7 @@ collections:
           - { label: Shipping fee (₹), name: shipping_fee, widget: number }
           - { label: Free shipping above (₹), name: free_shipping_above, widget: number }
           - { label: "Razorpay Key ID (paste later to switch on online payment, starts with rzp_)", name: razorpay_key_id, widget: string, required: false }
-          - { label: Footer newsletter text, name: footer_newsletter_text, widget: string }
+          - { label: Footer newsletter text, name: footer_newsletter_text, widget: string, required: false }
           - label: Footer – Explore links
             name: footer_explore
             widget: list
