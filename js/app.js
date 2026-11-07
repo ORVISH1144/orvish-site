@@ -116,7 +116,16 @@
     $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); cfg ? payRazorpay(f, t) : emailOrder(f, t); });
   }
   function orderLines() { return cart.map(function (l) { var p = findP(l.id); return l.q + ' x ' + p.title + ' (' + money(p.price) + ')'; }); }
+  function sendOrder(f, t, status, payId) {
+    var url = S.order_webhook_url; if (!url) return null;
+    var id = 'ORV-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+    var body = new URLSearchParams({ date: new Date().toISOString().slice(0, 10), order_id: id, name: f.name, phone: f.phone, email: f.email, address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '' });
+    try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
+    return id;
+  }
   function emailOrder(f, t) {
+    var oid = sendOrder(f, t, 'Pending');
+    if (oid) { done('Thank you! Your order ' + oid + ' has been received. We will contact you on ' + f.phone + ' to confirm it and arrange payment.'); return; }
     var body = 'New order request\n\n' + orderLines().join('\n') + '\n\nTotal: ' + money(t.total) + '\n\nName: ' + f.name + '\nPhone: ' + f.phone + '\nEmail: ' + f.email + '\nAddress: ' + f.address + ', ' + f.city + ' - ' + f.pin;
     location.href = 'mailto:' + (S.support_email || '') + '?subject=' + encodeURIComponent('Order request from ' + f.name) + '&body=' + encodeURIComponent(body);
     done('Thanks! Your email app should open with the order details. Please send it to complete your request.');
@@ -128,7 +137,7 @@
         prefill: { name: f.name, email: f.email, contact: f.phone },
         notes: { items: orderLines().join(' | ').slice(0, 250), address: (f.address + ', ' + f.city + ' - ' + f.pin).slice(0, 250), phone: f.phone },
         theme: { color: '#761941' },
-        handler: function (r) { done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '. We will email you the order confirmation.'); }
+        handler: function (r) { sendOrder(f, t, 'Paid', r.razorpay_payment_id); done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '. We will email you the order confirmation.'); }
       });
       rz.open();
     };

@@ -96,6 +96,7 @@ collections:
               - { label: Code, name: code, widget: string }
               - { label: Percent off, name: percent, widget: number }
               - { label: Minimum items in cart, name: min_items, widget: number, default: 1 }
+          - { label: Order webhook URL (Zoho Flow – sends each order to your sheet), name: order_webhook_url, widget: string, required: false }
           - { label: Shipping fee (₹), name: shipping_fee, widget: number }
           - { label: Free shipping above (₹), name: free_shipping_above, widget: number }
           - { label: "Razorpay Key ID (paste later to switch on online payment, starts with rzp_)", name: razorpay_key_id, widget: string, required: false }
