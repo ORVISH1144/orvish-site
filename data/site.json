@@ -10,19 +10,19 @@
   "menu": [
     {
       "label": "Home",
-      "url": "index.html"
+      "url": "/"
     },
     {
       "label": "Shop",
-      "url": "shop.html"
+      "url": "/shop"
     },
     {
       "label": "About Us",
-      "url": "page.html?p=about-us"
+      "url": "/page?p=about-us"
     },
     {
       "label": "Contact Us",
-      "url": "page.html?p=contact"
+      "url": "/page?p=contact"
     }
   ],
   "slides": [
@@ -30,19 +30,19 @@
       "image": "images/slide-1.svg",
       "caption": "New arrivals are here",
       "button_label": "Shop",
-      "button_link": "shop.html"
+      "button_link": "/shop"
     },
     {
       "image": "images/slide-2.svg",
       "caption": "Genuine products, easy replacement",
       "button_label": "Shop",
-      "button_link": "shop.html"
+      "button_link": "/shop"
     },
     {
       "image": "images/slide-3.svg",
       "caption": "Express shipping across India",
       "button_label": "Shop",
-      "button_link": "shop.html"
+      "button_link": "/shop"
     }
   ],
   "ticker": [
@@ -79,37 +79,37 @@
   "footer_explore": [
     {
       "label": "Home",
-      "url": "index.html"
+      "url": "/"
     },
     {
       "label": "Shop",
-      "url": "shop.html"
+      "url": "/shop"
     },
     {
       "label": "About Us",
-      "url": "page.html?p=about-us"
+      "url": "/page?p=about-us"
     },
     {
       "label": "Contact Us",
-      "url": "page.html?p=contact"
+      "url": "/page?p=contact"
     }
   ],
   "footer_policies": [
     {
       "label": "Privacy Policy",
-      "url": "page.html?p=privacy-policy"
+      "url": "/page?p=privacy-policy"
     },
     {
       "label": "Return & Refund Policy",
-      "url": "page.html?p=refund-policy"
+      "url": "/page?p=refund-policy"
     },
     {
       "label": "Shipping Policy",
-      "url": "page.html?p=shipping-policy"
+      "url": "/page?p=shipping-policy"
     },
     {
       "label": "Terms and Conditions",
-      "url": "page.html?p=terms-of-service"
+      "url": "/page?p=terms-of-service"
     }
   ],
   "razorpay_key_id": "",

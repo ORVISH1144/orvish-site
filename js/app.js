@@ -83,7 +83,7 @@
     var t = totals();
     $$('.cart-count').forEach(function (e) { e.textContent = t.items; e.style.display = t.items ? 'grid' : 'none'; });
     var body = $('#cart-body'), foot = $('#cart-foot'); if (!body) return;
-    if (!cart.length) { body.innerHTML = '<div class="empty">Your cart is empty.<br><br><a class="btn" href="shop.html">Continue shopping</a></div>'; foot.innerHTML = ''; return; }
+    if (!cart.length) { body.innerHTML = '<div class="empty">Your cart is empty.<br><br><a class="btn" href="/shop">Continue shopping</a></div>'; foot.innerHTML = ''; return; }
     body.innerHTML = cart.map(function (l) {
       var p = findP(l.id);
       return '<div class="line"><img src="' + esc(p.images[0]) + '" alt=""><div><div class="t">' + esc(p.title) + '</div><div class="price" style="padding:0">' + money(p.price) + '</div>' +
@@ -137,7 +137,7 @@
   }
   function done(msg) {
     cart = []; discount = null; saveCart(); openCart(false);
-    $('#checkout-modal').innerHTML = '<div class="box"><h4>Thank you</h4><p>' + esc(msg) + '</p><a class="btn" href="index.html">Back to home</a></div>';
+    $('#checkout-modal').innerHTML = '<div class="box"><h4>Thank you</h4><p>' + esc(msg) + '</p><a class="btn" href="/">Back to home</a></div>';
   }
 
   /* shell */
@@ -146,7 +146,7 @@
     $('#announce').innerHTML = (S.announcements || []).map(function (a, i) { return '<span class="' + (i ? '' : 'on') + '">' + esc(a) + '</span>'; }).join('');
     var ai = 0, sp = $$('#announce span'); if (sp.length > 1) setInterval(function () { sp[ai].classList.remove('on'); ai = (ai + 1) % sp.length; sp[ai].classList.add('on'); }, 4000);
     $('#header').innerHTML = '<div class="wrap"><div style="display:flex;align-items:center;gap:20px"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><nav class="nav">' + menu + '</nav></div>' +
-      '<a class="logo" href="index.html">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
+      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
     var li = function (a) { return (a || []).map(function (l) { return '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>'; }).join(''); };
     $('#footer').innerHTML = '<div class="wrap"><div class="f-grid"><div><div class="logo">' + logoHTML() + '</div><p style="font-size:13px;color:#555">Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a></p></div>' +
       '<div><h6>Explore</h6><ul>' + li(S.footer_explore) + '</ul></div><div><h6>Policies</h6><ul>' + li(S.footer_policies) + '</ul></div>' +
@@ -156,7 +156,7 @@
       '<div class="mobile-nav" id="mnav">' + menu + '</div><div class="overlay" id="ov"></div>' +
       '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
       '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb"><div class="in"><input id="sq" placeholder="Search products" autocomplete="off"><button class="icon-btn" style="color:var(--ink)" id="close-search">' + ico('close') + '</button></div><div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>' +
-      '<nav class="bnav" id="bnav"><a href="index.html">' + ico('home') + 'Home</a><a href="shop.html">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
+      '<nav class="bnav" id="bnav"><a href="/">' + ico('home') + 'Home</a><a href="/shop">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
       (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><img src="images/whatsapp.png" alt="WhatsApp"></a>' : ''));
     document.title = (document.title && document.title !== 'ORVISH' ? document.title + ' – ' : '') + (S.store_name || 'ORVISH');
     renderCart();
@@ -187,10 +187,10 @@
     $('#sq').addEventListener('input', function (e) {
       var q = e.target.value.toLowerCase().trim();
       $('#hits').innerHTML = !q ? '' : P.filter(function (p) { return (p.title + ' ' + (p.short_description || '')).toLowerCase().indexOf(q) > -1; }).slice(0, 8).map(function (p) {
-        return '<a class="hit" href="product.html?id=' + encodeURIComponent(p.id) + '"><img src="' + esc(p.images[0]) + '" alt=""><div><div style="font-family:var(--font-sub)">' + esc(p.title) + '</div><div class="price" style="padding:0">' + money(p.price) + '</div></div></a>';
+        return '<a class="hit" href="/product?id=' + encodeURIComponent(p.id) + '"><img src="' + esc(p.images[0]) + '" alt=""><div><div style="font-family:var(--font-sub)">' + esc(p.title) + '</div><div class="price" style="padding:0">' + money(p.price) + '</div></div></a>';
       }).join('') || '<p class="empty">No results</p>';
     });
-    $('#sq').addEventListener('keydown', function (e) { if (e.key === 'Enter') location.href = 'shop.html?q=' + encodeURIComponent(e.target.value); if (e.key === 'Escape') $('#sb').classList.remove('open'); });
+    $('#sq').addEventListener('keydown', function (e) { if (e.key === 'Enter') location.href = '/shop?q=' + encodeURIComponent(e.target.value); if (e.key === 'Escape') $('#sb').classList.remove('open'); });
   }
 
   function swipe(el, cb) {
@@ -201,14 +201,14 @@
   /* views */
   function cardHTML(p) {
     var sale = p.compare_at_price && p.compare_at_price > p.price, so = p.in_stock === false;
-    return '<a class="card" href="product.html?id=' + encodeURIComponent(p.id) + '"><div class="img">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">Sale</span>' : '') +
+    return '<a class="card" href="/product?id=' + encodeURIComponent(p.id) + '"><div class="img">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">Sale</span>' : '') +
       '<img loading="lazy" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '">' + (so ? '' : '<button class="plus" data-add="' + esc(p.id) + '" aria-label="Add to cart">' + ico('plus') + '</button>') + '</div>' +
       '<h5>' + esc(p.title) + '</h5><div class="price">' + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div></a>';
   }
   function home() {
     var sl = S.slides || [];
     $('#slider').innerHTML = sl.map(function (s, i) {
-      return '<div class="slide' + (i ? '' : ' active') + '"><img src="' + esc(s.image) + '" alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || 'shop.html') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
+      return '<div class="slide' + (i ? '' : ' active') + '"><img src="' + esc(s.image) + '" alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || '/shop') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
     }).join('') + (sl.length > 1 ? '<button class="s-arrow s-prev" aria-label="Previous">' + ico('left') + '</button><button class="s-arrow s-next" aria-label="Next">' + ico('right') + '</button><div class="dots">' + sl.map(function (_, i) { return '<button class="' + (i ? '' : 'on') + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
     swipe($('#slider'), function (d) { d > 0 ? $('.s-next') && $('.s-next').click() : $('.s-prev') && $('.s-prev').click(); });
     var cur = 0, slides = $$('.slide', $('#slider')), dots = $$('.dots button'), timer;
@@ -241,7 +241,7 @@
   }
   function product() {
     var p = findP(qs.get('id')), el = $('#pdp');
-    if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="shop.html">Back to shop</a></p>'; return; }
+    if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="/shop">Back to shop</a></p>'; return; }
     document.title = p.title; var sale = p.compare_at_price && p.compare_at_price > p.price, so = p.in_stock === false, q = 1;
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" src="' + esc(im) + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div><h1>' + esc(p.title) + '</h1><div class="price">' + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">Sale</span>' : '') + '</div>' +
