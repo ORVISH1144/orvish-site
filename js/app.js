@@ -20,10 +20,29 @@
     bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    home: '<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>', grid: '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4z"/>', plus: '<path d="M12 5v14M5 12h14"/>',
     left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>'
   };
   var ico = function (n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || ICONS.star) + '</svg>'; };
   var fetchJSON = function (u) { return fetch(u + '?v=' + Date.now()).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); };
+
+  function applyTheme() {
+    var T = S.theme || {}, r = document.documentElement.style;
+    if (T.bg) r.setProperty('--bg', T.bg); if (T.ink) r.setProperty('--ink', T.ink);
+    if (T.primary) r.setProperty('--maroon', T.primary); if (T.accent) r.setProperty('--gold', T.accent);
+    if (T.button_radius != null) r.setProperty('--r-btn', T.button_radius + 'px');
+    var single = ['Acme', 'Bebas Neue', 'DM Serif Display'], load = [];
+    [['--font-heading', T.heading_font], ['--font-sub', T.subheading_font], ['--font-body', T.body_font]].forEach(function (x) {
+      if (!x[1]) return; r.setProperty(x[0], "'" + x[1] + "'," + (x[1] === 'Georgia' ? 'serif' : 'Georgia,serif'));
+      if (['Georgia', 'Acme', 'Andada Pro', 'Inter'].indexOf(x[1]) < 0 && load.indexOf(x[1]) < 0) load.push(x[1]);
+    });
+    if (load.length) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?' + load.map(function (f) { return 'family=' + f.replace(/ /g, '+') + (single.indexOf(f) > -1 ? '' : ':wght@400;500;600;700'); }).join('&') + '&display=swap'; document.head.appendChild(l); }
+    r.setProperty('--logo-h', (S.logo_height || 38) + 'px');
+    if (S.favicon) { var f = document.createElement('link'); f.rel = 'icon'; f.href = S.favicon; document.head.appendChild(f); }
+  }
+  function logoHTML() { return S.logo ? '<img class="logo-img" src="' + esc(S.logo) + '" alt="' + esc(S.store_name) + '">' : esc(S.store_name || 'ORVISH'); }
+  function waLink(txt) { var n = String(S.whatsapp_number || '').replace(/\D/g, ''); return n ? 'https://wa.me/' + n + '?text=' + encodeURIComponent(txt || 'Hi, I need help with an order') : ''; }
 
   /* markdown (small subset) */
   function md(src) {
@@ -127,26 +146,28 @@
     $('#announce').innerHTML = (S.announcements || []).map(function (a, i) { return '<span class="' + (i ? '' : 'on') + '">' + esc(a) + '</span>'; }).join('');
     var ai = 0, sp = $$('#announce span'); if (sp.length > 1) setInterval(function () { sp[ai].classList.remove('on'); ai = (ai + 1) % sp.length; sp[ai].classList.add('on'); }, 4000);
     $('#header').innerHTML = '<div class="wrap"><div style="display:flex;align-items:center;gap:20px"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><nav class="nav">' + menu + '</nav></div>' +
-      '<a class="logo" href="index.html">' + esc(S.store_name || 'ORVISH') + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
+      '<a class="logo" href="index.html">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
     var li = function (a) { return (a || []).map(function (l) { return '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>'; }).join(''); };
-    $('#footer').innerHTML = '<div class="wrap"><div class="f-grid"><div><div class="logo">' + esc(S.store_name) + '</div><p style="font-size:13px;color:#555">Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a></p></div>' +
+    $('#footer').innerHTML = '<div class="wrap"><div class="f-grid"><div><div class="logo">' + logoHTML() + '</div><p style="font-size:13px;color:#555">Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a></p></div>' +
       '<div><h6>Explore</h6><ul>' + li(S.footer_explore) + '</ul></div><div><h6>Policies</h6><ul>' + li(S.footer_policies) + '</ul></div>' +
       '<div><h6><em>Get In Touch</em></h6><p style="font-size:13px;margin:0">' + esc(S.footer_newsletter_text) + '</p><form class="news" id="news"><input type="email" placeholder="Email" required><button class="btn" type="submit">Sign up</button></form></div></div>' +
       '<div class="copy">© ' + new Date().getFullYear() + ' ' + esc(S.store_name) + '. All rights reserved.</div></div>';
     document.body.insertAdjacentHTML('beforeend',
       '<div class="mobile-nav" id="mnav">' + menu + '</div><div class="overlay" id="ov"></div>' +
       '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
-      '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb"><div class="in"><input id="sq" placeholder="Search products" autocomplete="off"><button class="icon-btn" style="color:var(--ink)" id="close-search">' + ico('close') + '</button></div><div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>');
+      '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb"><div class="in"><input id="sq" placeholder="Search products" autocomplete="off"><button class="icon-btn" style="color:var(--ink)" id="close-search">' + ico('close') + '</button></div><div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>' +
+      '<nav class="bnav" id="bnav"><a href="index.html">' + ico('home') + 'Home</a><a href="shop.html">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
+      (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + ico('chat') + '</a>' : ''));
     document.title = (document.title && document.title !== 'ORVISH' ? document.title + ' – ' : '') + (S.store_name || 'ORVISH');
     renderCart();
   }
   function events() {
     document.addEventListener('click', function (e) {
       var t = e.target.closest('button,a,[data-close-modal]'); if (!t) return;
-      if (t.id === 'open-cart') openCart(true);
+      if (t.id === 'open-cart' || t.id === 'b-cart') openCart(true);
       else if (t.id === 'close-cart') openCart(false);
       else if (t.id === 'burger') { $('#mnav').classList.add('open'); $('#ov').classList.add('on'); }
-      else if (t.id === 'open-search') { $('#sb').classList.add('open'); $('#sq').focus(); }
+      else if (t.id === 'open-search' || t.id === 'b-search') { $('#sb').classList.add('open'); $('#sq').focus(); }
       else if (t.id === 'close-search') $('#sb').classList.remove('open');
       else if (t.hasAttribute('data-close-modal')) { $('#checkout-modal').classList.remove('open'); $('#ov').classList.remove('on'); }
       else if (t.dataset.inc) { cart.filter(function (l) { return l.id === t.dataset.inc; })[0].q++; saveCart(); }
@@ -172,11 +193,16 @@
     $('#sq').addEventListener('keydown', function (e) { if (e.key === 'Enter') location.href = 'shop.html?q=' + encodeURIComponent(e.target.value); if (e.key === 'Escape') $('#sb').classList.remove('open'); });
   }
 
+  function swipe(el, cb) {
+    var x0 = null; if (!el) return;
+    el.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    el.addEventListener('touchend', function (e) { if (x0 == null) return; var d = x0 - e.changedTouches[0].clientX; if (Math.abs(d) > 40) cb(d); x0 = null; });
+  }
   /* views */
   function cardHTML(p) {
     var sale = p.compare_at_price && p.compare_at_price > p.price, so = p.in_stock === false;
     return '<a class="card" href="product.html?id=' + encodeURIComponent(p.id) + '"><div class="img">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">Sale</span>' : '') +
-      '<img loading="lazy" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '">' + (so ? '' : '<div class="quick"><button class="btn" data-add="' + esc(p.id) + '">Add to cart</button></div>') + '</div>' +
+      '<img loading="lazy" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '">' + (so ? '' : '<button class="plus" data-add="' + esc(p.id) + '" aria-label="Add to cart">' + ico('plus') + '</button>') + '</div>' +
       '<h5>' + esc(p.title) + '</h5><div class="price">' + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div></a>';
   }
   function home() {
@@ -184,6 +210,7 @@
     $('#slider').innerHTML = sl.map(function (s, i) {
       return '<div class="slide' + (i ? '' : ' active') + '"><img src="' + esc(s.image) + '" alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || 'shop.html') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
     }).join('') + (sl.length > 1 ? '<button class="s-arrow s-prev" aria-label="Previous">' + ico('left') + '</button><button class="s-arrow s-next" aria-label="Next">' + ico('right') + '</button><div class="dots">' + sl.map(function (_, i) { return '<button class="' + (i ? '' : 'on') + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
+    swipe($('#slider'), function (d) { d > 0 ? $('.s-next') && $('.s-next').click() : $('.s-prev') && $('.s-prev').click(); });
     var cur = 0, slides = $$('.slide', $('#slider')), dots = $$('.dots button'), timer;
     function go(n) {
       if (slides.length < 2) return; n = (n + slides.length) % slides.length;
@@ -195,7 +222,8 @@
     if (slides.length > 1) { $('.s-prev').onclick = function () { go(cur - 1); auto(); }; $('.s-next').onclick = function () { go(cur + 1); auto(); }; dots.forEach(function (d, i) { d.onclick = function () { go(i); auto(); }; }); auto(); }
     var items = (S.ticker || []).map(function (t) { return '<div class="t-item">' + ico(t.icon) + esc(t.text) + '</div>'; }).join('');
     $('#ticker').innerHTML = '<div class="track">' + items + items + items + items + '</div>';
-    var feat = P.filter(function (p) { return p.featured !== false; }).slice(0, 8);
+    var feat = P.filter(function (p) { return p.featured !== false; }).slice(0, S.products_on_home || 8);
+    $('#home-heading').textContent = S.home_heading || 'Our products';
     $('#featured').innerHTML = feat.length ? feat.map(cardHTML).join('') : '<p class="empty" style="grid-column:1/-1">No products yet.</p>';
   }
   function shop() {
@@ -220,12 +248,17 @@
       '<div>' + md(p.description) + '</div>' +
       (so ? '<p><strong>Sold out</strong></p>' : '<div class="qty" id="pq"><button data-d="-1">−</button><span>1</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn secondary" id="add">Add to cart</button><button class="btn" id="buy">Buy it now</button></div>') +
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
+    if (p.images.length > 1) { var gi = 0; swipe($('.gallery .main'), function (d) { gi = (gi + (d > 0 ? 1 : -1) + p.images.length) % p.images.length; $('#mi').src = p.images[gi]; $$('.thumbs img').forEach(function (x, i) { x.classList.toggle('on', i === gi); }); }); }
     $$('.thumbs img').forEach(function (t) { t.onclick = function () { $('#mi').src = t.src; $$('.thumbs img').forEach(function (x) { x.classList.remove('on'); }); t.classList.add('on'); }; });
     if (!so) {
       $$('#pq button').forEach(function (b) { b.onclick = function () { q = Math.max(1, q + Number(b.dataset.d)); $('#pq span').textContent = q; }; });
       $('#add').onclick = function () { addToCart(p.id, q); openCart(true); };
       $('#buy').onclick = function () { addToCart(p.id, q); openCheckout(); };
     }
+    var wl = waLink('Hi, I want to order: ' + p.title + ' (' + money(p.price) + ') ' + location.href);
+    if (wl) el.lastElementChild.insertAdjacentHTML('beforeend', '<a class="btn secondary block" style="margin:6px 0 16px" target="_blank" rel="noopener" href="' + wl + '">Order on WhatsApp</a>');
+    if (!so) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><div><div class="price" style="padding:0;font-size:16px">' + money(p.price) + '</div><div style="font:12px var(--font-accent);opacity:.7">' + esc(p.title) + '</div></div><button class="btn secondary" id="s-add">Add</button><button class="btn" id="s-buy">Buy now</button></div>');
+      $('#s-add').onclick = function () { addToCart(p.id, q); openCart(true); }; $('#s-buy').onclick = function () { addToCart(p.id, q); openCheckout(); }; }
     var rel = P.filter(function (x) { return x.id !== p.id; }).slice(0, 4);
     if (rel.length) $('#related').innerHTML = rel.map(cardHTML).join('');
   }
@@ -239,7 +272,7 @@
   Promise.all([fetchJSON('data/site.json'), fetchJSON('data/products.json'), fetchJSON('data/pages.json')]).then(function (r) {
     S = r[0]; P = (r[1].products || []).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['images/product-1.svg']; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []);
-    shell(); events();
+    applyTheme(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page }[pg] || function () {})();
     document.body.classList.add('ready');
   }).catch(function (e) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Could not load store data. Please refresh. (' + esc(e.message) + ')</p>'; });

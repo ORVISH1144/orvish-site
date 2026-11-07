@@ -46,6 +46,24 @@ collections:
         format: json
         fields:
           - { label: Store name, name: store_name, widget: string }
+          - { label: Logo (leave empty to show store name as text), name: logo, widget: image, required: false }
+          - { label: Logo height (px), name: logo_height, widget: number, default: 38, min: 16, max: 90 }
+          - { label: Browser tab icon (favicon), name: favicon, widget: image, required: false }
+          - { label: "WhatsApp number with country code, digits only (e.g. 919876543210). Shows a WhatsApp button.", name: whatsapp_number, widget: string, required: false }
+          - label: Colours, fonts and buttons
+            name: theme
+            widget: object
+            fields:
+              - { label: Page background colour, name: bg, widget: color }
+              - { label: Text colour, name: ink, widget: color }
+              - { label: Main brand colour (header, badges), name: primary, widget: color }
+              - { label: Text colour on brand colour, name: accent, widget: color }
+              - { label: Heading font, name: heading_font, widget: select, options: [Acme, Playfair Display, Poppins, Montserrat, Lora, Oswald, Bebas Neue, DM Serif Display, Cormorant Garamond, Inter] }
+              - { label: Sub-heading and button font, name: subheading_font, widget: select, options: [Andada Pro, Inter, Poppins, Montserrat, Lora, Roboto, Georgia] }
+              - { label: Body text font, name: body_font, widget: select, options: [Georgia, Andada Pro, Inter, Poppins, Montserrat, Lora, Roboto] }
+              - { label: Button roundness (0 = square, 30 = very round), name: button_radius, widget: number, min: 0, max: 30 }
+          - { label: Home page products heading, name: home_heading, widget: string }
+          - { label: How many products on home page, name: products_on_home, widget: number, min: 1, max: 24 }
           - { label: Tagline, name: tagline, widget: string }
           - { label: Support email, name: support_email, widget: string }
           - { label: Currency symbol, name: currency_symbol, widget: string }
