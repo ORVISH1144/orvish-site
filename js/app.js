@@ -60,6 +60,18 @@
     return out.join('\n');
   }
 
+  /* customer accounts (Firebase Auth + Firestore, free plan) */
+  var FB = null, USER = null, fbWait = [];
+  function loadJS(u) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+  function fbReady() {
+    var c = S.firebase_config; if (!c || !c.apiKey) return Promise.resolve(null);
+    if (FB) return Promise.resolve(FB);
+    var b = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
+    return loadJS(b + 'app-compat.js').then(function () { return loadJS(b + 'auth-compat.js'); }).then(function () { return loadJS(b + 'firestore-compat.js'); }).then(function () {
+      firebase.initializeApp(c); FB = { auth: firebase.auth(), db: firebase.firestore() };
+      return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; ok(FB); var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; }); });
+    }).catch(function () { return null; });
+  }
   /* cart (lines are {id, v: variant label, q}) */
   function saveCart() { store.set('orvish_cart', cart); renderCart(); }
   function findP(id) { return P.filter(function (p) { return p.id === id; })[0]; }
@@ -116,8 +128,8 @@
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel"></div></div>' +
-      '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email"></div>' +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(USER ? USER.displayName || '' : '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel"></div></div>' +
+      '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(USER ? USER.email || '' : '') + '"></div>' +
       '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address"></textarea></div>' +
       '<div class="two"><div class="field"><label>City</label><input name="city" required></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric"></div></div>' +
       '<h6 class="co-h">Payment</h6><div class="pay">' + ms.map(function (x, i) { return '<label><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '> ' + x[1] + '</label>'; }).join('') + '</div>' +
@@ -134,6 +146,7 @@
     var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
     var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now() }); store.set('orvish_orders', o.slice(0, 20));
+    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} }
     return id;
   }
   function emailOrder(f, t) {
@@ -173,14 +186,14 @@
     return (S.menu || []).map(function (m) {
       var c = m.children || [];
       return c.length ? '<details><summary>' + esc(m.label) + '</summary>' + c.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</details>' : '<a class="top" href="' + esc(m.url) + '">' + esc(m.label) + '</a>';
-    }).join('') + '<a class="top" href="/track">Track your order</a>';
+    }).join('') + '<a class="top" href="/account">My account</a><a class="top" href="/track">Track your order</a>';
   }
   function shell() {
     var anns = (S.announcements || []).filter(function (x) { return x && String(x).trim(); }); if (!anns.length) $('#announce').style.display = 'none';
     $('#announce').innerHTML = anns.map(function (a, i) { return '<span class="' + (i ? '' : 'on') + '">' + esc(a) + '</span>'; }).join('');
     var ai = 0, sp = $$('#announce span'); if (sp.length > 1) setInterval(function () { sp[ai].classList.remove('on'); ai = (ai + 1) % sp.length; sp[ai].classList.add('on'); }, 4000);
     $('#header').innerHTML = '<div class="wrap"><div style="display:flex;align-items:center;gap:20px"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><nav class="nav">' + navHTML() + '</nav></div>' +
-      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><a class="icon-btn acct" href="/track" aria-label="Track order">' + ico('user') + '</a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
+      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><a class="icon-btn acct" href="/account" aria-label="My account">' + ico('user') + '<i id="acct-dot"></i></a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
     var li = function (a) { return (a || []).map(function (l) { return '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>'; }).join(''); };
     var cols = (S.footer_columns || []).map(function (c) { return '<div><h6>' + esc(c.title) + '</h6><ul>' + li(c.links) + '</ul></div>'; }).join('');
     $('#footer').innerHTML = '<div class="wrap"><div class="f-top"><div><div class="logo">' + logoHTML() + '</div><p style="font-size:13px;color:#555;margin:6px 0 0">' + esc(S.tagline || '') + '<br>Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a></p></div>' +
@@ -191,7 +204,7 @@
       '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
       '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb"><div class="in"><input id="sq" placeholder="Search products" autocomplete="off"><button class="icon-btn" style="color:var(--ink)" id="close-search">' + ico('close') + '</button></div>' +
       ((S.trending || []).length ? '<div class="trend"><b>Trending searches</b>' + S.trending.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</div>' : '') + '<div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>' +
-      '<nav class="bnav" id="bnav"><a href="/">' + ico('home') + 'Home</a><a href="/shop">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><a href="/track">' + ico('user') + 'Orders</a><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
+      '<nav class="bnav" id="bnav"><a href="/">' + ico('home') + 'Home</a><a href="/shop">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><a href="/account">' + ico('user') + 'Account</a><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
       (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><img src="/images/whatsapp.png" alt="WhatsApp"></a>' : ''));
     document.title = (document.title && document.title !== 'ORVISH' ? document.title + ' – ' : '') + (S.store_name || 'ORVISH');
     renderCart();
@@ -379,12 +392,58 @@
     if (qs.get('id') && mine[0]) look(qs.get('id'), mine[0].phone);
   }
 
+  function account() {
+    var el = $('#acct-body');
+    if (!(S.firebase_config && S.firebase_config.apiKey)) { el.innerHTML = '<h1>My account</h1><p class="sub">Customer accounts are not switched on yet. You can still <a class="link" href="/track">track an order</a> with your order ID and phone number.</p>'; return; }
+    el.innerHTML = '<p class="msg">Loading…</p>';
+    fbReady().then(function (f) {
+      if (!f) { el.innerHTML = '<p class="msg err">Could not load accounts. Please refresh.</p>'; return; }
+      f.auth.onAuthStateChanged(function (u) { u ? dash(u) : loginForm(); });
+    });
+    function err(e) { var m = (e && e.code) || ''; return /wrong-password|invalid-credential|user-not-found/.test(m) ? 'Wrong email or password.' : /email-already/.test(m) ? 'An account with this email already exists. Please log in.' : /weak-password/.test(m) ? 'Password must be at least 6 characters.' : /popup/.test(m) ? 'Sign-in window was closed.' : /unauthorized-domain/.test(m) ? 'This website address is not allowed yet in Firebase settings.' : (e && e.message) || 'Something went wrong.'; }
+    function loginForm() {
+      var mode = 'in';
+      function paint() {
+        el.innerHTML = '<h1>' + (mode === 'in' ? 'Log in' : 'Create account') + '</h1><form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name"></div>' : '') +
+          '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
+          '<button class="btn block" type="submit">' + (mode === 'in' ? 'Log in' : 'Create account') + '</button></form><div id="amsg" class="msg err"></div>' +
+          (mode === 'in' ? '<p style="text-align:right;margin:6px 0"><button class="link lnk" id="forgot">Forgot password?</button></p>' : '') +
+          '<div class="or"><span>or</span></div><button class="btn secondary block" id="gbtn">Continue with Google</button>' +
+          '<p style="text-align:center;margin-top:18px">' + (mode === 'in' ? 'New customer? <button class="link lnk" id="sw">Create an account</button>' : 'Already have an account? <button class="link lnk" id="sw">Log in</button>') + '</p>' +
+          '<p style="text-align:center"><a class="link" href="/track">Track an order without an account</a></p>';
+        $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
+        $('#af').onsubmit = function (e) {
+          e.preventDefault(); var d = Object.fromEntries(new FormData(e.target)), m = $('#amsg'); m.textContent = '';
+          (mode === 'in' ? f.auth.signInWithEmailAndPassword(d.email, d.pw) : f.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); })).catch(function (x) { m.textContent = err(x); });
+        };
+        $('#gbtn').onclick = function () { f.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (x) { $('#amsg').textContent = err(x); }); };
+        var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } f.auth.sendPasswordResetEmail(em).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
+      }
+      paint();
+    }
+    function dash(u) {
+      el.innerHTML = '<div class="ah"><div><h1 style="margin:0">My account</h1><p class="sub" style="margin:0">' + esc(u.displayName || '') + ' · ' + esc(u.email || '') + '</p></div><button class="btn secondary" id="lo">Log out</button></div><h3 style="margin-top:24px">My orders</h3><div id="ol"><p class="msg">Loading orders…</p></div>';
+      $('#lo').onclick = function () { f_out(); };
+      function f_out() { FB.auth.signOut(); }
+      FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
+        var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; });
+        if (!o.length) { $('#ol').innerHTML = '<p class="empty" style="padding:24px 0">No orders yet. <a class="link" href="/shop">Start shopping</a></p>'; return; }
+        $('#ol').innerHTML = o.map(function (x) { return '<div class="tcard" style="margin-top:12px" data-id="' + esc(x.order_id) + '" data-ph="' + esc(x.phone) + '"><div class="th"><div><small>' + new Date(x.created).toLocaleDateString('en-IN') + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st">…</span></div><div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(x.items) + '</span></div><div class="row"><span>Total</span><span>' + money(x.total) + '</span></div></div>'; }).join('');
+        $$('#ol .tcard').forEach(function (c) {
+          if (!S.order_webhook_url) return;
+          fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(c.dataset.id) + '&phone=' + c.dataset.ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) { $('.st', c).textContent = d.found ? d.order_status : 'Received'; }).catch(function () { $('.st', c).textContent = 'Received'; });
+        });
+      }).catch(function () { $('#ol').innerHTML = '<p class="msg err">Could not load orders.</p>'; });
+    }
+  }
+
   /* boot */
   Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json')]).then(function (r) {
     S = r[0]; P = (r[1].products || []).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     applyTheme(); shell(); events();
-    var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track }[pg] || function () {})();
+    var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})();
     document.body.classList.add('ready');
+    if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();
   }).catch(function (e) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Could not load store data. Please refresh. (' + esc(e.message) + ')</p>'; });
 })();

@@ -130,6 +130,15 @@ collections:
           - { label: Free shipping above (₹), name: free_shipping_above, widget: number }
           - { label: "Razorpay Key ID (paste later to switch on online payment, starts with rzp_)", name: razorpay_key_id, widget: string, required: false }
           - { label: Footer newsletter text, name: footer_newsletter_text, widget: string, required: false }
+          - label: Customer accounts (Firebase settings – see instructions)
+            name: firebase_config
+            widget: object
+            required: false
+            fields:
+              - { label: apiKey, name: apiKey, widget: string, required: false }
+              - { label: authDomain, name: authDomain, widget: string, required: false }
+              - { label: projectId, name: projectId, widget: string, required: false }
+              - { label: appId, name: appId, widget: string, required: false }
           - { label: Cash on delivery option, name: cod_enabled, widget: boolean, default: true }
           - { label: Tagline (footer), name: tagline, widget: string, required: false }
           - { label: Best sellers heading, name: best_sellers_title, widget: string, required: false }

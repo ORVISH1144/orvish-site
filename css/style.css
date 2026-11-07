@@ -310,3 +310,8 @@ html{overflow-x:clip}
 .nav,.ni>a{white-space:nowrap}.nav{gap:22px}
 .header .wrap{grid-template-columns:1fr auto 1fr}
 .footer .logo-img{background:var(--maroon);padding:8px 14px;border-radius:8px}
+
+#acct-body{max-width:460px}.acct{position:relative}#acct-dot{display:none;position:absolute;top:7px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.lnk{background:none;border:0;padding:0;cursor:pointer;color:var(--maroon);font-size:inherit}
+.or{text-align:center;margin:16px 0;position:relative;font:400 12px var(--font-accent)}.or::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}.or span{position:relative;background:var(--bg);padding:0 10px}
+.ah{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}

@@ -346,5 +346,11 @@
         }
       ]
     }
-  ]
+  ],
+  "firebase_config": {
+    "apiKey": "",
+    "authDomain": "",
+    "projectId": "",
+    "appId": ""
+  }
 }
