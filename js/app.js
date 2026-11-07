@@ -126,9 +126,8 @@
   function emailOrder(f, t) {
     var oid = sendOrder(f, t, 'Pending');
     if (oid) { done('Thank you! Your order ' + oid + ' has been received. We will contact you on ' + f.phone + ' to confirm it and arrange payment.'); return; }
-    var body = 'New order request\n\n' + orderLines().join('\n') + '\n\nTotal: ' + money(t.total) + '\n\nName: ' + f.name + '\nPhone: ' + f.phone + '\nEmail: ' + f.email + '\nAddress: ' + f.address + ', ' + f.city + ' - ' + f.pin;
-    location.href = 'mailto:' + (S.support_email || '') + '?subject=' + encodeURIComponent('Order request from ' + f.name) + '&body=' + encodeURIComponent(body);
-    done('Thanks! Your email app should open with the order details. Please send it to complete your request.');
+    var wa = waLink('Hi, I want to place an order: ' + orderLines().join(', ') + ' Total ' + money(t.total));
+    $('#checkout-modal').innerHTML = '<div class="box"><h4>Ordering is unavailable</h4><p>Sorry, we could not place your order online right now.' + (wa ? ' Please order on WhatsApp instead.' : ' Please try again later.') + '</p>' + (wa ? '<a class="btn" href="' + wa + '" target="_blank" rel="noopener">Order on WhatsApp</a>' : '') + '</div>';
   }
   function payRazorpay(f, t) {
     var go = function () {
