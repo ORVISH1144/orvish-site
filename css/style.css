@@ -315,3 +315,9 @@ html{overflow-x:clip}
 .lnk{background:none;border:0;padding:0;cursor:pointer;color:var(--maroon);font-size:inherit}
 .or{text-align:center;margin:16px 0;position:relative;font:400 12px var(--font-accent)}.or::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}.or span{position:relative;background:var(--bg);padding:0 10px}
 .ah{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+.paylogos{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.footer .paylogos{justify-content:center;margin:20px 0 0}
+.pl{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;color:#222;border-radius:6px;padding:4px 9px;font:700 11px var(--font-accent);letter-spacing:.3px;white-space:nowrap}
+.pl.visa{color:#1a1f71;font-style:italic;font-size:13px}.pl.upi{color:#0c6b3a}.pl.rupay{color:#0b4f9c}.pl.rp{font-weight:500;color:#555}.pl.rp b{color:#0b2a5b}
+.pl.mc i{width:11px;height:11px;border-radius:50%;background:#eb001b;display:inline-block}.pl.mc i+i{background:#f79e1b;margin-left:-9px;opacity:.9}
+.pay-note{font:400 12px var(--font-accent);margin:10px 0 0;opacity:.8}.d-foot .paylogos{justify-content:center;margin-top:12px}

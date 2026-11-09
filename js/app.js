@@ -79,6 +79,9 @@
       return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; ok(FB); var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; }); });
     }).catch(function () { return null; });
   }
+  function payLogos() {
+    return '<div class="paylogos" aria-label="Accepted payments"><span class="pl visa">VISA</span><span class="pl mc"><i></i><i></i>Mastercard</span><span class="pl rupay">RuPay</span><span class="pl upi">UPI</span><span class="pl">Net Banking</span><span class="pl">Cash on delivery</span><span class="pl rp"><b>Razorpay</b> secured</span></div>';
+  }
   /* cart (lines are {id, v: variant label, q}) */
   function saveCart() { store.set('orvish_cart', cart); renderCart(); }
   function findP(id) { return P.filter(function (p) { return p.id === id; })[0]; }
@@ -122,7 +125,7 @@
       (t.off ? '<div class="row"><span>Discount (' + esc(discount.code) + ')</span><span>−' + money(t.off) + '</span></div>' : '') +
       '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
-      '<button class="btn block" id="checkout" style="margin-top:10px">Checkout · ' + money(t.total) + '</button>';
+      '<button class="btn block" id="checkout" style="margin-top:10px">Checkout · ' + money(t.total) + '</button>' + payLogos();
   }
   function openCart(o) { $('#cart').classList.toggle('open', o); $('#ov').classList.toggle('on', o); }
   function toast(m) { var t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('on'); }, 1800); }
@@ -142,15 +145,18 @@
       '<h6 class="co-h">Payment</h6><div class="pay">' + ms.map(function (x, i) { return '<label><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '> ' + x[1] + '</label>'; }).join('') + '</div>' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' + (t.off ? '<div class="row"><span>Discount</span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
-      '<button class="btn block" type="submit" style="margin-top:10px">Place order · ' + money(t.total) + '</button></form></div>';
+      '<div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
     m.classList.add('open'); $('#ov').classList.add('on');
-    $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); f.pm === 'online' ? payRazorpay(f, t) : emailOrder(f, t); });
+    $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); if (f.pm === 'online') {
+        if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
+        payRazorpay(f, t);
+      } else emailOrder(f, t); });
   }
   function orderLines() { return cart.map(function (l) { var u = unit(l); return l.q + ' x ' + u.p.title + (u.label ? ' ' + u.label : '') + ' (' + money(u.price) + ')'; }); }
-  function sendOrder(f, t, status, payId) {
+  function sendOrder(f, t, status, payId, extra) {
     var url = S.order_webhook_url; if (!url) return null;
     var id = 'ORV-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '' });
+    var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
     var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now() }); store.set('orvish_orders', o.slice(0, 20));
     if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} }
@@ -163,18 +169,25 @@
     $('#checkout-modal').innerHTML = '<div class="box"><h4>Ordering is unavailable</h4><p>Sorry, we could not place your order online right now.' + (wa ? ' Please order on WhatsApp instead.' : ' Please try again later.') + '</p>' + (wa ? '<a class="btn" href="' + wa + '" target="_blank" rel="noopener">Order on WhatsApp</a>' : '') + '</div>';
   }
   function payRazorpay(f, t) {
-    var go = function () {
-      var rz = new window.Razorpay({
-        key: S.razorpay_key_id, amount: Math.round(t.total * 100), currency: 'INR', name: S.store_name || 'ORVISH', description: orderLines().join(', ').slice(0, 250),
-        prefill: { name: f.name, email: f.email, contact: f.phone },
-        notes: { items: orderLines().join(' | ').slice(0, 250), address: (f.address + ', ' + f.city + ' - ' + f.pin).slice(0, 250), phone: f.phone },
-        theme: { color: '#761941' },
-        handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id); done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '.' + (oid ? ' Your order ID is ' + oid + '.' : ''), oid, t.total); }
-      });
-      rz.open();
+    var btn = $('#co-form button[type=submit]'); if (btn) { btn.disabled = true; btn.textContent = 'Opening payment…'; }
+    var open = function (rzOrder) {
+      var go = function () {
+        var o = {
+          key: S.razorpay_key_id, amount: Math.round(t.total * 100), currency: 'INR', name: S.store_name || 'ORVISH', description: orderLines().join(', ').slice(0, 250),
+          prefill: { name: f.name, email: f.email, contact: f.phone },
+          notes: { items: orderLines().join(' | ').slice(0, 250), address: (f.address + ', ' + f.city + ' - ' + f.pin).slice(0, 250), phone: f.phone },
+          theme: { color: '#761941' },
+          modal: { ondismiss: function () { if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment · ' + money(t.total); } } },
+          handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id, { o: r.razorpay_order_id || '', s: r.razorpay_signature || '' }); done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '.' + (oid ? ' Your order ID is ' + oid + '.' : ''), oid, t.total); }
+        };
+        if (rzOrder) o.order_id = rzOrder;
+        new window.Razorpay(o).open();
+      };
+      if (window.Razorpay) return go();
+      var s = document.createElement('script'); s.src = 'https://checkout.razorpay.com/v1/checkout.js'; s.onload = go; s.onerror = function () { toast('Could not load payment. Try again.'); }; document.head.appendChild(s);
     };
-    if (window.Razorpay) return go();
-    var s = document.createElement('script'); s.src = 'https://checkout.razorpay.com/v1/checkout.js'; s.onload = go; s.onerror = function () { toast('Could not load payment. Try again.'); }; document.head.appendChild(s);
+    if (!S.order_webhook_url) return open('');
+    fetch(S.order_webhook_url + '?action=rzp_order&amount=' + Math.round(t.total * 100) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) { open(d && d.id ? d.id : ''); }).catch(function () { open(''); });
   }
   function done(msg, oid, tot) {
     if (tot != null) fbq_('track', 'Purchase', { value: tot, currency: 'INR' });
@@ -206,7 +219,7 @@
     var cols = (S.footer_columns || []).map(function (c) { return '<div><h6>' + esc(c.title) + '</h6><ul>' + li(c.links) + '</ul></div>'; }).join('');
     $('#footer').innerHTML = '<div class="wrap"><div class="f-top"><div><div class="logo">' + logoHTML() + '</div><p style="font-size:13px;color:#555;margin:6px 0 0">' + esc(S.tagline || '') + '<br>Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a></p></div>' +
       '<div class="nl"><h6><em>Get In Touch</em></h6><p style="font-size:13px;margin:0">' + esc(S.footer_newsletter_text) + '</p><form class="news" id="news"><input type="email" placeholder="Email" required><button class="btn" type="submit">Sign up</button></form></div></div>' +
-      '<div class="f-grid">' + cols + '</div><div class="copy">© ' + new Date().getFullYear() + ' ' + esc(S.store_name) + '. All rights reserved.</div></div>';
+      '<div class="f-grid">' + cols + '</div>' + payLogos() + '<div class="copy">© ' + new Date().getFullYear() + ' ' + esc(S.store_name) + '. All rights reserved.</div></div>';
     document.body.insertAdjacentHTML('beforeend',
       '<div class="mobile-nav" id="mnav">' + mobileNavHTML() + '</div><div class="overlay" id="ov"></div>' +
       '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
@@ -349,7 +362,7 @@
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" src="' + esc(im) + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div><h1>' + esc(p.title) + '</h1><div class="price" id="pp"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
-      '<div id="buyarea"></div><div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
+      '<div id="buyarea"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI or net banking</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
       '<div class="desc">' + md(p.description) + '</div>' + noteBlock(p) +
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
     function paint() {
