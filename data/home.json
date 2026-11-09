@@ -1,0 +1,161 @@
+{
+  "announcements": [
+    "Free Shipping on Orders Above ₹999",
+    "Save 5% on Your First Order",
+    "Buy 3 & Get 30% Off"
+  ],
+  "slides": [
+    {
+      "image": "/images/uploads/Luxury Burgundy Perfume Still Life.png",
+      "caption": "Discover your signature scent",
+      "button_label": "Shop Now",
+      "button_link": "/shop"
+    },
+    {
+      "image": "/images/uploads/Cinematic Perfume Mist Portrait.png",
+      "caption": "Genuine fragrances, easy replacement",
+      "button_label": "Explore",
+      "button_link": "/shop?best=1"
+    },
+    {
+      "image": "/images/uploads/Triumph Above the Clouds.png",
+      "caption": "Free shipping above ₹999",
+      "button_label": "Shop Now",
+      "button_link": "/shop"
+    }
+  ],
+  "ticker": [
+    {
+      "icon": "refresh",
+      "text": "Easy Replacement"
+    },
+    {
+      "icon": "shield",
+      "text": "100% Genuine Products"
+    },
+    {
+      "icon": "truck",
+      "text": "Express Shipping Across India"
+    },
+    {
+      "icon": "lock",
+      "text": "Secure Payments"
+    }
+  ],
+  "home_heading": "Our products",
+  "products_on_home": 8,
+  "best_sellers_title": "Best Sellers",
+  "home_tabs": [
+    {
+      "label": "Signature",
+      "collection": "signature"
+    },
+    {
+      "label": "Everyday",
+      "collection": "everyday"
+    }
+  ],
+  "men_title": "For Him – Must Haves",
+  "women_title": "For Her – Must Haves",
+  "collection_tiles": [
+    {
+      "title": "Signature",
+      "text": "Rich, lasting fragrances",
+      "image": "images/tile-1.svg",
+      "url": "/shop?c=signature",
+      "button": "View products"
+    },
+    {
+      "title": "Everyday",
+      "text": "Light and easy to wear",
+      "image": "images/tile-2.svg",
+      "url": "/shop?c=everyday",
+      "button": "View products"
+    },
+    {
+      "title": "Gift ideas",
+      "text": "Perfect for every occasion",
+      "image": "images/tile-3.svg",
+      "url": "/shop",
+      "button": "View products"
+    }
+  ],
+  "services": [
+    {
+      "icon": "truck",
+      "title": "Free shipping",
+      "text": "On orders above ₹999"
+    },
+    {
+      "icon": "shield",
+      "title": "100% genuine",
+      "text": "Authentic products only"
+    },
+    {
+      "icon": "lock",
+      "title": "Secure payments",
+      "text": "Safe and easy checkout"
+    },
+    {
+      "icon": "chat",
+      "title": "Customer support",
+      "text": "Help on WhatsApp"
+    }
+  ],
+  "home_text_title": "Genuine fragrances online in India",
+  "home_text": "ORVISH brings you genuine perfumes with easy replacement and express shipping across India. Explore our best sellers, find your favourite notes, and order in a few taps.\n\n*Edit this text from the admin panel.*",
+  "trending": [
+    {
+      "label": "Best sellers",
+      "url": "/shop?best=1"
+    },
+    {
+      "label": "For him",
+      "url": "/shop?gender=men"
+    },
+    {
+      "label": "For her",
+      "url": "/shop?gender=women"
+    },
+    {
+      "label": "Oud",
+      "url": "/shop?note=Oud"
+    },
+    {
+      "label": "Floral",
+      "url": "/shop?note=Floral"
+    }
+  ],
+  "faq": [
+    {
+      "title": "How long does delivery take?",
+      "body": "Orders are dispatched within 1–3 business days. Delivery usually takes 3–7 business days depending on your location."
+    },
+    {
+      "title": "Can I return or replace a product?",
+      "body": "If your order arrives damaged or incorrect, contact us within 7 days of delivery and we will arrange a replacement."
+    },
+    {
+      "title": "Do you offer cash on delivery?",
+      "body": "Yes. You can choose cash on delivery at checkout where available."
+    }
+  ],
+  "product_badges": [
+    {
+      "icon": "shield",
+      "text": "100% genuine"
+    },
+    {
+      "icon": "refresh",
+      "text": "Easy replacement"
+    },
+    {
+      "icon": "lock",
+      "text": "Secure payments"
+    }
+  ],
+  "best_pick": [],
+  "him_pick": [],
+  "her_pick": [],
+  "custom_rows": []
+}

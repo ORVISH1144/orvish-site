@@ -6,217 +6,637 @@ site_url: https://www.orvish.com
 media_folder: images/uploads
 public_folder: /images/uploads
 collections:
+- name: products
+  label: Products
+  files:
   - name: products
-    label: Products
-    files:
-      - name: products
-        label: All products (add, edit, delete)
-        file: data/products.json
-        format: json
+    label: All products (add, edit, delete)
+    file: data/products.json
+    format: json
+    fields:
+    - label: Products
+      name: products
+      widget: list
+      label_singular: Product
+      summary: '{{fields.title}} – ₹{{fields.price}}'
+      fields:
+      - label: ID (short, lowercase, no spaces – used in the web address)
+        name: id
+        widget: string
+        hint: e.g. blue-water-bottle. Do not change after publishing.
+      - label: Title
+        name: title
+        widget: string
+      - label: Price (₹)
+        name: price
+        widget: number
+        value_type: float
+        min: 0
+      - label: Original price (₹) – optional, shows a Sale badge
+        name: compare_at_price
+        widget: number
+        value_type: float
+        min: 0
+        required: false
+        default: 0
+      - label: Collection
+        name: collection
+        widget: string
+        default: all
+        hint: Used for the filter on the Shop page
+      - label: Photos (first one is the main photo)
+        name: images
+        widget: list
+        field:
+          label: Photo
+          name: image
+          widget: image
+      - label: Hide this product from the store (keeps it saved, customers cannot see it)
+        name: hidden
+        widget: boolean
+        default: false
+        required: false
+      - label: In stock
+        name: in_stock
+        widget: boolean
+        default: true
+      - label: Show on home page
+        name: featured
+        widget: boolean
+        default: true
+      - label: Brand (e.g. Rasasi)
+        name: brand
+        widget: string
+        required: false
+      - label: Gender
+        name: gender
+        widget: select
+        options:
+        - label: For Him
+          value: men
+        - label: For Her
+          value: women
+        - label: Unisex
+          value: unisex
+        required: false
+      - label: Type (e.g. Eau de Parfum)
+        name: type
+        widget: string
+        required: false
+      - label: Notes tags shown on the product card (e.g. Amber
+        Woody): null
+        name: notes
+        widget: list
+        required: false
+        field:
+          label: Note
+          name: note
+          widget: string
+      - label: Show in Best Sellers
+        name: best_seller
+        widget: boolean
+        default: false
+      - label: Small badge text (optional
+        e.g. New): null
+        name: badge
+        widget: string
+        required: false
+      - label: Sizes / options with their own price (optional)
+        name: variants
+        widget: list
+        required: false
         fields:
-          - label: Products
-            name: products
-            widget: list
-            label_singular: Product
-            summary: "{{fields.title}} – ₹{{fields.price}}"
-            fields:
-              - { label: "ID (short, lowercase, no spaces – used in the web address)", name: id, widget: string, hint: "e.g. blue-water-bottle. Do not change after publishing." }
-              - { label: Title, name: title, widget: string }
-              - { label: Price (₹), name: price, widget: number, value_type: float, min: 0 }
-              - { label: "Original price (₹) – optional, shows a Sale badge", name: compare_at_price, widget: number, value_type: float, min: 0, required: false, default: 0 }
-              - { label: Collection, name: collection, widget: string, default: all, hint: "Used for the filter on the Shop page" }
-              - { label: Photos (first one is the main photo), name: images, widget: list, field: { label: Photo, name: image, widget: image } }
-              - { label: "Hide this product from the store (keeps it saved, customers cannot see it)", name: hidden, widget: boolean, default: false, required: false }
-              - { label: In stock, name: in_stock, widget: boolean, default: true }
-              - { label: Show on home page, name: featured, widget: boolean, default: true }
-              - { label: Brand (e.g. Rasasi), name: brand, widget: string, required: false }
-              - { label: Gender, name: gender, widget: select, options: [{label: For Him, value: men},{label: For Her, value: women},{label: Unisex, value: unisex}], required: false }
-              - { label: Type (e.g. Eau de Parfum), name: type, widget: string, required: false }
-              - { label: Notes tags shown on the product card (e.g. Amber, Woody), name: notes, widget: list, required: false, field: { label: Note, name: note, widget: string } }
-              - { label: Show in Best Sellers, name: best_seller, widget: boolean, default: false }
-              - { label: Small badge text (optional, e.g. New), name: badge, widget: string, required: false }
-              - label: Sizes / options with their own price (optional)
-                name: variants
-                widget: list
-                required: false
-                fields:
-                  - { label: Name (e.g. 50 ml), name: label, widget: string }
-                  - { label: Price (₹), name: price, widget: number, value_type: float }
-                  - { label: Original price (₹), name: compare_at_price, widget: number, value_type: float, required: false }
-                  - { label: In stock, name: in_stock, widget: boolean, default: true }
-              - label: Fragrance notes (top / heart / base)
-                name: note_pyramid
-                widget: object
-                required: false
-                fields:
-                  - { label: Top notes, name: top, widget: string, required: false }
-                  - { label: Heart notes, name: heart, widget: string, required: false }
-                  - { label: Base notes, name: base, widget: string, required: false }
-              - { label: Short description, name: short_description, widget: string, required: false }
-              - { label: Full description, name: description, widget: text }
-              - label: Extra info sections (e.g. Shipping, Care)
-                name: details
-                widget: list
-                required: false
-                fields:
-                  - { label: Heading, name: title, widget: string }
-                  - { label: Text, name: body, widget: text }
+        - label: Name (e.g. 50 ml)
+          name: label
+          widget: string
+        - label: Price (₹)
+          name: price
+          widget: number
+          value_type: float
+        - label: Original price (₹)
+          name: compare_at_price
+          widget: number
+          value_type: float
+          required: false
+        - label: In stock
+          name: in_stock
+          widget: boolean
+          default: true
+      - label: Fragrance notes (top / heart / base)
+        name: note_pyramid
+        widget: object
+        required: false
+        fields:
+        - label: Top notes
+          name: top
+          widget: string
+          required: false
+        - label: Heart notes
+          name: heart
+          widget: string
+          required: false
+        - label: Base notes
+          name: base
+          widget: string
+          required: false
+      - label: Short description
+        name: short_description
+        widget: string
+        required: false
+      - label: Full description
+        name: description
+        widget: text
+      - label: Extra info sections (e.g. Shipping, Care)
+        name: details
+        widget: list
+        required: false
+        fields:
+        - label: Heading
+          name: title
+          widget: string
+        - label: Text
+          name: body
+          widget: text
+  icon: shopping_bag
+- name: home
+  label: Home page
+  files:
+  - name: home
+    label: Home page (banners, sections, which products show)
+    file: data/home.json
+    format: json
+    fields:
+    - label: Announcement bar messages
+      name: announcements
+      widget: list
+      required: false
+      field:
+        label: Message
+        name: message
+        widget: string
+    - label: Home page slider
+      name: slides
+      widget: list
+      required: false
+      fields:
+      - label: Image
+        name: image
+        widget: image
+      - label: Caption
+        name: caption
+        widget: string
+        required: false
+      - label: Button text
+        name: button_label
+        widget: string
+        required: false
+      - label: Button link
+        name: button_link
+        widget: string
+        required: false
+    - label: Scrolling ticker
+      name: ticker
+      widget: list
+      required: false
+      fields:
+      - label: Icon
+        name: icon
+        widget: select
+        options:
+        - refresh
+        - shield
+        - truck
+        - star
+      - label: Text
+        name: text
+        widget: string
+    - label: Home page products heading
+      name: home_heading
+      widget: string
+      required: false
+    - label: How many products on home page
+      name: products_on_home
+      widget: number
+      min: 1
+      max: 24
+    - label: Best sellers heading
+      name: best_sellers_title
+      widget: string
+      required: false
+    - label: Best sellers tabs (button label + collection name)
+      name: home_tabs
+      widget: list
+      required: false
+      fields:
+      - label: Button label
+        name: label
+        widget: string
+      - label: Collection name (as in the product)
+        name: collection
+        widget: string
+    - label: Home heading – For Him row
+      name: men_title
+      widget: string
+      required: false
+    - label: Home heading – For Her row
+      name: women_title
+      widget: string
+      required: false
+    - label: Collection tiles (home page picture boxes)
+      name: collection_tiles
+      widget: list
+      required: false
+      fields:
+      - label: Title
+        name: title
+        widget: string
+      - label: Small text
+        name: text
+        widget: string
+        required: false
+      - label: Image
+        name: image
+        widget: image
+      - label: Link
+        name: url
+        widget: string
+      - label: Button text
+        name: button
+        widget: string
+        required: false
+    - label: Service strip (free shipping, secure payments…)
+      name: services
+      widget: list
+      required: false
+      fields:
+      - label: Icon (truck
+        shield: null
+        lock: null
+        chat: null
+        refresh: null
+        star): null
+        name: icon
+        widget: string
+      - label: Title
+        name: title
+        widget: string
+      - label: Text
+        name: text
+        widget: string
+        required: false
+    - label: Home text heading
+      name: home_text_title
+      widget: string
+      required: false
+    - label: Home text (bottom of home page)
+      name: home_text
+      widget: text
+      required: false
+    - label: Trending searches (shown when searching)
+      name: trending
+      widget: list
+      required: false
+      fields:
+      - label: Label
+        name: label
+        widget: string
+      - label: Link
+        name: url
+        widget: string
+    - label: Questions and answers on product pages
+      name: faq
+      widget: list
+      required: false
+      fields:
+      - label: Question
+        name: title
+        widget: string
+      - label: Answer
+        name: body
+        widget: text
+    - label: Product page badges
+      name: product_badges
+      widget: list
+      required: false
+      fields:
+      - label: Icon (truck
+        shield: null
+        lock: null
+        chat: null
+        refresh: null
+        star): null
+        name: icon
+        widget: string
+      - label: Text
+        name: text
+        widget: string
+    - label: Best Sellers – choose which products to show, in order (leave empty = products marked Best seller)
+      name: best_pick
+      widget: relation
+      collection: products
+      file: products
+      value_field: products.*.id
+      search_fields:
+      - products.*.title
+      display_fields:
+      - products.*.title
+      multiple: true
+      required: false
+    - label: For Him row – choose products (leave empty = all For Him products)
+      name: him_pick
+      widget: relation
+      collection: products
+      file: products
+      value_field: products.*.id
+      search_fields:
+      - products.*.title
+      display_fields:
+      - products.*.title
+      multiple: true
+      required: false
+    - label: For Her row – choose products (leave empty = all For Her products)
+      name: her_pick
+      widget: relation
+      collection: products
+      file: products
+      value_field: products.*.id
+      search_fields:
+      - products.*.title
+      display_fields:
+      - products.*.title
+      multiple: true
+      required: false
+    - label: Extra product rows (e.g. New arrivals, Gift picks) – choose products for each
+      name: custom_rows
+      widget: list
+      required: false
+      summary: '{{fields.title}}'
+      fields:
+      - label: Row heading
+        name: title
+        widget: string
+      - label: Products
+        name: products
+        widget: relation
+        collection: products
+        file: products
+        value_field: products.*.id
+        search_fields:
+        - products.*.title
+        display_fields:
+        - products.*.title
+        multiple: true
+        required: false
+  icon: home
+- name: nav
+  label: Menu & footer
+  files:
+  - name: nav
+    label: Menu and footer
+    file: data/nav.json
+    format: json
+    fields:
+    - label: Menu
+      name: menu
+      widget: list
+      fields:
+      - label: Label
+        name: label
+        widget: string
+      - label: Link
+        name: url
+        widget: string
+      - label: Drop-down items (optional)
+        name: children
+        widget: list
+        required: false
+        fields:
+        - label: Label
+          name: label
+          widget: string
+        - label: Link
+          name: url
+          widget: string
+    - label: Footer columns
+      name: footer_columns
+      widget: list
+      fields:
+      - label: Column title
+        name: title
+        widget: string
+      - label: Links
+        name: links
+        widget: list
+        fields:
+        - label: Label
+          name: label
+          widget: string
+        - label: Link
+          name: url
+          widget: string
+    - label: Footer newsletter text
+      name: footer_newsletter_text
+      widget: string
+      required: false
+  icon: menu
+- name: commerce
+  label: Payments, shipping & discounts
+  files:
+  - name: commerce
+    label: Payments, shipping and discount codes
+    file: data/commerce.json
+    format: json
+    fields:
+    - label: Discount codes
+      name: discount_codes
+      widget: list
+      required: false
+      fields:
+      - label: Code
+        name: code
+        widget: string
+      - label: Percent off
+        name: percent
+        widget: number
+      - label: Minimum items in cart
+        name: min_items
+        widget: number
+        default: 1
+    - label: Shipping fee (₹)
+      name: shipping_fee
+      widget: number
+    - label: Free shipping above (₹)
+      name: free_shipping_above
+      widget: number
+    - label: Razorpay Key ID (paste later to switch on online payment, starts with rzp_)
+      name: razorpay_key_id
+      widget: string
+      required: false
+    - label: Cash on delivery option
+      name: cod_enabled
+      widget: boolean
+      default: true
+    - label: Payment logos (upload the official logo images – Visa, Mastercard, RuPay, UPI etc.)
+      name: payment_logos
+      widget: list
+      required: false
+      fields:
+      - label: Name
+        name: name
+        widget: string
+      - label: Logo image
+        name: image
+        widget: image
+  icon: payments
+- name: site
+  label: Store settings
+  files:
   - name: site
-    label: Store settings
-    files:
-      - name: site
-        label: Store settings (banner, slider, menu, footer, payment)
-        file: data/site.json
-        format: json
-        fields:
-          - { label: Store name, name: store_name, widget: string }
-          - { label: Logo (leave empty to show store name as text), name: logo, widget: image, required: false }
-          - { label: Logo height (px), name: logo_height, widget: number, default: 38, min: 16, max: 90 }
-          - { label: Browser tab icon (favicon), name: favicon, widget: image, required: false }
-          - { label: "WhatsApp number with country code, digits only (e.g. 919876543210). Shows a WhatsApp button.", name: whatsapp_number, widget: string, required: false }
-          - label: Colours, fonts and buttons
-            name: theme
-            widget: object
-            fields:
-              - { label: Page background colour, name: bg, widget: color }
-              - { label: Text colour, name: ink, widget: color }
-              - { label: Main brand colour (header, badges), name: primary, widget: color }
-              - { label: Text colour on brand colour, name: accent, widget: color }
-              - { label: Heading font, name: heading_font, widget: select, options: [Acme, Playfair Display, Poppins, Montserrat, Lora, Oswald, Bebas Neue, DM Serif Display, Cormorant Garamond, Inter] }
-              - { label: Sub-heading and button font, name: subheading_font, widget: select, options: [Andada Pro, Inter, Poppins, Montserrat, Lora, Roboto, Georgia] }
-              - { label: Body text font, name: body_font, widget: select, options: [Georgia, Andada Pro, Inter, Poppins, Montserrat, Lora, Roboto] }
-              - { label: Button roundness (0 = square, 30 = very round), name: button_radius, widget: number, min: 0, max: 30 }
-          - { label: Home page products heading, name: home_heading, widget: string, required: false }
-          - { label: How many products on home page, name: products_on_home, widget: number, min: 1, max: 24 }
-          - { label: Tagline, name: tagline, widget: string, required: false }
-          - { label: Support email, name: support_email, widget: string, required: false }
-          - { label: Currency symbol, name: currency_symbol, widget: string }
-          - { label: Announcement bar messages, name: announcements, widget: list, required: false, field: { label: Message, name: message, widget: string } }
-          - label: Home page slider
-            name: slides
-            widget: list
-            required: false
-            fields:
-              - { label: Image, name: image, widget: image }
-              - { label: Caption, name: caption, widget: string, required: false }
-              - { label: Button text, name: button_label, widget: string, required: false }
-              - { label: Button link, name: button_link, widget: string, required: false }
-          - label: Scrolling ticker
-            name: ticker
-            widget: list
-            required: false
-            fields:
-              - { label: Icon, name: icon, widget: select, options: [refresh, shield, truck, star] }
-              - { label: Text, name: text, widget: string }
-          - label: Menu
-            name: menu
-            widget: list
-            fields:
-              - { label: Label, name: label, widget: string }
-              - { label: Link, name: url, widget: string }
-              - label: Drop-down items (optional)
-                name: children
-                widget: list
-                required: false
-                fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
-          - label: Discount codes
-            name: discount_codes
-            widget: list
-            required: false
-            fields:
-              - { label: Code, name: code, widget: string }
-              - { label: Percent off, name: percent, widget: number }
-              - { label: Minimum items in cart, name: min_items, widget: number, default: 1 }
-          - { label: Order webhook URL (Zoho Flow – sends each order to your sheet), name: order_webhook_url, widget: string, required: false }
-          - { label: Shipping fee (₹), name: shipping_fee, widget: number }
-          - { label: Free shipping above (₹), name: free_shipping_above, widget: number }
-          - { label: "Razorpay Key ID (paste later to switch on online payment, starts with rzp_)", name: razorpay_key_id, widget: string, required: false }
-          - { label: Footer newsletter text, name: footer_newsletter_text, widget: string, required: false }
-          - label: Customer accounts (Firebase settings – see instructions)
-            name: firebase_config
-            widget: object
-            required: false
-            fields:
-              - { label: apiKey, name: apiKey, widget: string, required: false }
-              - { label: authDomain, name: authDomain, widget: string, required: false }
-              - { label: projectId, name: projectId, widget: string, required: false }
-              - { label: appId, name: appId, widget: string, required: false }
-          - { label: "Meta (Facebook/Instagram) Pixel ID – digits only, from Meta Events Manager", name: meta_pixel_id, widget: string, required: false }
-          - label: Payment logos (upload the official logo images – Visa, Mastercard, RuPay, UPI etc.)
-            name: payment_logos
-            widget: list
-            required: false
-            fields:
-              - { label: Name, name: name, widget: string }
-              - { label: Logo image, name: image, widget: image }
-          - label: Trending searches (shown when searching)
-            name: trending
-            widget: list
-            required: false
-            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
-          - label: Best sellers tabs (button label + collection name)
-            name: home_tabs
-            widget: list
-            required: false
-            fields: [ { label: Button label, name: label, widget: string }, { label: Collection name (as in the product), name: collection, widget: string } ]
-          - { label: Home heading – For Him row, name: men_title, widget: string, required: false }
-          - { label: Home heading – For Her row, name: women_title, widget: string, required: false }
-          - label: Collection tiles (home page picture boxes)
-            name: collection_tiles
-            widget: list
-            required: false
-            fields:
-              - { label: Title, name: title, widget: string }
-              - { label: Small text, name: text, widget: string, required: false }
-              - { label: Image, name: image, widget: image }
-              - { label: Link, name: url, widget: string }
-              - { label: Button text, name: button, widget: string, required: false }
-          - label: Service strip (free shipping, secure payments…)
-            name: services
-            widget: list
-            required: false
-            fields:
-              - { label: Icon (truck, shield, lock, chat, refresh, star), name: icon, widget: string }
-              - { label: Title, name: title, widget: string }
-              - { label: Text, name: text, widget: string, required: false }
-          - label: Product page badges
-            name: product_badges
-            widget: list
-            required: false
-            fields:
-              - { label: Icon (truck, shield, lock, chat, refresh, star), name: icon, widget: string }
-              - { label: Text, name: text, widget: string }
-          - { label: Cash on delivery option, name: cod_enabled, widget: boolean, default: true }
-          - { label: Best sellers heading, name: best_sellers_title, widget: string, required: false }
-          - { label: Home text heading, name: home_text_title, widget: string, required: false }
-          - { label: Home text (bottom of home page), name: home_text, widget: text, required: false }
-          - label: Questions and answers on product pages
-            name: faq
-            widget: list
-            required: false
-            fields: [ { label: Question, name: title, widget: string }, { label: Answer, name: body, widget: text } ]
-          - label: Footer columns
-            name: footer_columns
-            widget: list
-            fields:
-              - { label: Column title, name: title, widget: string }
-              - label: Links
-                name: links
-                widget: list
-                fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+    label: Store name, logo, colours, contact, tracking
+    file: data/site.json
+    format: json
+    fields:
+    - label: Store name
+      name: store_name
+      widget: string
+    - label: Logo (leave empty to show store name as text)
+      name: logo
+      widget: image
+      required: false
+    - label: Logo height (px)
+      name: logo_height
+      widget: number
+      default: 38
+      min: 16
+      max: 90
+    - label: Browser tab icon (favicon)
+      name: favicon
+      widget: image
+      required: false
+    - label: WhatsApp number with country code, digits only (e.g. 919876543210). Shows a WhatsApp button.
+      name: whatsapp_number
+      widget: string
+      required: false
+    - label: Colours, fonts and buttons
+      name: theme
+      widget: object
+      fields:
+      - label: Page background colour
+        name: bg
+        widget: color
+      - label: Text colour
+        name: ink
+        widget: color
+      - label: Main brand colour (header
+        badges): null
+        name: primary
+        widget: color
+      - label: Text colour on brand colour
+        name: accent
+        widget: color
+      - label: Heading font
+        name: heading_font
+        widget: select
+        options:
+        - Acme
+        - Playfair Display
+        - Poppins
+        - Montserrat
+        - Lora
+        - Oswald
+        - Bebas Neue
+        - DM Serif Display
+        - Cormorant Garamond
+        - Inter
+      - label: Sub-heading and button font
+        name: subheading_font
+        widget: select
+        options:
+        - Andada Pro
+        - Inter
+        - Poppins
+        - Montserrat
+        - Lora
+        - Roboto
+        - Georgia
+      - label: Body text font
+        name: body_font
+        widget: select
+        options:
+        - Georgia
+        - Andada Pro
+        - Inter
+        - Poppins
+        - Montserrat
+        - Lora
+        - Roboto
+      - label: Button roundness (0 = square
+        30 = very round): null
+        name: button_radius
+        widget: number
+        min: 0
+        max: 30
+    - label: Tagline
+      name: tagline
+      widget: string
+      required: false
+    - label: Support email
+      name: support_email
+      widget: string
+      required: false
+    - label: Currency symbol
+      name: currency_symbol
+      widget: string
+    - label: Meta (Facebook/Instagram) Pixel ID – digits only, from Meta Events Manager
+      name: meta_pixel_id
+      widget: string
+      required: false
+    - label: Customer accounts (Firebase settings – see instructions)
+      name: firebase_config
+      widget: object
+      required: false
+      fields:
+      - label: apiKey
+        name: apiKey
+        widget: string
+        required: false
+      - label: authDomain
+        name: authDomain
+        widget: string
+        required: false
+      - label: projectId
+        name: projectId
+        widget: string
+        required: false
+      - label: appId
+        name: appId
+        widget: string
+        required: false
+    - label: Order webhook URL (Zoho Flow – sends each order to your sheet)
+      name: order_webhook_url
+      widget: string
+      required: false
+  icon: settings
+- name: pages
+  label: Pages & policies
+  files:
   - name: pages
-    label: Pages & policies
-    files:
-      - name: pages
-        label: About, Contact and policy pages
-        file: data/pages.json
-        format: json
-        fields:
-          - label: Pages
-            name: pages
-            widget: list
-            summary: "{{fields.title}}"
-            fields:
-              - { label: "Slug (web address part)", name: slug, widget: string }
-              - { label: Title, name: title, widget: string }
-              - { label: Content, name: body, widget: markdown }
+    label: About, Contact and policy pages
+    file: data/pages.json
+    format: json
+    fields:
+    - label: Pages
+      name: pages
+      widget: list
+      summary: '{{fields.title}}'
+      fields:
+      - label: Slug (web address part)
+        name: slug
+        widget: string
+      - label: Title
+        name: title
+        widget: string
+      - label: Content
+        name: body
+        widget: markdown
+  icon: description

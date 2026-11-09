@@ -1,0 +1,160 @@
+{
+  "menu": [
+    {
+      "label": "Shop",
+      "url": "/shop",
+      "children": []
+    },
+    {
+      "label": "Best Sellers",
+      "url": "/shop?best=1",
+      "children": []
+    },
+    {
+      "label": "By Type",
+      "url": "/shop",
+      "children": [
+        {
+          "label": "Eau de Parfum",
+          "url": "/shop?type=Eau de Parfum"
+        },
+        {
+          "label": "Extrait de Parfum",
+          "url": "/shop?type=Extrait de Parfum"
+        },
+        {
+          "label": "Perfume Oil",
+          "url": "/shop?type=Perfume Oil"
+        },
+        {
+          "label": "Deo",
+          "url": "/shop?type=Deo"
+        }
+      ]
+    },
+    {
+      "label": "By Notes",
+      "url": "/shop",
+      "children": [
+        {
+          "label": "Amber",
+          "url": "/shop?note=Amber"
+        },
+        {
+          "label": "Floral",
+          "url": "/shop?note=Floral"
+        },
+        {
+          "label": "Fresh",
+          "url": "/shop?note=Fresh"
+        },
+        {
+          "label": "Musk",
+          "url": "/shop?note=Musk"
+        },
+        {
+          "label": "Woody",
+          "url": "/shop?note=Woody"
+        },
+        {
+          "label": "Oud",
+          "url": "/shop?note=Oud"
+        }
+      ]
+    },
+    {
+      "label": "By Gender",
+      "url": "/shop",
+      "children": [
+        {
+          "label": "For Him",
+          "url": "/shop?gender=men"
+        },
+        {
+          "label": "For Her",
+          "url": "/shop?gender=women"
+        },
+        {
+          "label": "Unisex",
+          "url": "/shop?gender=unisex"
+        }
+      ]
+    },
+    {
+      "label": "Contact Us",
+      "url": "/page?p=contact",
+      "children": []
+    }
+  ],
+  "footer_columns": [
+    {
+      "title": "About",
+      "links": [
+        {
+          "label": "About Us",
+          "url": "/page?p=about-us"
+        },
+        {
+          "label": "Contact Us",
+          "url": "/page?p=contact"
+        }
+      ]
+    },
+    {
+      "title": "Policies",
+      "links": [
+        {
+          "label": "Privacy Policy",
+          "url": "/page?p=privacy-policy"
+        },
+        {
+          "label": "Return & Refund Policy",
+          "url": "/page?p=refund-policy"
+        },
+        {
+          "label": "Shipping Policy",
+          "url": "/page?p=shipping-policy"
+        },
+        {
+          "label": "Terms and Conditions",
+          "url": "/page?p=terms-of-service"
+        }
+      ]
+    },
+    {
+      "title": "Customer Service",
+      "links": [
+        {
+          "label": "Track your order",
+          "url": "/track"
+        },
+        {
+          "label": "Contact Us",
+          "url": "/page?p=contact"
+        }
+      ]
+    },
+    {
+      "title": "Shop",
+      "links": [
+        {
+          "label": "All products",
+          "url": "/shop"
+        },
+        {
+          "label": "Best sellers",
+          "url": "/shop?best=1"
+        },
+        {
+          "label": "For Him",
+          "url": "/shop?gender=men"
+        },
+        {
+          "label": "For Her",
+          "url": "/shop?gender=women"
+        }
+      ]
+    }
+  ],
+  "footer_newsletter_text": "Enter your email below to be the first to know about new collections and product launches."
+}

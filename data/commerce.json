@@ -1,0 +1,40 @@
+{
+  "discount_codes": [
+    {
+      "code": "FIRST5",
+      "percent": 5,
+      "min_items": 1
+    },
+    {
+      "code": "BUY3",
+      "percent": 30,
+      "min_items": 3
+    }
+  ],
+  "shipping_fee": 49,
+  "free_shipping_above": 999,
+  "razorpay_key_id": "",
+  "cod_enabled": true,
+  "payment_logos": [
+    {
+      "name": "Visa",
+      "image": "/images/uploads/pay-visa.png"
+    },
+    {
+      "name": "Mastercard",
+      "image": "/images/uploads/pay-mastercard.png"
+    },
+    {
+      "name": "RuPay",
+      "image": "/images/uploads/pay-rupay.png"
+    },
+    {
+      "name": "UPI",
+      "image": "/images/uploads/pay-upi.png"
+    },
+    {
+      "name": "Apple Pay",
+      "image": "/images/uploads/pay-applepay.png"
+    }
+  ]
+}
