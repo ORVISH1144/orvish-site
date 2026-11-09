@@ -423,3 +423,11 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 }
 
 .brand{font:600 11px var(--font-accent);letter-spacing:.16em;text-transform:uppercase;color:var(--maroon);margin-top:6px}.pdp .brand{margin:0 0 4px}
+
+/* bundles + images blend into theme background */
+.bundles{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin:0 0 14px}.bundles b{grid-column:1/-1;font:600 13px var(--font-accent)}
+.bnd{border:1px solid #76194166;background:#ffffff80;border-radius:10px;padding:10px 6px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;gap:2px;font:600 13px var(--font-accent)}
+.bnd em{font:500 11px var(--font-accent);font-style:normal;color:var(--maroon)}.bnd.on{background:var(--maroon);border-color:var(--maroon);color:var(--gold)}.bnd.on em{color:var(--gold)}
+.card .img,.gallery .main{background:var(--bg)!important}
+.card .img img,.gallery .main img,.thumbs img,.line img,.hit img,.sum-l img{mix-blend-mode:multiply}
+.thumbs img{background:var(--bg)}

@@ -40,5 +40,15 @@
       "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
     }
   ],
-  "position": 1
+  "position": 1,
+  "bundles": [
+    {
+      "qty": 2,
+      "percent": 10
+    },
+    {
+      "qty": 3,
+      "percent": 15
+    }
+  ]
 }

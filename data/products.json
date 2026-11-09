@@ -41,6 +41,67 @@
           "title": "Shipping and returns",
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
         }
+      ],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ]
+    },
+    {
+      "id": "rose-01-extrait-50ml",
+      "title": "Rose 01 – Extrait de Parfum, 50 ml",
+      "brand": "Swiss Arabian",
+      "price": 1999,
+      "compare_at_price": 2499,
+      "collection": "signature",
+      "gender": "women",
+      "type": "Extrait de Parfum",
+      "notes": [
+        "Rose",
+        "Floral",
+        "Fruity"
+      ],
+      "images": [
+        "/images/photo-soon.svg"
+      ],
+      "in_stock": true,
+      "best_seller": true,
+      "featured": true,
+      "hidden": false,
+      "badge": "",
+      "short_description": "A rich rose fragrance with lychee, peony and a creamy vanilla musk base.",
+      "description": "Rose 01 by Swiss Arabian is a luxurious rose fragrance in Extrait de Parfum strength. It opens with juicy lychee, bergamot and a touch of pink pepper, blooms into Bulgarian rose and peony, and dries down to soft vanilla, musk and cashmere wood.\n\n**Size:** 50 ml\n\n**Concentration:** Extrait de Parfum\n\n**Best for:** evenings, special occasions and gifting.",
+      "note_pyramid": {
+        "top": "Lychee, Bergamot, Pink pepper",
+        "heart": "Bulgarian rose, Peony",
+        "base": "Vanilla, Musk, Cashmere wood"
+      },
+      "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        }
       ]
     },
     {

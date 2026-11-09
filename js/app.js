@@ -89,7 +89,9 @@
   function findP(id) { return P.filter(function (p) { return p.id === id; })[0]; }
   function vs(p) { return (p.variants && p.variants.length) ? p.variants : null; }
   function vOf(p, label) { var v = vs(p); return v ? (v.filter(function (x) { return x.label === label; })[0] || v[0]) : null; }
-  function unit(l) { var p = findP(l.id), v = p && vOf(p, l.v); return { p: p, label: v ? v.label : '', price: v && v.price != null ? Number(v.price) : p.price, old: v && v.compare_at_price ? Number(v.compare_at_price) : p.compare_at_price }; }
+  function bundlePct(p, q) { var b = 0; (p.bundles || []).forEach(function (x) { if (q >= Number(x.qty) && Number(x.percent) > b) b = Number(x.percent); }); return b; }
+  function unit(l) { var p = findP(l.id), v = p && vOf(p, l.v), base = v && v.price != null ? Number(v.price) : p.price, bp = bundlePct(p, l.q || 1);
+    return { p: p, label: v ? v.label : '', price: Math.round(base * (100 - bp)) / 100, base: base, bp: bp, old: v && v.compare_at_price ? Number(v.compare_at_price) : p.compare_at_price }; }
   function inStock(p, label) { if (p.in_stock === false) return false; var v = vs(p); if (!v) return true; if (label) { var x = vOf(p, label); return x.in_stock !== false; } return v.some(function (x) { return x.in_stock !== false; }); }
   function addToCart(id, q, label) {
     var p = findP(id); if (!p) return; var v = vs(p); if (v && !label) { var f = v.filter(function (x) { return x.in_stock !== false; })[0]; label = f && f.label; }
@@ -360,8 +362,8 @@
     var p = findP(qs.get('id')), el = $('#pdp');
     if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="/shop">Back to shop</a></p>'; return; }
     document.title = p.title; fbq_('track', 'ViewContent', { content_ids: [p.id], content_name: p.title, content_type: 'product', value: p.price, currency: 'INR' }); var q = 1, v = vs(p), cur = v ? (v.filter(function (x) { return x.in_stock !== false; })[0] || v[0]).label : '';
-    function info() { var u = unit({ id: p.id, v: cur }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
-    function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax"> Inclusive of all taxes</small>'; }
+    function info() { var u = unit({ id: p.id, v: cur, q: q }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
+    function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax">' + (i.u.bp ? 'per bottle after ' + i.u.bp + '% bundle discount · ' : '') + 'Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" src="' + esc(im) + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><div class="price" id="pp"></div>' +
@@ -371,9 +373,10 @@
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
     function paint() {
       $('#pp').innerHTML = priceHTML(); var i = info();
-      $('#buyarea').innerHTML = i.so ? '<p><strong>Sold out</strong></p>' : '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn secondary" id="add">Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
+      $('#buyarea').innerHTML = i.so ? '<p><strong>Sold out</strong></p>' : (p.bundles && p.bundles.length ? '<div class="bundles"><b>Bundle &amp; save</b>' + [{ qty: 1, percent: 0 }].concat(p.bundles).map(function (b) { return '<button class="bnd' + (q === Number(b.qty) ? ' on' : '') + '" data-q="' + b.qty + '"><span>Buy ' + b.qty + '</span>' + (Number(b.percent) ? '<em>Save ' + b.percent + '%</em>' : '<em>Single</em>') + '</button>'; }).join('') + '</div>' : '') + '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn secondary" id="add">Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
       if (i.so) return;
-      $$('#pq button').forEach(function (b) { b.onclick = function () { q = Math.max(1, q + Number(b.dataset.d)); $('#pq span').textContent = q; }; });
+      $$('#pq button').forEach(function (b) { b.onclick = function () { q = Math.max(1, q + Number(b.dataset.d)); paint(); }; });
+      $$('.bnd').forEach(function (b) { b.onclick = function () { q = Number(b.dataset.q); paint(); }; });
       $('#add').onclick = function () { addToCart(p.id, q, cur); openCart(true); };
       $('#buy').onclick = function () { addToCart(p.id, q, cur); openCheckout(); };
       var s = $('#s-add'); if (s) { $('#s-price').textContent = money(i.u.price); }

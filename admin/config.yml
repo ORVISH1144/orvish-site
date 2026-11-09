@@ -121,6 +121,23 @@ collections:
       name: in_stock
       widget: boolean
       default: true
+  - label: Bundle offers (e.g. Buy 2 save 10%) – optional
+    name: bundles
+    widget: list
+    required: false
+    summary: Buy {{fields.qty}} save {{fields.percent}}%
+    fields:
+    - label: Quantity (e.g. 2)
+      name: qty
+      widget: number
+      value_type: int
+      min: 2
+    - label: Discount % (e.g. 10)
+      name: percent
+      widget: number
+      value_type: int
+      min: 1
+      max: 90
   - label: Fragrance notes (top / heart / base)
     name: note_pyramid
     widget: object
