@@ -38,7 +38,7 @@
       "button_link": "/shop?best=1"
     },
     {
-      "image": "images/slide-3.svg",
+      "image": "/images/uploads/Triumph Above the Clouds.png",
       "caption": "Free shipping above ₹999",
       "button_label": "Shop Now",
       "button_link": "/shop"
@@ -161,11 +161,40 @@
       "min_items": 3
     }
   ],
+  "order_webhook_url": "https://script.google.com/macros/s/AKfycbz50EsSTdNujoXdXu3TxJKxLxhfU5nY99IyLalb3yxHK7J8IInWHNFr7xvieToP76M2zQ/exec",
   "shipping_fee": 49,
   "free_shipping_above": 999,
   "razorpay_key_id": "",
   "footer_newsletter_text": "Enter your email below to be the first to know about new collections and product launches.",
-  "order_webhook_url": "https://script.google.com/macros/s/AKfycbz50EsSTdNujoXdXu3TxJKxLxhfU5nY99IyLalb3yxHK7J8IInWHNFr7xvieToP76M2zQ/exec",
+  "firebase_config": {
+    "apiKey": "",
+    "authDomain": "",
+    "projectId": "",
+    "appId": ""
+  },
+  "meta_pixel_id": "",
+  "payment_logos": [
+    {
+      "name": "Visa",
+      "image": "/images/uploads/pay-visa.png"
+    },
+    {
+      "name": "Mastercard",
+      "image": "/images/uploads/pay-mastercard.png"
+    },
+    {
+      "name": "RuPay",
+      "image": "/images/uploads/pay-rupay.png"
+    },
+    {
+      "name": "UPI",
+      "image": "/images/uploads/pay-upi.png"
+    },
+    {
+      "name": "Apple Pay",
+      "image": "/images/uploads/pay-applepay.png"
+    }
+  ],
   "trending": [
     {
       "label": "Best sellers",
@@ -188,7 +217,6 @@
       "url": "/shop?note=Floral"
     }
   ],
-  "best_sellers_title": "Best Sellers",
   "home_tabs": [
     {
       "label": "Signature",
@@ -260,6 +288,10 @@
       "text": "Secure payments"
     }
   ],
+  "cod_enabled": true,
+  "best_sellers_title": "Best Sellers",
+  "home_text_title": "Genuine fragrances online in India",
+  "home_text": "ORVISH brings you genuine perfumes with easy replacement and express shipping across India. Explore our best sellers, find your favourite notes, and order in a few taps.\n\n*Edit this text from the admin panel.*",
   "faq": [
     {
       "title": "How long does delivery take?",
@@ -274,9 +306,6 @@
       "body": "Yes. You can choose cash on delivery at checkout where available."
     }
   ],
-  "home_text_title": "Genuine fragrances online in India",
-  "home_text": "ORVISH brings you genuine perfumes with easy replacement and express shipping across India. Explore our best sellers, find your favourite notes, and order in a few taps.\n\n*Edit this text from the admin panel.*",
-  "cod_enabled": true,
   "footer_columns": [
     {
       "title": "About",
@@ -345,35 +374,6 @@
           "url": "/shop?gender=women"
         }
       ]
-    }
-  ],
-  "firebase_config": {
-    "apiKey": "",
-    "authDomain": "",
-    "projectId": "",
-    "appId": ""
-  },
-  "meta_pixel_id": "",
-  "payment_logos": [
-    {
-      "name": "Visa",
-      "image": "/images/uploads/pay-visa.png"
-    },
-    {
-      "name": "Mastercard",
-      "image": "/images/uploads/pay-mastercard.png"
-    },
-    {
-      "name": "RuPay",
-      "image": "/images/uploads/pay-rupay.png"
-    },
-    {
-      "name": "UPI",
-      "image": "/images/uploads/pay-upi.png"
-    },
-    {
-      "name": "Apple Pay",
-      "image": "/images/uploads/pay-applepay.png"
     }
   ]
 }
