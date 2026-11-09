@@ -9,8 +9,10 @@
     "/images/uploads/hawas_2.avif",
     "/images/uploads/Hawas_Kobra_By_Rasasi_Perfume_For_Men_Edp_100ml.avif"
   ],
-  "in_stock": true,
+  "hidden": false,
+  "in_stock": false,
   "featured": true,
+  "brand": "Rasasi",
   "gender": "men",
   "type": "Eau de Parfum",
   "notes": [
@@ -38,6 +40,5 @@
       "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
     }
   ],
-  "brand": "Rasasi",
   "position": 1
 }
