@@ -421,3 +421,5 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .header .wrap{grid-template-columns:auto 1fr auto;grid-template-areas:"logo nav act";column-gap:40px}
   .header .wrap>div:first-child{grid-area:nav}.header .logo{grid-area:logo}.header .actions{grid-area:act}
 }
+
+.brand{font:600 11px var(--font-accent);letter-spacing:.16em;text-transform:uppercase;color:var(--maroon);margin-top:6px}.pdp .brand{margin:0 0 4px}

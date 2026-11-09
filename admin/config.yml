@@ -28,6 +28,7 @@ collections:
               - { label: Photos (first one is the main photo), name: images, widget: list, field: { label: Photo, name: image, widget: image } }
               - { label: In stock, name: in_stock, widget: boolean, default: true }
               - { label: Show on home page, name: featured, widget: boolean, default: true }
+              - { label: Brand (e.g. Rasasi), name: brand, widget: string, required: false }
               - { label: Gender, name: gender, widget: select, options: [{label: For Him, value: men},{label: For Her, value: women},{label: Unisex, value: unisex}], required: false }
               - { label: Type (e.g. Eau de Parfum), name: type, widget: string, required: false }
               - { label: Notes tags shown on the product card (e.g. Amber, Woody), name: notes, widget: list, required: false, field: { label: Note, name: note, widget: string } }
