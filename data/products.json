@@ -3,10 +3,16 @@
     {
       "id": "hawas-kobra-edp-100ml",
       "title": "Hawas Kobra – Eau de Parfum for Men, 100 ml",
-      "brand": "Rasasi",
       "price": 1299,
       "compare_at_price": 1799,
       "collection": "signature",
+      "images": [
+        "/images/uploads/hawas.avif",
+        "/images/uploads/Hawas_Kobra_By_Rasasi_Perfume_For_Men_Edp_100ml.avif",
+        "/images/uploads/hawas_2.avif"
+      ],
+      "in_stock": true,
+      "featured": true,
       "gender": "men",
       "type": "Eau de Parfum",
       "notes": [
@@ -14,21 +20,16 @@
         "Aquatic",
         "Spicy"
       ],
-      "images": [
-        "/images/photo-soon.svg"
-      ],
-      "in_stock": true,
       "best_seller": true,
-      "featured": true,
       "badge": "",
-      "short_description": "A fresh, spicy and aquatic men's fragrance with a deep woody base.",
-      "description": "Hawas Kobra by Rasasi is a bold, modern fragrance for men. It opens fresh and fruity with bergamot and apple, warms up with cinnamon and cardamom, and settles into a long, woody base of ambergris, musk and patchouli.\n\n**Size:** 100 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** daily wear, office and evenings out.",
+      "variants": [],
       "note_pyramid": {
         "top": "Apple, Bergamot, Lemon, Cinnamon",
         "heart": "Orange blossom, Cardamom, Plum",
         "base": "Patchouli, Ambergris, Driftwood, Musk"
       },
-      "variants": [],
+      "short_description": "A fresh, spicy and aquatic men's fragrance with a deep woody base.",
+      "description": "Hawas Kobra by Rasasi is a bold, modern fragrance for men. It opens fresh and fruity with bergamot and apple, warms up with cinnamon and cardamom, and settles into a long, woody base of ambergris, musk and patchouli.\n\n**Size:** 100 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** daily wear, office and evenings out.",
       "details": [
         {
           "title": "How to use",
@@ -38,7 +39,8 @@
           "title": "Shipping and returns",
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
         }
-      ]
+      ],
+      "brand": "Rasasi"
     },
     {
       "id": "amber-oud-edp",
@@ -46,6 +48,12 @@
       "price": 1499,
       "compare_at_price": 1999,
       "collection": "signature",
+      "images": [
+        "images/perfume-1.svg",
+        "images/perfume-1b.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
       "gender": "men",
       "type": "Eau de Parfum",
       "notes": [
@@ -53,20 +61,8 @@
         "Woody",
         "Oud"
       ],
-      "images": [
-        "images/perfume-1.svg",
-        "images/perfume-1b.svg"
-      ],
-      "in_stock": true,
       "best_seller": true,
       "badge": "",
-      "short_description": "SAMPLE LISTING – a warm, woody amber fragrance.",
-      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA warm and lasting fragrance that opens bright and settles into amber and oud.",
-      "note_pyramid": {
-        "top": "Bergamot, Saffron",
-        "heart": "Amber, Rose",
-        "base": "Oud, Vanilla, Musk"
-      },
       "variants": [
         {
           "label": "50 ml",
@@ -81,6 +77,13 @@
           "in_stock": true
         }
       ],
+      "note_pyramid": {
+        "top": "Bergamot, Saffron",
+        "heart": "Amber, Rose",
+        "base": "Oud, Vanilla, Musk"
+      },
+      "short_description": "SAMPLE LISTING – a warm, woody amber fragrance.",
+      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA warm and lasting fragrance that opens bright and settles into amber and oud.",
       "details": [
         {
           "title": "How to use",
@@ -98,6 +101,12 @@
       "price": 1299,
       "compare_at_price": 1799,
       "collection": "everyday",
+      "images": [
+        "images/perfume-2.svg",
+        "images/perfume-2b.svg"
+      ],
+      "in_stock": true,
+      "featured": true,
       "gender": "women",
       "type": "Eau de Parfum",
       "notes": [
@@ -105,20 +114,8 @@
         "Musk",
         "Fresh"
       ],
-      "images": [
-        "images/perfume-2.svg",
-        "images/perfume-2b.svg"
-      ],
-      "in_stock": true,
       "best_seller": true,
       "badge": "",
-      "short_description": "SAMPLE LISTING – a soft floral musk fragrance.",
-      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA soft, clean floral fragrance with a creamy musk dry-down for everyday wear.",
-      "note_pyramid": {
-        "top": "Pear, Pink pepper",
-        "heart": "Rose, Jasmine",
-        "base": "White musk, Sandalwood"
-      },
       "variants": [
         {
           "label": "50 ml",
@@ -133,6 +130,13 @@
           "in_stock": true
         }
       ],
+      "note_pyramid": {
+        "top": "Pear, Pink pepper",
+        "heart": "Rose, Jasmine",
+        "base": "White musk, Sandalwood"
+      },
+      "short_description": "SAMPLE LISTING – a soft floral musk fragrance.",
+      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA soft, clean floral fragrance with a creamy musk dry-down for everyday wear.",
       "details": [
         {
           "title": "How to use",
