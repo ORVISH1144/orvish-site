@@ -323,3 +323,4 @@ html{overflow-x:clip}
 .pay-note{font:400 12px var(--font-accent);margin:10px 0 0;opacity:.8}.d-foot .paylogos{justify-content:center;margin-top:12px}
 
 .paylogos.img .pl{padding:3px 8px;height:30px}.paylogos.img img{height:22px;width:auto;display:block}
+.paylogos.img .pl{background:#fff;border:1px solid var(--line);height:34px;padding:4px 8px}.paylogos.img img{height:24px;max-width:70px;object-fit:contain}

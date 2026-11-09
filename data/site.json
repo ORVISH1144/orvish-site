@@ -354,5 +354,26 @@
     "appId": ""
   },
   "meta_pixel_id": "",
-  "payment_logos": []
+  "payment_logos": [
+    {
+      "name": "Visa",
+      "image": "/images/uploads/pay-visa.png"
+    },
+    {
+      "name": "Mastercard",
+      "image": "/images/uploads/pay-mastercard.png"
+    },
+    {
+      "name": "RuPay",
+      "image": "/images/uploads/pay-rupay.png"
+    },
+    {
+      "name": "UPI",
+      "image": "/images/uploads/pay-upi.png"
+    },
+    {
+      "name": "Apple Pay",
+      "image": "/images/uploads/pay-applepay.png"
+    }
+  ]
 }
