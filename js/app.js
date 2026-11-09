@@ -467,6 +467,7 @@
     applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})();
     document.body.classList.add('ready');
+    if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
     if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();
   }).catch(function (e) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Could not load store data. Please refresh. (' + esc(e.message) + ')</p>'; });
 })();
