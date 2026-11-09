@@ -26,6 +26,7 @@ collections:
               - { label: "Original price (₹) – optional, shows a Sale badge", name: compare_at_price, widget: number, value_type: float, min: 0, required: false, default: 0 }
               - { label: Collection, name: collection, widget: string, default: all, hint: "Used for the filter on the Shop page" }
               - { label: Photos (first one is the main photo), name: images, widget: list, field: { label: Photo, name: image, widget: image } }
+              - { label: "Hide this product from the store (keeps it saved, customers cannot see it)", name: hidden, widget: boolean, default: false, required: false }
               - { label: In stock, name: in_stock, widget: boolean, default: true }
               - { label: Show on home page, name: featured, widget: boolean, default: true }
               - { label: Brand (e.g. Rasasi), name: brand, widget: string, required: false }
