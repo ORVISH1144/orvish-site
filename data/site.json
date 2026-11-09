@@ -353,5 +353,6 @@
     "projectId": "",
     "appId": ""
   },
-  "meta_pixel_id": ""
+  "meta_pixel_id": "",
+  "payment_logos": []
 }

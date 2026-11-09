@@ -140,6 +140,13 @@ collections:
               - { label: projectId, name: projectId, widget: string, required: false }
               - { label: appId, name: appId, widget: string, required: false }
           - { label: "Meta (Facebook/Instagram) Pixel ID – digits only, from Meta Events Manager", name: meta_pixel_id, widget: string, required: false }
+          - label: Payment logos (upload the official logo images – Visa, Mastercard, RuPay, UPI etc.)
+            name: payment_logos
+            widget: list
+            required: false
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: Logo image, name: image, widget: image }
           - { label: Cash on delivery option, name: cod_enabled, widget: boolean, default: true }
           - { label: Tagline (footer), name: tagline, widget: string, required: false }
           - { label: Best sellers heading, name: best_sellers_title, widget: string, required: false }

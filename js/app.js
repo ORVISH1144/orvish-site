@@ -80,7 +80,9 @@
     }).catch(function () { return null; });
   }
   function payLogos() {
-    return '<div class="paylogos" aria-label="Accepted payments"><span class="pl visa">VISA</span><span class="pl mc"><i></i><i></i>Mastercard</span><span class="pl rupay">RuPay</span><span class="pl upi">UPI</span><span class="pl">Net Banking</span><span class="pl">Cash on delivery</span><span class="pl rp"><b>Razorpay</b> secured</span></div>';
+    var L = (S.payment_logos || []).filter(function (x) { return x && x.image; });
+    if (L.length) return '<div class="paylogos img" aria-label="Accepted payments">' + L.map(function (x) { return '<span class="pl"><img src="' + esc(x.image) + '" alt="' + esc(x.name || 'Payment method') + '" loading="lazy"></span>'; }).join('') + '</div>';
+    return '<div class="paylogos" aria-label="Accepted payments"><span class="pl">Cards</span><span class="pl">UPI</span><span class="pl">Net Banking</span><span class="pl">Cash on delivery</span></div>';
   }
   /* cart (lines are {id, v: variant label, q}) */
   function saveCart() { store.set('orvish_cart', cart); renderCart(); }
@@ -362,7 +364,7 @@
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" src="' + esc(im) + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div><h1>' + esc(p.title) + '</h1><div class="price" id="pp"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
-      '<div id="buyarea"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI or net banking</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
+      '<div id="buyarea"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
       '<div class="desc">' + md(p.description) + '</div>' + noteBlock(p) +
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
     function paint() {
