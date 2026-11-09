@@ -1,0 +1,33 @@
+name: Build product list
+on:
+  push:
+    branches: [main]
+    paths: ['data/products/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge product files into data/products.json
+        run: |
+          python3 - <<'PY'
+          import json,glob
+          items=[json.load(open(f)) for f in glob.glob('data/products/*.json')]
+          items.sort(key=lambda p:(p.get('position',100),p.get('title','')))
+          for p in items: p.pop('position',None)
+          json.dump({'products':items},open('data/products.json','w'),indent=2,ensure_ascii=False)
+          PY
+      - name: Commit if changed
+        run: |
+          git config user.name "orvish-bot"
+          git config user.email "bot@orvish.com"
+          git add data/products.json
+          git diff --cached --quiet || (git commit -m "Rebuild product list" && git push)
+      - name: Ask Pages to rebuild
+        run: gh api -X POST repos/${{ github.repository }}/pages/builds || true
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,54 @@
+{
+  "id": "amber-oud-edp",
+  "title": "Amber Oud – Eau de Parfum",
+  "price": 1499,
+  "compare_at_price": 1999,
+  "collection": "signature",
+  "images": [
+    "images/perfume-1.svg",
+    "images/perfume-1b.svg"
+  ],
+  "in_stock": true,
+  "featured": true,
+  "gender": "men",
+  "type": "Eau de Parfum",
+  "notes": [
+    "Amber",
+    "Woody",
+    "Oud"
+  ],
+  "best_seller": true,
+  "badge": "",
+  "variants": [
+    {
+      "label": "50 ml",
+      "price": 1499,
+      "compare_at_price": 1999,
+      "in_stock": true
+    },
+    {
+      "label": "100 ml",
+      "price": 2299,
+      "compare_at_price": 2999,
+      "in_stock": true
+    }
+  ],
+  "note_pyramid": {
+    "top": "Bergamot, Saffron",
+    "heart": "Amber, Rose",
+    "base": "Oud, Vanilla, Musk"
+  },
+  "short_description": "SAMPLE LISTING – a warm, woody amber fragrance.",
+  "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA warm and lasting fragrance that opens bright and settles into amber and oud.",
+  "details": [
+    {
+      "title": "How to use",
+      "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+    },
+    {
+      "title": "Shipping and returns",
+      "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+    }
+  ],
+  "position": 2
+}

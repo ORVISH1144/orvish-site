@@ -8,156 +8,160 @@ public_folder: /images/uploads
 collections:
 - name: products
   label: Products
-  files:
-  - name: products
-    label: All products (add, edit, delete)
-    file: data/products.json
-    format: json
-    fields:
-    - label: Products
-      name: products
-      widget: list
-      label_singular: Product
-      summary: '{{fields.title}} – ₹{{fields.price}}'
-      fields:
-      - label: ID (short, lowercase, no spaces – used in the web address)
-        name: id
-        widget: string
-        hint: e.g. blue-water-bottle. Do not change after publishing.
-      - label: Title
-        name: title
-        widget: string
-      - label: Price (₹)
-        name: price
-        widget: number
-        value_type: float
-        min: 0
-      - label: Original price (₹) – optional, shows a Sale badge
-        name: compare_at_price
-        widget: number
-        value_type: float
-        min: 0
-        required: false
-        default: 0
-      - label: Collection
-        name: collection
-        widget: string
-        default: all
-        hint: Used for the filter on the Shop page
-      - label: Photos (first one is the main photo)
-        name: images
-        widget: list
-        field:
-          label: Photo
-          name: image
-          widget: image
-      - label: Hide this product from the store (keeps it saved, customers cannot see it)
-        name: hidden
-        widget: boolean
-        default: false
-        required: false
-      - label: In stock
-        name: in_stock
-        widget: boolean
-        default: true
-      - label: Show on home page
-        name: featured
-        widget: boolean
-        default: true
-      - label: Brand (e.g. Rasasi)
-        name: brand
-        widget: string
-        required: false
-      - label: Gender
-        name: gender
-        widget: select
-        options:
-        - label: For Him
-          value: men
-        - label: For Her
-          value: women
-        - label: Unisex
-          value: unisex
-        required: false
-      - label: Type (e.g. Eau de Parfum)
-        name: type
-        widget: string
-        required: false
-      - label: Notes tags shown on the product card (e.g. Amber
-        Woody): null
-        name: notes
-        widget: list
-        required: false
-        field:
-          label: Note
-          name: note
-          widget: string
-      - label: Show in Best Sellers
-        name: best_seller
-        widget: boolean
-        default: false
-      - label: Small badge text (optional
-        e.g. New): null
-        name: badge
-        widget: string
-        required: false
-      - label: Sizes / options with their own price (optional)
-        name: variants
-        widget: list
-        required: false
-        fields:
-        - label: Name (e.g. 50 ml)
-          name: label
-          widget: string
-        - label: Price (₹)
-          name: price
-          widget: number
-          value_type: float
-        - label: Original price (₹)
-          name: compare_at_price
-          widget: number
-          value_type: float
-          required: false
-        - label: In stock
-          name: in_stock
-          widget: boolean
-          default: true
-      - label: Fragrance notes (top / heart / base)
-        name: note_pyramid
-        widget: object
-        required: false
-        fields:
-        - label: Top notes
-          name: top
-          widget: string
-          required: false
-        - label: Heart notes
-          name: heart
-          widget: string
-          required: false
-        - label: Base notes
-          name: base
-          widget: string
-          required: false
-      - label: Short description
-        name: short_description
-        widget: string
-        required: false
-      - label: Full description
-        name: description
-        widget: text
-      - label: Extra info sections (e.g. Shipping, Care)
-        name: details
-        widget: list
-        required: false
-        fields:
-        - label: Heading
-          name: title
-          widget: string
-        - label: Text
-          name: body
-          widget: text
+  label_singular: Product
   icon: shopping_bag
+  folder: data/products
+  extension: json
+  format: json
+  create: true
+  delete: true
+  slug: '{{id}}'
+  identifier_field: title
+  summary: '{{title}} – ₹{{price}}'
+  fields:
+  - label: ID (short, lowercase, no spaces – used in the web address)
+    name: id
+    widget: string
+    hint: e.g. blue-water-bottle. Do not change after publishing.
+  - label: Title
+    name: title
+    widget: string
+  - label: Price (₹)
+    name: price
+    widget: number
+    value_type: float
+    min: 0
+  - label: Original price (₹) – optional, shows a Sale badge
+    name: compare_at_price
+    widget: number
+    value_type: float
+    min: 0
+    required: false
+    default: 0
+  - label: Collection
+    name: collection
+    widget: string
+    default: all
+    hint: Used for the filter on the Shop page
+  - label: Photos (first one is the main photo)
+    name: images
+    widget: list
+    field:
+      label: Photo
+      name: image
+      widget: image
+  - label: Hide this product from the store (keeps it saved, customers cannot see it)
+    name: hidden
+    widget: boolean
+    default: false
+    required: false
+  - label: In stock
+    name: in_stock
+    widget: boolean
+    default: true
+  - label: Show on home page
+    name: featured
+    widget: boolean
+    default: true
+  - label: Brand (e.g. Rasasi)
+    name: brand
+    widget: string
+    required: false
+  - label: Gender
+    name: gender
+    widget: select
+    options:
+    - label: For Him
+      value: men
+    - label: For Her
+      value: women
+    - label: Unisex
+      value: unisex
+    required: false
+  - label: Type (e.g. Eau de Parfum)
+    name: type
+    widget: string
+    required: false
+  - label: Notes tags shown on the product card (e.g. Amber
+    Woody): null
+    name: notes
+    widget: list
+    required: false
+    field:
+      label: Note
+      name: note
+      widget: string
+  - label: Show in Best Sellers
+    name: best_seller
+    widget: boolean
+    default: false
+  - label: Small badge text (optional
+    e.g. New): null
+    name: badge
+    widget: string
+    required: false
+  - label: Sizes / options with their own price (optional)
+    name: variants
+    widget: list
+    required: false
+    fields:
+    - label: Name (e.g. 50 ml)
+      name: label
+      widget: string
+    - label: Price (₹)
+      name: price
+      widget: number
+      value_type: float
+    - label: Original price (₹)
+      name: compare_at_price
+      widget: number
+      value_type: float
+      required: false
+    - label: In stock
+      name: in_stock
+      widget: boolean
+      default: true
+  - label: Fragrance notes (top / heart / base)
+    name: note_pyramid
+    widget: object
+    required: false
+    fields:
+    - label: Top notes
+      name: top
+      widget: string
+      required: false
+    - label: Heart notes
+      name: heart
+      widget: string
+      required: false
+    - label: Base notes
+      name: base
+      widget: string
+      required: false
+  - label: Short description
+    name: short_description
+    widget: string
+    required: false
+  - label: Full description
+    name: description
+    widget: text
+  - label: Extra info sections (e.g. Shipping, Care)
+    name: details
+    widget: list
+    required: false
+    fields:
+    - label: Heading
+      name: title
+      widget: string
+    - label: Text
+      name: body
+      widget: text
+  - label: Display order (smaller number shows first)
+    name: position
+    widget: number
+    value_type: int
+    default: 100
+    required: false
 - name: home
   label: Home page
   files:
@@ -334,36 +338,33 @@ collections:
       name: best_pick
       widget: relation
       collection: products
-      file: products
-      value_field: products.*.id
+      value_field: id
       search_fields:
-      - products.*.title
+      - title
       display_fields:
-      - products.*.title
+      - title
       multiple: true
       required: false
     - label: For Him row – choose products (leave empty = all For Him products)
       name: him_pick
       widget: relation
       collection: products
-      file: products
-      value_field: products.*.id
+      value_field: id
       search_fields:
-      - products.*.title
+      - title
       display_fields:
-      - products.*.title
+      - title
       multiple: true
       required: false
     - label: For Her row – choose products (leave empty = all For Her products)
       name: her_pick
       widget: relation
       collection: products
-      file: products
-      value_field: products.*.id
+      value_field: id
       search_fields:
-      - products.*.title
+      - title
       display_fields:
-      - products.*.title
+      - title
       multiple: true
       required: false
     - label: Extra product rows (e.g. New arrivals, Gift picks) – choose products for each
@@ -379,12 +380,11 @@ collections:
         name: products
         widget: relation
         collection: products
-        file: products
-        value_field: products.*.id
+        value_field: id
         search_fields:
-        - products.*.title
+        - title
         display_fields:
-        - products.*.title
+        - title
         multiple: true
         required: false
   icon: home
