@@ -147,8 +147,44 @@ collections:
             fields:
               - { label: Name, name: name, widget: string }
               - { label: Logo image, name: image, widget: image }
+          - label: Trending searches (shown when searching)
+            name: trending
+            widget: list
+            required: false
+            fields: [ { label: Label, name: label, widget: string }, { label: Link, name: url, widget: string } ]
+          - label: Best sellers tabs (button label + collection name)
+            name: home_tabs
+            widget: list
+            required: false
+            fields: [ { label: Button label, name: label, widget: string }, { label: Collection name (as in the product), name: collection, widget: string } ]
+          - { label: Home heading – For Him row, name: men_title, widget: string, required: false }
+          - { label: Home heading – For Her row, name: women_title, widget: string, required: false }
+          - label: Collection tiles (home page picture boxes)
+            name: collection_tiles
+            widget: list
+            required: false
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: Small text, name: text, widget: string, required: false }
+              - { label: Image, name: image, widget: image }
+              - { label: Link, name: url, widget: string }
+              - { label: Button text, name: button, widget: string, required: false }
+          - label: Service strip (free shipping, secure payments…)
+            name: services
+            widget: list
+            required: false
+            fields:
+              - { label: Icon (truck, shield, lock, chat, refresh, star), name: icon, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Text, name: text, widget: string, required: false }
+          - label: Product page badges
+            name: product_badges
+            widget: list
+            required: false
+            fields:
+              - { label: Icon (truck, shield, lock, chat, refresh, star), name: icon, widget: string }
+              - { label: Text, name: text, widget: string }
           - { label: Cash on delivery option, name: cod_enabled, widget: boolean, default: true }
-          - { label: Tagline (footer), name: tagline, widget: string, required: false }
           - { label: Best sellers heading, name: best_sellers_title, widget: string, required: false }
           - { label: Home text heading, name: home_text_title, widget: string, required: false }
           - { label: Home text (bottom of home page), name: home_text, widget: text, required: false }
