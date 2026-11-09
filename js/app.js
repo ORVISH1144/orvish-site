@@ -60,6 +60,13 @@
     return out.join('\n');
   }
 
+  /* Meta (Facebook/Instagram) Pixel – active when a Pixel ID is set in admin */
+  function fbq_() { if (window.fbq) window.fbq.apply(null, arguments); }
+  function metaInit() {
+    var id = S.meta_pixel_id && String(S.meta_pixel_id).replace(/\D/g, ''); if (!id || window.fbq) return;
+    !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    window.fbq('init', id); window.fbq('track', 'PageView');
+  }
   /* customer accounts (Firebase Auth + Firestore, free plan) */
   var FB = null, USER = null, fbWait = [];
   function loadJS(u) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
@@ -84,7 +91,7 @@
     if (!inStock(p, label)) return; label = label || '';
     var l = cart.filter(function (x) { return x.id === id && (x.v || '') === label; })[0];
     if (l) l.q += q || 1; else cart.push({ id: id, v: label, q: q || 1 });
-    saveCart(); toast('Added to cart');
+    saveCart(); toast('Added to cart'); fbq_('track', 'AddToCart', { content_ids: [id], content_name: p.title, content_type: 'product', value: unit({ id: id, v: label }).price * (q || 1), currency: 'INR' });
   }
   function totals() {
     var items = 0, sub = 0;
@@ -123,7 +130,7 @@
   /* checkout */
   function methods() { var m = []; if (S.razorpay_key_id) m.push(['online', 'Pay online (UPI / Cards / Netbanking)']); if (S.cod_enabled !== false) m.push(['cod', 'Cash on delivery']); if (!m.length) m.push(['cod', 'Pay on delivery / we will contact you']); return m; }
   function openCheckout() {
-    var t = totals(); if (!t.items) return;
+    var t = totals(); if (!t.items) return; fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
@@ -151,7 +158,7 @@
   }
   function emailOrder(f, t) {
     var oid = sendOrder(f, t, 'COD');
-    if (oid) { done('Thank you! Your order ' + oid + ' has been received. We will contact you on ' + f.phone + ' to confirm it.', oid); return; }
+    if (oid) { done('Thank you! Your order ' + oid + ' has been received. We will contact you on ' + f.phone + ' to confirm it.', oid, t.total); return; }
     var wa = waLink('Hi, I want to place an order: ' + orderLines().join(', ') + ' Total ' + money(t.total));
     $('#checkout-modal').innerHTML = '<div class="box"><h4>Ordering is unavailable</h4><p>Sorry, we could not place your order online right now.' + (wa ? ' Please order on WhatsApp instead.' : ' Please try again later.') + '</p>' + (wa ? '<a class="btn" href="' + wa + '" target="_blank" rel="noopener">Order on WhatsApp</a>' : '') + '</div>';
   }
@@ -162,14 +169,15 @@
         prefill: { name: f.name, email: f.email, contact: f.phone },
         notes: { items: orderLines().join(' | ').slice(0, 250), address: (f.address + ', ' + f.city + ' - ' + f.pin).slice(0, 250), phone: f.phone },
         theme: { color: '#761941' },
-        handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id); done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '.' + (oid ? ' Your order ID is ' + oid + '.' : ''), oid); }
+        handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id); done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '.' + (oid ? ' Your order ID is ' + oid + '.' : ''), oid, t.total); }
       });
       rz.open();
     };
     if (window.Razorpay) return go();
     var s = document.createElement('script'); s.src = 'https://checkout.razorpay.com/v1/checkout.js'; s.onload = go; s.onerror = function () { toast('Could not load payment. Try again.'); }; document.head.appendChild(s);
   }
-  function done(msg, oid) {
+  function done(msg, oid, tot) {
+    if (tot != null) fbq_('track', 'Purchase', { value: tot, currency: 'INR' });
     cart = []; discount = null; saveCart(); openCart(false);
     $('#checkout-modal').innerHTML = '<div class="box" style="text-align:center"><h4>Thank you</h4><p>' + esc(msg) + '</p>' + (oid ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(oid) + '">Track my order</a> ' : '') + '<a class="btn" href="/">Back to home</a></div>';
   }
@@ -334,7 +342,7 @@
   function product() {
     var p = findP(qs.get('id')), el = $('#pdp');
     if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="/shop">Back to shop</a></p>'; return; }
-    document.title = p.title; var q = 1, v = vs(p), cur = v ? (v.filter(function (x) { return x.in_stock !== false; })[0] || v[0]).label : '';
+    document.title = p.title; fbq_('track', 'ViewContent', { content_ids: [p.id], content_name: p.title, content_type: 'product', value: p.price, currency: 'INR' }); var q = 1, v = vs(p), cur = v ? (v.filter(function (x) { return x.in_stock !== false; })[0] || v[0]).label : '';
     function info() { var u = unit({ id: p.id, v: cur }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
     function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax"> Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
@@ -441,7 +449,7 @@
   Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json')]).then(function (r) {
     S = r[0]; P = (r[1].products || []).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
-    applyTheme(); shell(); events();
+    applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})();
     document.body.classList.add('ready');
     if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();

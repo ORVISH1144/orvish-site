@@ -352,5 +352,6 @@
     "authDomain": "",
     "projectId": "",
     "appId": ""
-  }
+  },
+  "meta_pixel_id": ""
 }
