@@ -441,7 +441,7 @@
   /* order tracking (looks the order up in the Google Sheet through the Apps Script web app) */
   function track() {
     var el = $('#track-body'), mine = store.get('orvish_orders', []);
-    var steps = ['New', 'Confirmed', 'Packed', 'Shipped', 'Delivered'];
+    var steps = ['New', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'];
     el.innerHTML = '<h1>Track your order</h1><p class="sub">Enter your order ID and the phone number you used when ordering.</p><form id="tf" class="tf"><div class="field"><label>Order ID</label><input name="id" required placeholder="ORV-261107-AB12" value="' + esc(qs.get('id') || '') + '"></div><div class="field"><label>Phone number</label><input name="phone" type="tel" required placeholder="10-digit mobile number" value="' + esc(mine[0] ? mine[0].phone : '') + '"></div><button class="btn block" type="submit">Track order</button></form><div id="tres"></div>' +
       (mine.length ? '<h3 style="margin-top:30px">Orders placed on this device</h3><div class="mine">' + mine.map(function (o) { return '<button data-id="' + esc(o.id) + '" data-ph="' + esc(o.phone) + '"><b>' + esc(o.id) + '</b><span>' + money(o.total) + ' · ' + new Date(o.date).toLocaleDateString('en-IN') + '</span></button>'; }).join('') + '</div>' : '');
     function look(id, phone) {
