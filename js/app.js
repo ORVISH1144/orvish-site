@@ -258,6 +258,7 @@
       } else if (t.id === 'checkout') openCheckout();
     });
     $('#ov').addEventListener('click', closeAll);
+    var hd = $('#header'), sc = function () { hd.classList.toggle('scrolled', window.scrollY > 30); }; window.addEventListener('scroll', sc, { passive: true }); sc();
     $('#news').addEventListener('submit', function (e) { e.preventDefault(); location.href = 'mailto:' + S.support_email + '?subject=Subscribe&body=Please add ' + encodeURIComponent(e.target.querySelector('input').value) + ' to your mailing list.'; });
     $('#sq').addEventListener('input', function (e) {
       var q = e.target.value.toLowerCase().trim();
@@ -300,7 +301,7 @@
       slides[n].classList.add('active'); dots.forEach(function (d, i) { d.classList.toggle('on', i === n); }); var old = cur; cur = n;
       setTimeout(function () { if (cur !== old) slides[old].classList.remove('prev'); }, 700);
     }
-    function auto() { clearInterval(timer); timer = setInterval(function () { go(cur + 1); }, 4000); }
+    function auto() { clearInterval(timer); timer = setInterval(function () { go(cur + 1); }, 6000); }
     if (slides.length > 1) { $('.s-prev').onclick = function () { go(cur - 1); auto(); }; $('.s-next').onclick = function () { go(cur + 1); auto(); }; dots.forEach(function (d, i) { d.onclick = function () { go(i); auto(); }; }); auto(); }
     if (!(S.ticker || []).length) $('#ticker').style.display = 'none';
     var items = (S.ticker || []).map(function (t) { return '<div class="t-item">' + ico(t.icon) + esc(t.text) + '</div>'; }).join('');
@@ -316,6 +317,11 @@
     (S.custom_rows || []).forEach(function (cr) { h += row(cr.title, pick(cr.products)); });
     var rest = P.filter(function (p) { return p.featured !== false; }).slice(0, S.products_on_home || 8);
     if (!P.some(function (p) { return p.gender === 'men' || p.gender === 'women'; })) h += '<section class="section"><div class="wrap"><div class="sec-head"><h3>' + esc(S.home_heading || 'Our products') + '</h3><a class="link" href="/shop">View all</a></div><div class="grid">' + rest.map(cardHTML).join('') + '</div></div></section>';
+    var nset = {}; P.forEach(function (p) { (p.notes || []).forEach(function (n) { nset[n] = (nset[n] || 0) + 1; }); });
+    var nl = Object.keys(nset).sort(function (a, b) { return nset[b] - nset[a]; }).slice(0, 10);
+    if (nl.length) h += '<section class="section scent"><div class="wrap"><div class="sec-head"><h3>Find your scent</h3><p class="sub" style="margin:0">Tap a note you love</p></div><div class="chips">' + nl.map(function (n) { return '<a href="/shop?note=' + encodeURIComponent(n) + '">' + esc(n) + '</a>'; }).join('') + '</div></div></section>';
+    var mq = String(S.marquee_text || 'Genuine fragrances · Easy replacement · Express shipping').trim();
+    if (mq) { var one = '<span>' + esc(mq) + '</span><i>✦</i>'; h += '<div class="bigmq" aria-hidden="true"><div class="track">' + one + one + one + one + '</div></div>'; }
     var sv = S.services || [];
     if (sv.length) h += '<section class="services"><div class="wrap">' + sv.map(function (s) { return '<div>' + ico(s.icon) + '<b>' + esc(s.title) + '</b><span>' + esc(s.text) + '</span></div>'; }).join('') + '</div></section>';
     if (S.home_text) h += '<section class="section"><div class="wrap seo"><h3>' + esc(S.home_text_title || '') + '</h3>' + md(S.home_text) + '</div></section>';
@@ -472,7 +478,7 @@
     applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})();
     document.body.classList.add('ready');
-    if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
+    if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
     if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();
   }).catch(function (e) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Could not load store data. Please refresh. (' + esc(e.message) + ')</p>'; });
 })();

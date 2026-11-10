@@ -431,3 +431,44 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .card .img,.gallery .main{background:var(--bg)!important}
 .card .img img,.gallery .main img,.thumbs img,.line img,.hit img,.sum-l img{mix-blend-mode:multiply}
 .thumbs img{background:var(--bg)}
+
+/* ===== v21: product backgrounds = theme (permanent) ===== */
+.card .img,.gallery .main,.thumbs img,.line img,.hit img,.sum-l img{background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--bg) 55%,#fff),var(--bg) 75%)!important}
+.card .img img,.gallery .main img,.thumbs img,.line img,.hit img,.sum-l img{mix-blend-mode:multiply;background:transparent!important}
+.card .img img{object-fit:contain;padding:6%}.gallery .main img{object-fit:contain;padding:4%}
+.thumbs img{object-fit:contain;padding:3px}
+
+/* ===== v21: new hero – cinematic dissolve + rising captions + story-style progress ===== */
+.slide{clip-path:none!important;opacity:0;visibility:hidden;transition:opacity 1.3s ease,visibility 0s 1.3s}
+.slide.active{opacity:1;visibility:visible;transition:opacity 1.3s ease;z-index:2}
+.slide.prev{opacity:0;visibility:visible;z-index:1}
+.slide img{transform:scale(1.18);filter:blur(5px) saturate(.9);transition:transform 8s cubic-bezier(.2,.6,.2,1),filter 1.6s ease}
+.slide.active img{transform:scale(1);filter:none}
+.slide .cap p,.slide .cap .btn{opacity:0;transform:translateY(34px);transition:none}
+.slide.active .cap p{animation:rise .9s .55s cubic-bezier(.22,.61,.36,1) forwards}
+.slide.active .cap .btn{animation:rise .9s .85s cubic-bezier(.22,.61,.36,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(34px);clip-path:inset(0 0 100% 0)}to{opacity:1;transform:none;clip-path:inset(0)}}
+.s-arrow{background:#fff7e2d9;backdrop-filter:blur(6px);transition:transform .3s,background .3s}.s-arrow:hover{background:var(--gold);transform:translateY(-50%) scale(1.08)}
+.dots{gap:8px;left:6%;right:6%;justify-content:flex-start;bottom:22px}
+.dots button{width:46px;height:3px;border-radius:3px;background:#fff7e255;position:relative;overflow:hidden}
+.dots button::after{content:"";position:absolute;inset:0;background:var(--gold);transform:scaleX(0);transform-origin:left}
+.dots button.on{width:46px;background:#fff7e255}.dots button.on::after{animation:fillbar 6s linear forwards}
+@keyframes fillbar{to{transform:scaleX(1)}}
+.slider:hover .dots button.on::after{animation-play-state:paused}
+
+/* ===== v21: more life ===== */
+.header{transition:min-height .3s,box-shadow .3s}.header.scrolled .wrap{min-height:58px}.header.scrolled{box-shadow:0 8px 30px -12px #000a}
+.header .wrap{transition:min-height .3s}
+.chips{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.chips a{border:1px solid #76194155;background:#ffffff80;border-radius:99px;padding:12px 26px;font:600 12px var(--font-accent);letter-spacing:.14em;text-transform:uppercase;color:var(--maroon);text-decoration:none;transition:all .3s var(--ease)}
+.chips a:hover{background:var(--maroon);color:var(--gold);transform:translateY(-3px);box-shadow:0 12px 24px -12px var(--maroon)}
+.scent .sub{opacity:.7}
+.bigmq{overflow:hidden;padding:26px 0;background:var(--ink)}
+.bigmq .track{animation-duration:45s;align-items:center}
+.bigmq span{font:400 clamp(44px,8vw,104px)/1 var(--font-heading);color:transparent;-webkit-text-stroke:1px var(--gold);white-space:nowrap;padding:0 26px;letter-spacing:.02em}
+.bigmq i{color:var(--gold);font-style:normal;font-size:30px}
+.card .img::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,#ffffff66 50%,transparent 60%);transform:translateX(-120%);transition:transform .9s;pointer-events:none}
+.card:hover .img::after{transform:translateX(120%)}
+.rail>*,.grid>*{animation:fadein .7s both}.rail>*:nth-child(2),.grid>*:nth-child(2){animation-delay:.08s}.rail>*:nth-child(3),.grid>*:nth-child(3){animation-delay:.16s}.rail>*:nth-child(4),.grid>*:nth-child(4){animation-delay:.24s}
+@keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.slide img,.slide .cap p,.slide .cap .btn,.bigmq .track,.rail>*,.grid>*{animation:none!important;transition:none!important;opacity:1!important;transform:none!important;filter:none!important}}

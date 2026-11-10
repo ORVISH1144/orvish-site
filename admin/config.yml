@@ -187,6 +187,10 @@ collections:
     file: data/home.json
     format: json
     fields:
+    - label: Large scrolling text band on home page (leave empty to hide)
+      name: marquee_text
+      widget: string
+      required: false
     - label: Announcement bar messages
       name: announcements
       widget: list
