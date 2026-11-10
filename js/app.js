@@ -261,7 +261,7 @@
       ((S.trending || []).length ? '<div class="trend"><b>Trending searches</b>' + S.trending.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</div>' : '') + '<div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>' +
       '<nav class="bnav" id="bnav"><a href="/">' + ico('home') + 'Home</a><a href="/shop">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><a href="/account">' + ico('user') + 'Account</a><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
       (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><img src="/images/whatsapp.png" alt="WhatsApp"></a>' : ''));
-    document.title = (document.title && document.title !== 'ORVISH' ? document.title + ' – ' : '') + (S.store_name || 'ORVISH');
+    if (!/orvish/i.test(document.title)) document.title = (document.title ? document.title + ' – ' : '') + 'ORVISH';
     renderCart();
   }
   function closeAll() { openCart(false); $('#mnav').classList.remove('open'); $('#checkout-modal').classList.remove('open'); var f = $('#fpanel'); if (f) f.classList.remove('open'); $('#ov').classList.remove('on'); }
@@ -399,7 +399,12 @@
   function product() {
     var p = findP(qs.get('id')), el = $('#pdp');
     if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="/shop">Back to shop</a></p>'; return; }
-    document.title = p.title; fbq_('track', 'ViewContent', { content_ids: [p.id], content_name: p.title, content_type: 'product', value: p.price, currency: 'INR' }); var q = 1, v = vs(p), cur = v ? (v.filter(function (x) { return x.in_stock !== false; })[0] || v[0]).label : '';
+    document.title = p.title + ' – ORVISH';
+    (function () { var rt = rateOf(p.id), m = document.querySelector('meta[name=description]'); if (m) m.content = (p.short_description || p.title) + ' Buy online at ORVISH with express shipping across India.';
+      var ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.title, image: p.images.map(function (i) { return new URL(i, location.origin).href; }), description: p.short_description || p.title, sku: p.id, offers: { '@type': 'Offer', url: location.href, priceCurrency: 'INR', price: p.price, availability: 'https://schema.org/' + (inStock(p) ? 'InStock' : 'OutOfStock') } };
+      if (p.brand) ld.brand = { '@type': 'Brand', name: p.brand }; if (rt) ld.aggregateRating = { '@type': 'AggregateRating', ratingValue: rt.avg.toFixed(1), reviewCount: rt.n };
+      var sc = document.createElement('script'); sc.type = 'application/ld+json'; sc.textContent = JSON.stringify(ld); document.head.appendChild(sc); })();
+    fbq_('track', 'ViewContent', { content_ids: [p.id], content_name: p.title, content_type: 'product', value: p.price, currency: 'INR' }); var q = 1, v = vs(p), cur = v ? (v.filter(function (x) { return x.in_stock !== false; })[0] || v[0]).label : '';
     function info() { var u = unit({ id: p.id, v: cur, q: q }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
     function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax">' + (i.u.bp ? 'per bottle after ' + i.u.bp + '% bundle discount · ' : '') + 'Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
@@ -455,7 +460,7 @@
   function page() {
     var pg = PAGES.filter(function (x) { return x.slug === qs.get('p'); })[0], el = $('#page-body');
     if (!pg) { el.innerHTML = '<h2>Page not found</h2>'; return; }
-    document.title = pg.title; el.innerHTML = '<h1 style="font-size:40px">' + esc(pg.title) + '</h1>' + md(pg.body);
+    document.title = pg.title + ' – ORVISH'; el.innerHTML = '<h1 style="font-size:40px">' + esc(pg.title) + '</h1>' + md(pg.body);
   }
   /* order tracking (looks the order up in the Google Sheet through the Apps Script web app) */
   function track() {

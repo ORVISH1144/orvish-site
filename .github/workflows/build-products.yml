@@ -20,12 +20,15 @@ jobs:
           items.sort(key=lambda p:(p.get('position',100),p.get('title','')))
           for p in items: p.pop('position',None)
           json.dump({'products':items},open('data/products.json','w'),indent=2,ensure_ascii=False)
+          pg=json.load(open('data/pages.json'))['pages']
+          urls=['https://www.orvish.com/','https://www.orvish.com/shop']+['https://www.orvish.com/product?id='+p['id'] for p in items if not p.get('hidden')]+['https://www.orvish.com/page?p='+x['slug'] for x in pg]
+          open('sitemap.xml','w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join('  <url><loc>%s</loc></url>\n'%u.replace('&','&amp;') for u in urls)+'</urlset>\n')
           PY
       - name: Commit if changed
         run: |
           git config user.name "orvish-bot"
           git config user.email "bot@orvish.com"
-          git add data/products.json
+          git add data/products.json sitemap.xml
           git diff --cached --quiet || (git commit -m "Rebuild product list" && git push)
       - name: Ask Pages to rebuild
         run: gh api -X POST repos/${{ github.repository }}/pages/builds || true

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /account
+Disallow: /track
+
+Sitemap: https://www.orvish.com/sitemap.xml
