@@ -14,7 +14,7 @@
     },
     {
       "image": "/images/uploads/Cinematic Perfume Mist Portrait.png",
-      "caption": "Genuine fragrances, easy replacement",
+      "caption": "Authentic fragrances, easy replacement",
       "button_label": "Explore",
       "button_link": "/shop?best=1"
     },
@@ -32,7 +32,7 @@
     },
     {
       "icon": "shield",
-      "text": "100% Genuine Products"
+      "text": "Authentic Products"
     },
     {
       "icon": "truck",
@@ -89,7 +89,7 @@
     },
     {
       "icon": "shield",
-      "title": "100% genuine",
+      "title": "Authentic",
       "text": "Authentic products only"
     },
     {
@@ -144,7 +144,7 @@
   "product_badges": [
     {
       "icon": "shield",
-      "text": "100% genuine"
+      "text": "Authentic"
     },
     {
       "icon": "refresh",
@@ -162,7 +162,7 @@
   "bottom_banner": {
     "image": "",
     "title": "Discover your signature scent",
-    "text": "Genuine fragrances, delivered across India",
+    "text": "Authentic fragrances, delivered across India",
     "button_label": "Shop now",
     "button_link": "/shop"
   }
