@@ -19,10 +19,10 @@
   "currency_symbol": "₹",
   "meta_pixel_id": "",
   "firebase_config": {
-    "apiKey": "AIzaSyC1LVfYJmRJyUk_zLi5h55JuXzBLN-00N8",
-    "authDomain": "orvish-547a5.firebaseapp.com",
-    "projectId": "orvish-547a5",
-    "appId": "1:251061554725:web:f28f9627ffac4e10a6b9cc"
+    "apiKey": "AIzaSyA-jGuP_Ql3zadmd41NGOQTmtSrzS0uwXA",
+    "authDomain": "orvish-93305.firebaseapp.com",
+    "projectId": "orvish-93305",
+    "appId": "1:1013527301298:web:c8a5d05ff0d7f96d608dab"
   },
   "order_webhook_url": "https://script.google.com/macros/s/AKfycbztmccRaxy6cHVvcMLm-ilBwFcYyARCvh61ughqiTrwB54pMqtJdWnRtNnBysFZKLnkXw/exec"
 }
