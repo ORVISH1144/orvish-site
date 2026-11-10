@@ -433,13 +433,13 @@
     if (inStock(p)) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><div><div class="price" id="s-price" style="padding:0;font-size:16px">' + money(info().u.price) + '</div><div style="font:12px var(--font-accent);opacity:.7">' + esc(p.title) + '</div></div><button class="btn secondary" id="s-add">Add</button><button class="btn" id="s-buy">Buy now</button></div>');
       $('#s-add').onclick = function () { addToCart(p.id, q, cur); openCart(true); }; $('#s-buy').onclick = function () { addToCart(p.id, q, cur); openCheckout(); }; }
     function drawReviews() {
-      var box = $('#reviews'); if (!box) return; var x = rateOf(p.id), mine = store.get('orvish_reviewed', []).indexOf(p.id) > -1;
+      var box = $('#reviews'); if (!box) return; var lastO = store.get('orvish_orders', [])[0]; var x = rateOf(p.id), mine = store.get('orvish_reviewed', []).indexOf(p.id) > -1;
       var bars = ''; if (x) { for (var st = 5; st >= 1; st--) { var c = x.list.filter(function (y) { return Math.round(Number(y.rating)) === st; }).length; bars += '<div class="rb"><span>' + st + ' ★</span><i><b style="width:' + Math.round(c / x.n * 100) + '%"></b></i><span>' + c + '</span></div>'; } }
       box.innerHTML = '<h3>Customer reviews</h3>' +
         (x ? '<div class="rsum"><div class="ravg"><b>' + x.avg.toFixed(1) + '</b>' + starsHTML(x.avg) + '<small>' + x.n + (x.n === 1 ? ' review' : ' reviews') + '</small></div><div class="rbars">' + bars + '</div></div>' : '<p class="sub" style="margin:0 0 14px">No reviews yet. Be the first to review this product.</p>') +
         (mine ? '<p class="msg">Thank you! Your review was sent and will appear here after we approve it.</p>' : '<details class="rform"><summary class="btn secondary">Write a review</summary><form id="rf"><div class="pick" id="pick">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' stars">★</button>'; }).join('') + '<span id="pick-t">Tap to rate</span></div>' +
           '<div class="field"><label>Your name</label><input name="name" required maxlength="40"></div><div class="field"><label>Your review</label><textarea name="review" rows="3" required maxlength="800"></textarea></div>' +
-          '<div class="field"><label>Order ID (optional – shows a “Verified buyer” tag)</label><input name="order_id" maxlength="30" placeholder="ORV-..."></div><input name="website" class="hp" tabindex="-1" autocomplete="off">' +
+          '<p class="msg" style="margin:0 0 10px">Reviews are open to customers who bought this product. Enter the order ID and phone number from your order.</p><div class="two"><div class="field"><label>Order ID</label><input name="order_id" required maxlength="30" placeholder="ORV-..." value="' + esc(lastO ? lastO.id : '') + '"></div><div class="field"><label>Phone used for the order</label><input name="phone" type="tel" required maxlength="16" value="' + esc(lastO ? lastO.phone : '') + '"></div></div><input name="website" class="hp" tabindex="-1" autocomplete="off">' +
           '<div class="msg err" id="rmsg"></div><button class="btn" type="submit">Submit review</button></form></details>') +
         (x ? '<div class="rlist">' + x.list.slice().reverse().map(function (y) { return '<div class="rev"><div class="rh">' + starsHTML(Number(y.rating)) + '<b>' + esc(y.name) + '</b>' + (y.verified ? '<em>Verified buyer</em>' : '') + '<small>' + esc(y.date || '') + '</small></div><p>' + esc(y.review) + '</p></div>'; }).join('') + '</div>' : '');
       var rate = 0, f = $('#rf'); if (!f) return;
@@ -448,8 +448,16 @@
         e.preventDefault(); var d = Object.fromEntries(new FormData(f)); if (d.website) return;
         if (!rate) { $('#rmsg').textContent = 'Please tap the stars to give a rating.'; return; }
         if (!S.order_webhook_url) { $('#rmsg').textContent = 'Reviews are not available right now.'; return; }
-        try { fetch(S.order_webhook_url, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'review', product_id: p.id, product: p.title, name: d.name, rating: String(rate), review: d.review, order_id: d.order_id || '', date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) }) }).catch(function () {}); } catch (er) {}
-        var m = store.get('orvish_reviewed', []); m.push(p.id); store.set('orvish_reviewed', m); drawReviews();
+        var m = $('#rmsg'), btn = f.querySelector('button[type=submit]'), ph = String(d.phone || '').replace(/\D/g, ''), oid = String(d.order_id || '').trim();
+        btn.disabled = true; btn.textContent = 'Checking your order…'; m.textContent = '';
+        var fail = function (t) { m.textContent = t; btn.disabled = false; btn.textContent = 'Submit review'; };
+        fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(oid) + '&phone=' + encodeURIComponent(ph) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (o) {
+          if (!o || !o.found) return fail('We could not find an order with this order ID and phone number. Only customers who bought this product can review it.');
+          if (String(o.items || '').toLowerCase().indexOf(p.title.toLowerCase()) < 0) return fail('This order does not include this product, so it cannot be used to review it.');
+          if (/cancel|return/i.test(String(o.order_status || ''))) return fail('This order was cancelled or returned, so it cannot be used for a review.');
+          try { fetch(S.order_webhook_url, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'review', product_id: p.id, product: p.title, name: d.name, rating: String(rate), review: d.review, order_id: oid, phone: ph, date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) }) }).catch(function () {}); } catch (er) {}
+          var mm = store.get('orvish_reviewed', []); mm.push(p.id); store.set('orvish_reviewed', mm); drawReviews();
+        }).catch(function () { fail('Could not check your order right now. Please try again in a moment.'); });
       };
     }
     drawReviews(); loadReviews().then(function () { fillRatings(); drawReviews(); });
