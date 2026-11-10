@@ -68,15 +68,23 @@
     window.fbq('init', id); window.fbq('track', 'PageView');
   }
   /* customer accounts (Firebase Auth + Firestore, free plan) */
-  var FB = null, USER = null, fbWait = [];
+  var FB = null, USER = null, PROFILE = null, fbWait = [];
   function loadJS(u) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+  function loadProfile() {
+    if (!FB || !USER) { PROFILE = null; return Promise.resolve(null); }
+    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; return PROFILE; }).catch(function () { PROFILE = null; return null; });
+  }
+  function saveProfile(f) {
+    if (!FB || !USER) return;
+    try { FB.db.collection('customers').doc(USER.uid).set({ name: f.name || '', phone: f.phone || '', email: f.email || '', address: f.address || '', city: f.city || '', pin: f.pin || '', updated: Date.now() }, { merge: true }).then(function () { PROFILE = Object.assign({}, PROFILE, f); }).catch(function () {}); } catch (e) {}
+  }
   function fbReady() {
     var c = S.firebase_config; if (!c || !c.apiKey) return Promise.resolve(null);
     if (FB) return Promise.resolve(FB);
     var b = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
     return loadJS(b + 'app-compat.js').then(function () { return loadJS(b + 'auth-compat.js'); }).then(function () { return loadJS(b + 'firestore-compat.js'); }).then(function () {
       firebase.initializeApp(c); FB = { auth: firebase.auth(), db: firebase.firestore() };
-      return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; ok(FB); var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; }); });
+      return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; (u ? loadProfile() : (PROFILE = null, Promise.resolve())).then(function () { ok(FB); }); }); });
     }).catch(function () { return null; });
   }
   function payLogos() {
@@ -172,15 +180,17 @@
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(USER ? USER.displayName || '' : '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc(USER && USER.phoneNumber ? USER.phoneNumber : '') + '"></div></div>' +
-      '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(USER ? USER.email || '' : '') + '"></div>' +
-      '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address"></textarea></div>' +
-      '<div class="two"><div class="field"><label>City</label><input name="city" required></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric"></div></div>' +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc((USER && USER.displayName) || (PROFILE && PROFILE.name) || '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc((USER && USER.phoneNumber) || (PROFILE && PROFILE.phone) || '') + '"></div></div>' +
+      '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(USER ? USER.email || (PROFILE && PROFILE.email) || '' : '') + '"></div>' +
+      '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc((PROFILE && PROFILE.address) || '') + '</textarea></div>' +
+      '<div class="two"><div class="field"><label>City</label><input name="city" required value="' + esc((PROFILE && PROFILE.city) || '') + '"></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric" value="' + esc((PROFILE && PROFILE.pin) || '') + '"></div></div>' +
+      (USER && PROFILE && PROFILE.address ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') +
       '<h6 class="co-h">Payment</h6><div class="pay">' + ms.map(function (x, i) { return '<label><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '> ' + x[1] + '</label>'; }).join('') + '</div>' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' + (t.off ? '<div class="row"><span>Discount</span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
       '<div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
     m.classList.add('open'); $('#ov').classList.add('on');
+    if ($('#co-clear')) $('#co-clear').onclick = function () { var fm = $('#co-form'); fm.address.value = ''; fm.city.value = ''; fm.pin.value = ''; $('#co-clear').closest('.msg').remove(); fm.address.focus(); };
     $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); if (f.pm === 'online') {
         if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
         payRazorpay(f, t);
@@ -193,7 +203,7 @@
     var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
     var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; ') }); store.set('orvish_orders', o.slice(0, 20));
-    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} }
+    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} saveProfile(f); }
     return id;
   }
   function emailOrder(f, t) {
