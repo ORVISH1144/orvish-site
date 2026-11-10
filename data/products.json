@@ -7,9 +7,9 @@
       "compare_at_price": 1799,
       "collection": "signature",
       "images": [
-        "/images/uploads/hawas.avif",
-        "/images/uploads/hawas_2.avif",
-        "/images/uploads/Hawas_Kobra_By_Rasasi_Perfume_For_Men_Edp_100ml.avif"
+        "/images/uploads/hawas_kobra_web_product_1200.png",
+        "/images/uploads/hawas_kobra_set_optimized_1200.png",
+        "/images/uploads/Hawas Kobra in a Blue Water Splash.png"
       ],
       "hidden": false,
       "in_stock": false,
@@ -25,6 +25,16 @@
       "best_seller": true,
       "badge": "",
       "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
       "note_pyramid": {
         "top": "Apple, Bergamot, Lemon, Cinnamon",
         "heart": "Orange blossom, Cardamom, Plum",
@@ -40,16 +50,6 @@
         {
           "title": "Shipping and returns",
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        }
-      ],
-      "bundles": [
-        {
-          "qty": 2,
-          "percent": 10
-        },
-        {
-          "qty": 3,
-          "percent": 15
         }
       ]
     },
