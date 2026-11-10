@@ -1,4 +1,5 @@
 {
+  "marquee_text": "Genuine fragrances · Easy replacement · Express shipping",
   "announcements": [
     "Free Shipping on Orders Above ₹999",
     "Save 5% on Your First Order",
@@ -66,17 +67,17 @@
       "button": "View products"
     },
     {
-      "title": "Everyday",
-      "text": "Light and easy to wear",
-      "image": "/images/uploads/orvish_everyday.jpg",
-      "url": "/shop?c=everyday",
-      "button": "View products"
-    },
-    {
       "title": "Gift ideas",
       "text": "Perfect for every occasion",
       "image": "/images/uploads/orvish_gift.jpg",
       "url": "/shop",
+      "button": "View products"
+    },
+    {
+      "title": "Everyday",
+      "text": "Light and easy to wear",
+      "image": "/images/uploads/orvish_everyday.jpg",
+      "url": "/shop?c=everyday",
       "button": "View products"
     }
   ],
@@ -159,11 +160,10 @@
   "her_pick": [],
   "custom_rows": [],
   "bottom_banner": {
-    "button_label": "Shop now",
-    "button_link": "/shop",
     "image": "",
+    "title": "Discover your signature scent",
     "text": "Genuine fragrances, delivered across India",
-    "title": "Discover your signature scent"
-  },
-  "marquee_text": "Genuine fragrances · Easy replacement · Express shipping"
+    "button_label": "Shop now",
+    "button_link": "/shop"
+  }
 }
