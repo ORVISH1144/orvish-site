@@ -482,11 +482,11 @@
         $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
         $('#af').onsubmit = function (e) {
           e.preventDefault(); var d = Object.fromEntries(new FormData(e.target)), m = $('#amsg'); m.textContent = '';
-          (mode === 'in' ? f.auth.signInWithEmailAndPassword(d.email, d.pw) : f.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); })).catch(function (x) { m.textContent = err(x); });
+          (mode === 'in' ? FB.auth.signInWithEmailAndPassword(d.email, d.pw) : FB.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); })).catch(function (x) { m.textContent = err(x); });
         };
-        $('#gbtn').onclick = function () { f.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (x) { $('#amsg').textContent = err(x); }); };
+        $('#gbtn').onclick = function () { FB.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (x) { $('#amsg').textContent = err(x); }); };
         $('#pbtn').onclick = phoneForm;
-        var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } f.auth.sendPasswordResetEmail(em).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
+        var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } FB.auth.sendPasswordResetEmail(em).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
       }
       function phoneForm() {
         el.innerHTML = '<h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 "></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p>';
@@ -497,7 +497,7 @@
           var num = raw.charAt(0) === '+' ? '+' + dg : (dg.length === 10 ? '+91' + dg : '+' + dg);
           var btn = $('#psend'); btn.disabled = true; btn.textContent = 'Sending…';
           try { if (!rv) rv = new firebase.auth.RecaptchaVerifier('recap', { size: 'invisible' }); } catch (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; return; }
-          f.auth.signInWithPhoneNumber(num, rv).then(function (conf) {
+          FB.auth.signInWithPhoneNumber(num, rv).then(function (conf) {
             el.innerHTML = '<h1>Enter the code</h1><p class="sub">Sent to ' + esc(num) + '</p><form id="cf"><div class="field"><label>6-digit code</label><input name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" style="letter-spacing:.4em;font-size:20px;text-align:center"></div><button class="btn block" type="submit">Verify and log in</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Use a different number</button></p>';
             $('#back').onclick = phoneForm;
             $('#cf').onsubmit = function (ev) { ev.preventDefault(); $('#amsg').textContent = ''; conf.confirm(ev.target.elements.code.value.trim()).catch(function (x) { $('#amsg').textContent = err(x); }); };
