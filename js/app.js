@@ -325,6 +325,8 @@
     var sv = S.services || [];
     if (sv.length) h += '<section class="services"><div class="wrap">' + sv.map(function (s) { return '<div>' + ico(s.icon) + '<b>' + esc(s.title) + '</b><span>' + esc(s.text) + '</span></div>'; }).join('') + '</div></section>';
     if (S.home_text) h += '<section class="section"><div class="wrap seo"><h3>' + esc(S.home_text_title || '') + '</h3>' + md(S.home_text) + '</div></section>';
+    var bb = S.bottom_banner;
+    if (bb && (bb.image || bb.title)) h += '<section class="bigbanner"' + (bb.image ? ' style="background-image:url(\'' + esc(bb.image) + '\')"' : '') + '><div class="bb-in">' + (bb.title ? '<h2>' + esc(bb.title) + '</h2>' : '') + (bb.text ? '<p>' + esc(bb.text) + '</p>' : '') + (bb.button_label ? '<a class="btn" href="' + esc(bb.button_link || '/shop') + '">' + esc(bb.button_label) + '</a>' : '') + '</div></section>';
     $('#home-main').innerHTML = h;
     var tb = $('#tabs'); if (tb) tb.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; $$('#tabs button').forEach(function (x) { x.classList.toggle('on', x === b); }); var c = b.dataset.c; $('#best-rail').innerHTML = (bl.filter(function (p) { return !c || p.collection === c; })).map(cardHTML).join('') || '<p class="empty">No products here yet.</p>'; });
   }

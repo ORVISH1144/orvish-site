@@ -408,6 +408,31 @@ collections:
         - title
         multiple: true
         required: false
+    - label: Big banner at the bottom of the home page (wide picture, e.g. 2400 x 900)
+      name: bottom_banner
+      widget: object
+      required: false
+      fields:
+      - label: Banner image
+        name: image
+        widget: image
+        required: false
+      - label: Heading
+        name: title
+        widget: string
+        required: false
+      - label: Text
+        name: text
+        widget: string
+        required: false
+      - label: Button text
+        name: button_label
+        widget: string
+        required: false
+      - label: Button link
+        name: button_link
+        widget: string
+        required: false
   icon: home
 - name: nav
   label: Menu & footer

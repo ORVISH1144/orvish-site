@@ -158,5 +158,12 @@
   "him_pick": [],
   "her_pick": [],
   "custom_rows": [],
-  "marquee_text": "Genuine fragrances · Easy replacement · Express shipping"
+  "marquee_text": "Genuine fragrances · Easy replacement · Express shipping",
+  "bottom_banner": {
+    "image": "",
+    "title": "Discover your signature scent",
+    "text": "Genuine fragrances, delivered across India",
+    "button_label": "Shop now",
+    "button_link": "/shop"
+  }
 }
