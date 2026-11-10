@@ -61,21 +61,21 @@
     {
       "title": "Signature",
       "text": "Rich, lasting fragrances",
-      "image": "images/tile-1.svg",
+      "image": "/images/uploads/orvish_signature.jpg",
       "url": "/shop?c=signature",
       "button": "View products"
     },
     {
       "title": "Everyday",
       "text": "Light and easy to wear",
-      "image": "images/tile-2.svg",
+      "image": "/images/uploads/orvish_everyday.jpg",
       "url": "/shop?c=everyday",
       "button": "View products"
     },
     {
       "title": "Gift ideas",
       "text": "Perfect for every occasion",
-      "image": "images/tile-3.svg",
+      "image": "/images/uploads/orvish_gift.jpg",
       "url": "/shop",
       "button": "View products"
     }
@@ -158,12 +158,12 @@
   "him_pick": [],
   "her_pick": [],
   "custom_rows": [],
-  "marquee_text": "Genuine fragrances · Easy replacement · Express shipping",
   "bottom_banner": {
-    "image": "",
-    "title": "Discover your signature scent",
-    "text": "Genuine fragrances, delivered across India",
     "button_label": "Shop now",
-    "button_link": "/shop"
-  }
+    "button_link": "/shop",
+    "image": "",
+    "text": "Genuine fragrances, delivered across India",
+    "title": "Discover your signature scent"
+  },
+  "marquee_text": "Genuine fragrances · Easy replacement · Express shipping"
 }
