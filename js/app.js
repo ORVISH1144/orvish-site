@@ -197,13 +197,15 @@
       } else emailOrder(f, t); });
   }
   function orderLines() { return cart.map(function (l) { var u = unit(l); return l.q + ' x ' + u.p.title + (u.label ? ' ' + u.label : '') + ' (' + money(u.price) + ')'; }); }
+  function itemsDetail() { return cart.map(function (l) { var u = unit(l); return { id: u.p.id, title: u.p.title, image: u.p.images[0], qty: l.q, price: u.price }; }); }
   function sendOrder(f, t, status, payId, extra) {
     var url = S.order_webhook_url; if (!url) return null;
     var id = 'ORV-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
+    var items = itemsDetail();
+    var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), items_json: JSON.stringify(items), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
-    var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; ') }); store.set('orvish_orders', o.slice(0, 20));
-    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} saveProfile(f); }
+    var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; '), items_detail: items }); store.set('orvish_orders', o.slice(0, 20));
+    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), items_detail: items, total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} saveProfile(f); }
     return id;
   }
   function emailOrder(f, t) {
@@ -568,7 +570,12 @@
       FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
         var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; });
         if (!o.length) { $('#ol').innerHTML = '<p class="empty" style="padding:24px 0">No orders yet. <a class="link" href="/shop">Start shopping</a></p>'; return; }
-        $('#ol').innerHTML = o.map(function (x) { return '<div class="tcard" style="margin-top:12px" data-id="' + esc(x.order_id) + '" data-ph="' + esc(x.phone) + '"><div class="th"><div><small>' + new Date(x.created).toLocaleDateString('en-IN') + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st">…</span></div><div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(x.items) + '</span></div><div class="row"><span>Total</span><span>' + money(x.total) + '</span></div></div>'; }).join('');
+        $('#ol').innerHTML = o.map(function (x) {
+          var thumbs = (x.items_detail || []).map(function (it) { return '<img src="' + esc(it.image || '/images/perfume-1.svg') + '" alt="' + esc(it.title || '') + '" title="' + esc((it.qty || 1) + ' x ' + (it.title || '')) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid var(--line, #2207131f);margin:0 4px 4px 0">'; }).join('');
+          return '<div class="tcard" style="margin-top:12px" data-id="' + esc(x.order_id) + '" data-ph="' + esc(x.phone) + '"><div class="th"><div><small>' + new Date(x.created).toLocaleDateString('en-IN') + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st">…</span></div>' +
+            (thumbs ? '<div style="display:flex;flex-wrap:wrap;margin-top:8px">' + thumbs + '</div>' : '') +
+            '<div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(x.items) + '</span></div><div class="row"><span>Total</span><span>' + money(x.total) + '</span></div></div>';
+        }).join('');
         $$('#ol .tcard').forEach(function (c) {
           if (!S.order_webhook_url) return;
           fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(c.dataset.id) + '&phone=' + c.dataset.ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) { $('.st', c).textContent = d.found ? d.order_status : 'Received'; }).catch(function () { $('.st', c).textContent = 'Received'; });
