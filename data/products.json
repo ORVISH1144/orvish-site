@@ -56,10 +56,18 @@
     {
       "id": "rose-01-extrait-50ml",
       "title": "Rose 01 – Extrait de Parfum, 50 ml",
-      "brand": "Swiss Arabian",
       "price": 1999,
       "compare_at_price": 2499,
       "collection": "signature",
+      "images": [
+        "/images/uploads/swiss_arabian_rose01_bottle_transparent_1200.png",
+        "/images/uploads/a_clean_product_photography_image_on_a_transparent.png",
+        "/images/uploads/Rose 01 Perfume and Fresh Rose.png"
+      ],
+      "hidden": false,
+      "in_stock": true,
+      "featured": true,
+      "brand": "Swiss Arabian",
       "gender": "women",
       "type": "Extrait de Parfum",
       "notes": [
@@ -67,21 +75,8 @@
         "Floral",
         "Fruity"
       ],
-      "images": [
-        "/images/photo-soon.svg"
-      ],
-      "in_stock": true,
       "best_seller": true,
-      "featured": true,
-      "hidden": false,
       "badge": "",
-      "short_description": "A rich rose fragrance with lychee, peony and a creamy vanilla musk base.",
-      "description": "Rose 01 by Swiss Arabian is a luxurious rose fragrance in Extrait de Parfum strength. It opens with juicy lychee, bergamot and a touch of pink pepper, blooms into Bulgarian rose and peony, and dries down to soft vanilla, musk and cashmere wood.\n\n**Size:** 50 ml\n\n**Concentration:** Extrait de Parfum\n\n**Best for:** evenings, special occasions and gifting.",
-      "note_pyramid": {
-        "top": "Lychee, Bergamot, Pink pepper",
-        "heart": "Bulgarian rose, Peony",
-        "base": "Vanilla, Musk, Cashmere wood"
-      },
       "variants": [],
       "bundles": [
         {
@@ -93,6 +88,13 @@
           "percent": 15
         }
       ],
+      "note_pyramid": {
+        "top": "Lychee, Bergamot, Pink pepper",
+        "heart": "Bulgarian rose, Peony",
+        "base": "Vanilla, Musk, Cashmere wood"
+      },
+      "short_description": "A rich rose fragrance with lychee, peony and a creamy vanilla musk base.",
+      "description": "Rose 01 by Swiss Arabian is a luxurious rose fragrance in Extrait de Parfum strength. It opens with juicy lychee, bergamot and a touch of pink pepper, blooms into Bulgarian rose and peony, and dries down to soft vanilla, musk and cashmere wood.\n\n**Size:** 50 ml\n\n**Concentration:** Extrait de Parfum\n\n**Best for:** evenings, special occasions and gifting.",
       "details": [
         {
           "title": "How to use",
