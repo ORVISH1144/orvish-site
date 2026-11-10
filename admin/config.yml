@@ -173,6 +173,42 @@ collections:
     - label: Text
       name: body
       widget: text
+  - label: Customer reviews (add or edit reviews here – website reviews from customers arrive in the Google Sheet)
+    name: reviews
+    widget: list
+    required: false
+    summary: '{{fields.rating}}★ – {{fields.name}}'
+    fields:
+    - label: Customer name
+      name: name
+      widget: string
+    - label: Stars
+      name: rating
+      widget: select
+      options:
+      - label: 5 stars
+        value: 5
+      - label: 4 stars
+        value: 4
+      - label: 3 stars
+        value: 3
+      - label: 2 stars
+        value: 2
+      - label: 1 star
+        value: 1
+      default: 5
+    - label: Review text
+      name: review
+      widget: text
+    - label: Date (e.g. 2026-11-10)
+      name: date
+      widget: string
+      required: false
+    - label: Verified buyer tag
+      name: verified
+      widget: boolean
+      default: false
+      required: false
   - label: Display order (smaller number shows first)
     name: position
     widget: number

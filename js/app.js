@@ -87,7 +87,7 @@
   /* reviews (stored in the Google Sheet 'Reviews' tab; only rows marked Approved are shown) */
   var R = null;
   function starsHTML(v) { return '<span class="stars" aria-label="' + v.toFixed(1) + ' out of 5"><span style="width:' + Math.round(v / 5 * 100) + '%">★★★★★</span>★★★★★</span>'; }
-  function rateOf(id) { var l = (R || []).filter(function (x) { return x.product_id === id; }); if (!l.length) return null; return { n: l.length, avg: l.reduce(function (a, x) { return a + Number(x.rating || 0); }, 0) / l.length, list: l }; }
+  function rateOf(id) { var pp = P.filter(function (x) { return x.id === id; })[0], own = ((pp && pp.reviews) || []).filter(function (x) { return x && x.name && x.review && Number(x.rating); }); var l = own.concat((R || []).filter(function (x) { return x.product_id === id; })); if (!l.length) return null; return { n: l.length, avg: l.reduce(function (a, x) { return a + Number(x.rating || 0); }, 0) / l.length, list: l }; }
   function ratingHTML(id) { var x = rateOf(id); return x ? starsHTML(x.avg) + '<small>' + x.avg.toFixed(1) + ' (' + x.n + ')</small>' : ''; }
   function fillRatings() { $$('.rating[data-pid]').forEach(function (e) { e.innerHTML = ratingHTML(e.dataset.pid); }); }
   function loadReviews() {
