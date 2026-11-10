@@ -320,7 +320,7 @@
     var nset = {}; P.forEach(function (p) { (p.notes || []).forEach(function (n) { nset[n] = (nset[n] || 0) + 1; }); });
     var nl = Object.keys(nset).sort(function (a, b) { return nset[b] - nset[a]; }).slice(0, 10);
     if (nl.length) h += '<section class="section scent"><div class="wrap"><div class="sec-head"><h3>Find your scent</h3><p class="sub" style="margin:0">Tap a note you love</p></div><div class="chips">' + nl.map(function (n) { return '<a href="/shop?note=' + encodeURIComponent(n) + '">' + esc(n) + '</a>'; }).join('') + '</div></div></section>';
-    var mq = String(S.marquee_text || 'Genuine fragrances · Easy replacement · Express shipping').trim();
+    var mq = String(S.marquee_text || '').trim();
     if (mq) { var one = '<span>' + esc(mq) + '</span><i>✦</i>'; h += '<div class="bigmq" aria-hidden="true"><div class="track">' + one + one + one + one + '</div></div>'; }
     var sv = S.services || [];
     if (sv.length) h += '<section class="services"><div class="wrap">' + sv.map(function (s) { return '<div>' + ico(s.icon) + '<b>' + esc(s.title) + '</b><span>' + esc(s.text) + '</span></div>'; }).join('') + '</div></section>';
