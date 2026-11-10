@@ -13,7 +13,7 @@
   ],
   "shipping_fee": 49,
   "free_shipping_above": 999,
-  "razorpay_key_id": "",
+  "razorpay_key_id": "rzp_test_TyY2VwmXyCpL2r",
   "cod_enabled": true,
   "payment_logos": [
     {
