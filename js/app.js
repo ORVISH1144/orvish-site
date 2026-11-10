@@ -102,7 +102,7 @@
     return fetch('https://ipapi.co/json/').then(function (x) { return x.json(); }).then(function (d) { if (!d || d.error) throw 0; return save({ c: d.country_name || '', r: d.region || '', city: d.city || '' }); })
       .catch(function () { return fetch('https://www.cloudflare.com/cdn-cgi/trace').then(function (x) { return x.text(); }).then(function (t) { var m = /loc=(\w+)/.exec(t); return save({ c: m ? m[1] : '', r: '', city: '' }); }).catch(function () { return { c: '', r: '', city: '' }; }); });
   }
-  function track(ev, pid) {
+  function logVisit(ev, pid) {
     try {
       if (!(S.firebase_config && S.firebase_config.apiKey) || navigator.webdriver || store.get('orvish_notrack', false)) return;
       var sid = sessionStorage.getItem('orvish_sid'); if (!sid) { sid = Math.random().toString(36).slice(2, 12); sessionStorage.setItem('orvish_sid', sid); }
@@ -128,7 +128,7 @@
     if (!inStock(p, label)) return; label = label || '';
     var l = cart.filter(function (x) { return x.id === id && (x.v || '') === label; })[0];
     if (l) l.q += q || 1; else cart.push({ id: id, v: label, q: q || 1 });
-    saveCart(); toast('Added to cart'); track('cart', id); fbq_('track', 'AddToCart', { content_ids: [id], content_name: p.title, content_type: 'product', value: unit({ id: id, v: label }).price * (q || 1), currency: 'INR' });
+    saveCart(); toast('Added to cart'); logVisit('cart', id); fbq_('track', 'AddToCart', { content_ids: [id], content_name: p.title, content_type: 'product', value: unit({ id: id, v: label }).price * (q || 1), currency: 'INR' });
   }
   function totals() {
     var items = 0, sub = 0;
@@ -167,7 +167,7 @@
   /* checkout */
   function methods() { var m = []; if (S.razorpay_key_id) m.push(['online', 'Pay online (UPI / Cards / Netbanking)']); if (S.cod_enabled !== false) m.push(['cod', 'Cash on delivery']); if (!m.length) m.push(['cod', 'Pay on delivery / we will contact you']); return m; }
   function openCheckout() {
-    var t = totals(); if (!t.items) return; track('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
+    var t = totals(); if (!t.items) return; logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
@@ -224,7 +224,7 @@
     fetch(S.order_webhook_url + '?action=rzp_order&amount=' + Math.round(t.total * 100) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) { open(d && d.id ? d.id : ''); }).catch(function () { open(''); });
   }
   function done(msg, oid, tot) {
-    if (tot != null) { fbq_('track', 'Purchase', { value: tot, currency: 'INR' }); track('order'); }
+    if (tot != null) { fbq_('track', 'Purchase', { value: tot, currency: 'INR' }); logVisit('order'); }
     cart = []; discount = null; saveCart(); openCart(false);
     $('#checkout-modal').innerHTML = '<div class="box" style="text-align:center"><h4>Thank you</h4><p>' + esc(msg) + '</p>' + (oid ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(oid) + '">Track my order</a> ' : '') + '<a class="btn" href="/">Back to home</a></div>';
   }
@@ -547,7 +547,7 @@
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})();
-    document.body.classList.add('ready'); track('view', document.body.dataset.page === 'product' ? qs.get('id') : '');
+    document.body.classList.add('ready'); logVisit('view', document.body.dataset.page === 'product' ? qs.get('id') : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
     if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();
