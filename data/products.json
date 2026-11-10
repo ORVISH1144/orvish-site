@@ -105,59 +105,6 @@
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
         }
       ]
-    },
-    {
-      "id": "rose-musk-edp",
-      "title": "Rose Musk – Eau de Parfum",
-      "price": 1299,
-      "compare_at_price": 1799,
-      "collection": "everyday",
-      "images": [
-        "images/perfume-2.svg",
-        "images/perfume-2b.svg"
-      ],
-      "in_stock": true,
-      "featured": true,
-      "gender": "women",
-      "type": "Eau de Parfum",
-      "notes": [
-        "Floral",
-        "Musk",
-        "Fresh"
-      ],
-      "best_seller": true,
-      "badge": "",
-      "variants": [
-        {
-          "label": "50 ml",
-          "price": 1299,
-          "compare_at_price": 1799,
-          "in_stock": true
-        },
-        {
-          "label": "100 ml",
-          "price": 1999,
-          "compare_at_price": 2599,
-          "in_stock": true
-        }
-      ],
-      "note_pyramid": {
-        "top": "Pear, Pink pepper",
-        "heart": "Rose, Jasmine",
-        "base": "White musk, Sandalwood"
-      },
-      "short_description": "SAMPLE LISTING – a soft floral musk fragrance.",
-      "description": "This is a sample listing. Replace the name, photos, notes and prices from the admin panel with your real perfume.\n\nA soft, clean floral fragrance with a creamy musk dry-down for everyday wear.",
-      "details": [
-        {
-          "title": "How to use",
-          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
-        },
-        {
-          "title": "Shipping and returns",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        }
-      ]
     }
   ]
 }
