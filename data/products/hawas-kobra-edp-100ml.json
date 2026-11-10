@@ -50,5 +50,14 @@
       "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
     }
   ],
+  "reviews": [
+    {
+      "name": "Shamil",
+      "rating": 5,
+      "review": "Good lasting fragrance and genuine",
+      "date": "2026-5-10",
+      "verified": true
+    }
+  ],
   "position": 1
 }
