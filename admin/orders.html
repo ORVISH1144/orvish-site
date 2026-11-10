@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>ORVISH – Orders</title><link rel="icon" href="/images/favicon-192.png">
+<style>
+:root{--bg:#fff7e2;--ink:#220713;--maroon:#761941;--gold:#ffe9af;--line:#2207131f;--card:#ffffffb8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--maroon);color:var(--gold);padding:14px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0;font-weight:600;letter-spacing:.04em}header a{color:var(--gold);font-size:13px}header.embed span{display:none}header.embed{padding-right:230px}
+.wrap{max-width:1280px;margin:0 auto;padding:20px}
+button,select,input{font:inherit;border:1px solid var(--maroon);background:#fff;color:var(--ink);border-radius:8px;padding:8px 12px}button{cursor:pointer;color:var(--maroon)}button.p{background:var(--maroon);color:var(--gold)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.bar input{flex:1;min-width:180px}.bar small{opacity:.7}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.kpi small{display:block;font-size:12px;opacity:.7}.kpi b{font-size:26px;font-weight:650;color:var(--maroon)}
+.tw{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:auto}
+table{border-collapse:collapse;width:100%;min-width:980px}th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--maroon);padding:12px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:#fffdf6}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}tr:last-child td{border:0}td small{opacity:.7;display:block}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:600;background:var(--gold);color:var(--maroon);white-space:nowrap}.pill.warn{background:#fde2e2;color:#a11}.pill.ok{background:#dff5e7;color:#0c6b3a}
+td select{padding:5px 8px;font-size:13px}.note{font-size:11px;opacity:.7;display:block;margin-top:3px}
+.empty{opacity:.6;padding:20px}.login{max-width:420px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:center}.login input{width:100%;margin:6px 0}.err{color:#a11;min-height:20px;font-size:13px}
+@media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<header><h1>ORVISH · Orders</h1><span><a href="/admin/">Store admin</a> &nbsp;·&nbsp; <a href="/admin/traffic.html">Live traffic</a></span></header>
+<div class="wrap" id="app"><p class="empty">Loading…</p></div>
+<script>
+(function(){
+if(/embed=1/.test(location.search))document.querySelector('header').classList.add('embed');
+var $=function(s){return document.querySelector(s)},app=$('#app'),esc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var load=function(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
+var auth,api='',orders=[],user=null,STATUS=['New','Confirmed','Packed','Shipped','Out for delivery','Delivered','Cancelled','Returned'];
+try{localStorage.setItem('orvish_notrack','true')}catch(e){}
+fetch('/data/site.json?v='+Date.now()).then(function(r){return r.json()}).then(function(S){
+  var c=S.firebase_config;api=S.order_webhook_url||'';
+  if(!c||!c.apiKey||!api){app.innerHTML='<p class="empty">Orders cannot be shown until customer accounts (Firebase) and the order sheet link are set up.</p>';return}
+  var b='https://www.gstatic.com/firebasejs/10.12.2/firebase-';
+  return load(b+'app-compat.js').then(function(){return load(b+'auth-compat.js')}).then(function(){firebase.initializeApp(c);auth=firebase.auth();auth.onAuthStateChanged(function(u){user=u;u?start():login()})})
+}).catch(function(){app.innerHTML='<p class="err">Could not load. Please refresh.</p>'});
+function login(){
+  app.innerHTML='<div class="login"><h2 style="margin-top:0">Owner sign-in</h2><p>Sign in with the owner account to see your orders.</p><button class="p" id="g" style="width:100%">Continue with Google</button><div class="err" id="er"></div></div>';
+  $('#g').onclick=function(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(x){$('#er').textContent=x.message||'Sign-in failed'})};
+}
+function call(params){return user.getIdToken().then(function(t){var q=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k])}).join('&');return fetch(api+'?'+q+'&token='+encodeURIComponent(t)+'&_='+Date.now())}).then(function(r){return r.json()})}
+function start(){
+  app.innerHTML='<div class="bar"><input id="q" placeholder="Search name, phone, order ID, city or item"><select id="fs"><option value="">All statuses</option>'+STATUS.map(function(s){return'<option>'+s+'</option>'}).join('')+'</select><button id="rf">Refresh</button><small>'+esc(user.email||'')+'</small><button id="out">Log out</button></div><div id="kp"></div><div id="list"><p class="empty">Loading orders…</p></div>';
+  $('#out').onclick=function(){auth.signOut()};$('#rf').onclick=fetchOrders;$('#q').oninput=draw;$('#fs').onchange=draw;fetchOrders();
+}
+function fetchOrders(){
+  $('#list').innerHTML='<p class="empty">Loading orders…</p>';
+  call({action:'orders'}).then(function(d){
+    if(!d||!d.ok){$('#list').innerHTML=d&&d.error==='not_authorised'?'<div class="tw"><p class="empty">You are signed in as <b>'+esc(user.email||'')+'</b>, which is not an owner email in the order script. Sign in with the owner Google account, or add this email to ADMIN_EMAILS in the script and deploy a new version.</p></div>':'<p class="err">Could not load orders. Make sure the newest script is deployed in your Google Sheet.</p>';return}
+    orders=d.orders||[];draw();
+  }).catch(function(){$('#list').innerHTML='<p class="err">Could not load orders. Make sure the newest script is deployed in your Google Sheet, then refresh.</p>'});
+}
+function num(v){return Number(String(v||'').replace(/[^0-9.]/g,''))||0}
+function draw(){
+  var q=($('#q').value||'').toLowerCase(),fs=$('#fs').value;
+  var l=orders.filter(function(o){return(!fs||String(o.order_status).toLowerCase()===fs.toLowerCase())&&(!q||[o.name,o.phone,o.order_id,o.city,o.items,o.email].join(' ').toLowerCase().indexOf(q)>-1)});
+  var live=orders.filter(function(o){return!/cancel|return/i.test(o.order_status)}),today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
+  var k=function(a,b){return'<div class="kpi"><small>'+a+'</small><b>'+b+'</b></div>'};
+  $('#kp').innerHTML='<div class="kpis">'+k('Orders today',orders.filter(function(o){return o.date===today}).length)+k('To process (New / Confirmed / Packed)',orders.filter(function(o){return/^(new|confirmed|packed)$/i.test(String(o.order_status).trim())}).length)+k('Total orders',orders.length)+k('Sales (not cancelled)','₹'+live.reduce(function(a,o){return a+num(o.total)},0).toLocaleString('en-IN'))+'</div>';
+  if(!l.length){$('#list').innerHTML='<div class="tw"><p class="empty">'+(orders.length?'No orders match this search.':'No orders yet.')+'</p></div>';return}
+  $('#list').innerHTML='<div class="tw"><table><thead><tr><th>Date</th><th>Order</th><th>Customer</th><th>Delivery address</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>'+l.map(function(o){
+    var pay=String(o.payment_status||''),pc=/not verified/i.test(pay)?' warn':/paid/i.test(pay)?' ok':'';
+    return'<tr><td>'+esc(o.date)+'<small>'+esc(o.time)+'</small></td><td><b>'+esc(o.order_id)+'</b>'+(o.tracking?'<small>Tracking: '+esc(o.tracking)+'</small>':'')+'</td><td>'+esc(o.name)+'<small>'+esc(o.phone)+'</small><small>'+esc(o.email)+'</small></td><td>'+esc(o.address)+'<small>'+esc([o.city,o.pin].filter(Boolean).join(' – '))+'</small></td><td>'+esc(o.items)+'</td><td class="n">₹'+esc(o.total)+'</td><td><span class="pill'+pc+'">'+esc(pay||'—')+'</span></td><td><select data-row="'+esc(o.row)+'" data-id="'+esc(o.order_id)+'">'+STATUS.map(function(s){return'<option'+(s.toLowerCase()===String(o.order_status).trim().toLowerCase()?' selected':'')+'>'+s+'</option>'}).join('')+'</select><span class="note" id="n'+esc(o.row)+'">'+(o.notified?'Last email: '+esc(o.notified):'')+'</span></td></tr>'}).join('')+'</tbody></table></div>';
+  [].forEach.call(document.querySelectorAll('td select'),function(s){s.onchange=function(){
+    var row=s.dataset.row,id=s.dataset.id,val=s.value,note=$('#n'+row),o=orders.filter(function(x){return String(x.row)===row})[0],old=o?o.order_status:'';
+    if(!confirm('Change order '+id+' to "'+val+'"?\n\nThe customer gets an email about this status (if they gave an email).')){s.value=old;return}
+    s.disabled=true;note.textContent='Saving…';
+    call({action:'set_status',row:row,order_id:id,status:val}).then(function(d){s.disabled=false;if(d&&d.ok){if(o){o.order_status=val}note.textContent='Saved · '+(d.notified||'')}else{s.value=old;note.textContent='Could not save. Refresh and try again.'}}).catch(function(){s.disabled=false;s.value=old;note.textContent='Could not save. Check your connection.'});
+  }});
+}
+})();
+</script></body></html>

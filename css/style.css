@@ -501,3 +501,5 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .hp{position:absolute!important;left:-9999px;opacity:0;height:0;width:0}
 .rev{padding:16px 0;border-top:1px solid var(--line)}.rh{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:400 13px var(--font-accent)}.rh b{font-weight:600}.rh em{font-style:normal;font-size:11px;color:#0c6b3a;border:1px solid #0c6b3a55;border-radius:99px;padding:1px 8px}.rh small{opacity:.6;margin-left:auto}
 .rev p{margin:8px 0 0}
+
+.revlinks{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.revlinks b{font:600 13px var(--font-accent)}.revlinks .btn{font-size:11px;padding:10px 14px;white-space:normal;text-align:center}

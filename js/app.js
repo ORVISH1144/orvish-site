@@ -192,7 +192,7 @@
     var id = 'ORV-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
-    var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now() }); store.set('orvish_orders', o.slice(0, 20));
+    var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; ') }); store.set('orvish_orders', o.slice(0, 20));
     if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} }
     return id;
   }
@@ -432,34 +432,46 @@
     if (wl) $('#buyarea').insertAdjacentHTML('afterend', '<a class="btn secondary block" style="margin:6px 0 16px" target="_blank" rel="noopener" href="' + wl + '"><img class="wa-i" src="/images/whatsapp.png" alt="">Order on WhatsApp</a>');
     if (inStock(p)) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><div><div class="price" id="s-price" style="padding:0;font-size:16px">' + money(info().u.price) + '</div><div style="font:12px var(--font-accent);opacity:.7">' + esc(p.title) + '</div></div><button class="btn secondary" id="s-add">Add</button><button class="btn" id="s-buy">Buy now</button></div>');
       $('#s-add').onclick = function () { addToCart(p.id, q, cur); openCart(true); }; $('#s-buy').onclick = function () { addToCart(p.id, q, cur); openCheckout(); }; }
+    var elig; /* undefined = checking, null = not a buyer, {id, phone} = verified buyer of this product */
+    function findBuyer() {
+      var has = function (items) { return String(items || '').toLowerCase().indexOf(p.title.toLowerCase()) > -1; };
+      return fbReady().then(function () {
+        var c = []; if (qs.get('oid') && qs.get('ph')) c.push({ id: qs.get('oid'), phone: qs.get('ph') });
+        store.get('orvish_orders', []).forEach(function (o) { if (o.items == null || has(o.items)) c.push({ id: o.id, phone: o.phone }); });
+        var more = (FB && USER) ? FB.db.collection('orders').where('uid', '==', USER.uid).get().then(function (q) { q.docs.forEach(function (d) { var o = d.data(); if (has(o.items)) c.push({ id: o.order_id, phone: o.phone }); }); }).catch(function () {}) : Promise.resolve();
+        return more.then(function () {
+          if (!S.order_webhook_url) return null; c = c.slice(0, 6);
+          var next = function (k) {
+            if (k >= c.length) return null;
+            return fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(c[k].id) + '&phone=' + encodeURIComponent(String(c[k].phone).replace(/\D/g, '')) + '&_=' + Date.now()).then(function (x) { return x.json(); })
+              .then(function (o) { return (o && o.found && has(o.items) && !/cancel|return/i.test(String(o.order_status || ''))) ? c[k] : next(k + 1); }).catch(function () { return next(k + 1); });
+          };
+          return next(0);
+        });
+      }).catch(function () { return null; });
+    }
     function drawReviews() {
-      var box = $('#reviews'); if (!box) return; var lastO = store.get('orvish_orders', [])[0]; var x = rateOf(p.id), mine = store.get('orvish_reviewed', []).indexOf(p.id) > -1;
+      var box = $('#reviews'); if (!box) return; var x = rateOf(p.id), mine = store.get('orvish_reviewed', []).indexOf(p.id) > -1;
       var bars = ''; if (x) { for (var st = 5; st >= 1; st--) { var c = x.list.filter(function (y) { return Math.round(Number(y.rating)) === st; }).length; bars += '<div class="rb"><span>' + st + ' ★</span><i><b style="width:' + Math.round(c / x.n * 100) + '%"></b></i><span>' + c + '</span></div>'; } }
       box.innerHTML = '<h3>Customer reviews</h3>' +
-        (x ? '<div class="rsum"><div class="ravg"><b>' + x.avg.toFixed(1) + '</b>' + starsHTML(x.avg) + '<small>' + x.n + (x.n === 1 ? ' review' : ' reviews') + '</small></div><div class="rbars">' + bars + '</div></div>' : '<p class="sub" style="margin:0 0 14px">No reviews yet. Be the first to review this product.</p>') +
-        (mine ? '<p class="msg">Thank you! Your review was sent and will appear here after we approve it.</p>' : '<details class="rform"><summary class="btn secondary">Write a review</summary><form id="rf"><div class="pick" id="pick">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' stars">★</button>'; }).join('') + '<span id="pick-t">Tap to rate</span></div>' +
-          '<div class="field"><label>Your name</label><input name="name" required maxlength="40"></div><div class="field"><label>Your review</label><textarea name="review" rows="3" required maxlength="800"></textarea></div>' +
-          '<p class="msg" style="margin:0 0 10px">Reviews are open to customers who bought this product. Enter the order ID and phone number from your order.</p><div class="two"><div class="field"><label>Order ID</label><input name="order_id" required maxlength="30" placeholder="ORV-..." value="' + esc(lastO ? lastO.id : '') + '"></div><div class="field"><label>Phone used for the order</label><input name="phone" type="tel" required maxlength="16" value="' + esc(lastO ? lastO.phone : '') + '"></div></div><input name="website" class="hp" tabindex="-1" autocomplete="off">' +
-          '<div class="msg err" id="rmsg"></div><button class="btn" type="submit">Submit review</button></form></details>') +
+        (x ? '<div class="rsum"><div class="ravg"><b>' + x.avg.toFixed(1) + '</b>' + starsHTML(x.avg) + '<small>' + x.n + (x.n === 1 ? ' review' : ' reviews') + '</small></div><div class="rbars">' + bars + '</div></div>' : '<p class="sub" style="margin:0 0 14px">No reviews yet.</p>') +
+        (mine ? '<p class="msg">Thank you! Your review was sent and will appear here after we approve it.</p>' :
+          elig ? '<details class="rform"' + (qs.get('oid') ? ' open' : '') + '><summary class="btn secondary">Write a review</summary><form id="rf"><div class="pick" id="pick">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' stars">★</button>'; }).join('') + '<span id="pick-t">Tap to rate</span></div>' +
+          '<div class="field"><label>Your name</label><input name="name" required maxlength="40"></div><div class="field"><label>Your review</label><textarea name="review" rows="3" required maxlength="800"></textarea></div><input name="website" class="hp" tabindex="-1" autocomplete="off">' +
+          '<div class="msg err" id="rmsg"></div><button class="btn" type="submit">Submit review</button></form></details>' :
+          elig === null ? '<p class="msg" style="margin:0 0 14px">Reviews can be written by customers who have purchased this product.</p>' : '') +
         (x ? '<div class="rlist">' + x.list.slice().reverse().map(function (y) { return '<div class="rev"><div class="rh">' + starsHTML(Number(y.rating)) + '<b>' + esc(y.name) + '</b>' + (y.verified ? '<em>Verified buyer</em>' : '') + '<small>' + esc(y.date || '') + '</small></div><p>' + esc(y.review) + '</p></div>'; }).join('') + '</div>' : '');
       var rate = 0, f = $('#rf'); if (!f) return;
       $$('#pick button').forEach(function (b) { b.onclick = function () { rate = Number(b.dataset.n); $$('#pick button').forEach(function (z) { z.classList.toggle('on', Number(z.dataset.n) <= rate); }); $('#pick-t').textContent = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'][rate]; }; });
       f.onsubmit = function (e) {
         e.preventDefault(); var d = Object.fromEntries(new FormData(f)); if (d.website) return;
         if (!rate) { $('#rmsg').textContent = 'Please tap the stars to give a rating.'; return; }
-        if (!S.order_webhook_url) { $('#rmsg').textContent = 'Reviews are not available right now.'; return; }
-        var m = $('#rmsg'), btn = f.querySelector('button[type=submit]'), ph = String(d.phone || '').replace(/\D/g, ''), oid = String(d.order_id || '').trim();
-        btn.disabled = true; btn.textContent = 'Checking your order…'; m.textContent = '';
-        var fail = function (t) { m.textContent = t; btn.disabled = false; btn.textContent = 'Submit review'; };
-        fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(oid) + '&phone=' + encodeURIComponent(ph) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (o) {
-          if (!o || !o.found) return fail('We could not find an order with this order ID and phone number. Only customers who bought this product can review it.');
-          if (String(o.items || '').toLowerCase().indexOf(p.title.toLowerCase()) < 0) return fail('This order does not include this product, so it cannot be used to review it.');
-          if (/cancel|return/i.test(String(o.order_status || ''))) return fail('This order was cancelled or returned, so it cannot be used for a review.');
-          try { fetch(S.order_webhook_url, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'review', product_id: p.id, product: p.title, name: d.name, rating: String(rate), review: d.review, order_id: oid, phone: ph, date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) }) }).catch(function () {}); } catch (er) {}
-          var mm = store.get('orvish_reviewed', []); mm.push(p.id); store.set('orvish_reviewed', mm); drawReviews();
-        }).catch(function () { fail('Could not check your order right now. Please try again in a moment.'); });
+        if (!S.order_webhook_url || !elig) { $('#rmsg').textContent = 'Reviews are not available right now.'; return; }
+        try { fetch(S.order_webhook_url, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ action: 'review', product_id: p.id, product: p.title, name: d.name, rating: String(rate), review: d.review, order_id: elig.id, phone: String(elig.phone).replace(/\D/g, ''), date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) }) }).catch(function () {}); } catch (er) {}
+        var mm = store.get('orvish_reviewed', []); mm.push(p.id); store.set('orvish_reviewed', mm); drawReviews();
       };
     }
+    findBuyer().then(function (b) { elig = b || null; drawReviews(); if (b && qs.get('oid')) { var rb = $('#reviews'); if (rb) rb.scrollIntoView(); } });
     drawReviews(); loadReviews().then(function () { fillRatings(); drawReviews(); });
     var fq = S.faq || []; if (fq.length) $('#faq').innerHTML = '<h3>Frequently asked questions</h3>' + fq.map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('');
     var rel = P.filter(function (x) { return x.id !== p.id; }).slice(0, 4);
@@ -484,7 +496,8 @@
         var st = String(d.order_status || 'New'), i = steps.map(function (s) { return s.toLowerCase(); }).indexOf(st.toLowerCase()), bad = /cancel|return|refund/i.test(st);
         r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + (bad ? ' bad' : '') + '">' + esc(st) + '</span></div>' +
           (bad ? '' : '<ol class="steps">' + steps.map(function (s, k) { return '<li class="' + (k <= i ? 'on' : '') + '"><i></i><span>' + s + '</span></li>'; }).join('') + '</ol>') +
-          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(d.items) + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div>' + (d.tracking ? '<div class="row"><span>Tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') + '</div>';
+          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(d.items) + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div>' + (d.tracking ? '<div class="row"><span>Tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
+          (bad ? '' : (function () { var bought = P.filter(function (pp) { return String(d.items || '').toLowerCase().indexOf(pp.title.toLowerCase()) > -1; }); return bought.length ? '<div class="revlinks"><b>Bought it? Share your review</b>' + bought.map(function (pp) { return '<a class="btn secondary" href="/product?id=' + encodeURIComponent(pp.id) + '&oid=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(phone.replace(/\D/g, '')) + '#reviews">Review ' + esc(pp.title) + '</a>'; }).join('') + '</div>' : ''; })()) + '</div>';
       }).catch(function () { r.innerHTML = '<p class="msg err">Could not load the status right now. Please try again in a moment.</p>'; });
     }
     $('#tf').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); look(f.id, f.phone); });

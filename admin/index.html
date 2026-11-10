@@ -3,15 +3,18 @@
 <body><script src="https://unpkg.com/@sveltia/cms@0.261.0/dist/sveltia-cms.js"></script><style>
 #tf-btn{position:fixed;left:16px;bottom:16px;z-index:99998;background:#761941;color:#ffe9af;border:0;border-radius:99px;padding:11px 18px;font:600 14px system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 20px #0005;display:flex;align-items:center;gap:8px}
 #tf-btn i{width:9px;height:9px;border-radius:50%;background:#35d07f;display:inline-block}
+#od-btn{position:fixed;left:150px;bottom:16px;z-index:99998;background:#ffe9af;color:#761941;border:0;border-radius:99px;padding:11px 20px;font:600 14px system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 20px #0005}
 #tf-panel{position:fixed;inset:0;z-index:99999;background:#fff7e2;display:none;flex-direction:column}
 #tf-panel.on{display:flex}#tf-panel iframe{flex:1;border:0;width:100%}
 #tf-close{position:absolute;right:14px;top:10px;z-index:2;background:#ffe9af;color:#761941;border:0;border-radius:99px;padding:8px 16px;font:600 13px system-ui,sans-serif;cursor:pointer}
 </style>
 <button id="tf-btn" type="button"><i></i>Live traffic</button>
+<button id="od-btn" type="button">Orders</button>
 <div id="tf-panel"><button id="tf-close" type="button">✕ Back to store admin</button><iframe id="tf-frame" title="Live traffic"></iframe></div>
 <script>
 (function(){var b=document.getElementById('tf-btn'),p=document.getElementById('tf-panel'),f=document.getElementById('tf-frame');
-b.onclick=function(){if(!f.src)f.src='/admin/traffic.html?embed=1';p.classList.add('on')};
+var cur='';function show(u){if(cur!==u){f.src=u;cur=u}p.classList.add('on')}
+b.onclick=function(){show('/admin/traffic.html?embed=1')};document.getElementById('od-btn').onclick=function(){show('/admin/orders.html?embed=1')};
 document.getElementById('tf-close').onclick=function(){p.classList.remove('on')};})();
 </script>
 </body></html>
