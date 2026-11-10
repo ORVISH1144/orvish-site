@@ -153,7 +153,7 @@
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(USER ? USER.displayName || '' : '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel"></div></div>' +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(USER ? USER.displayName || '' : '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc(USER && USER.phoneNumber ? USER.phoneNumber : '') + '"></div></div>' +
       '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(USER ? USER.email || '' : '') + '"></div>' +
       '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address"></textarea></div>' +
       '<div class="two"><div class="field"><label>City</label><input name="city" required></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric"></div></div>' +
@@ -468,7 +468,7 @@
       if (!f) { el.innerHTML = '<p class="msg err">Could not load accounts. Please refresh.</p>'; return; }
       f.auth.onAuthStateChanged(function (u) { u ? dash(u) : loginForm(); });
     });
-    function err(e) { var m = (e && e.code) || ''; return /wrong-password|invalid-credential|user-not-found/.test(m) ? 'Wrong email or password.' : /email-already/.test(m) ? 'An account with this email already exists. Please log in.' : /weak-password/.test(m) ? 'Password must be at least 6 characters.' : /popup/.test(m) ? 'Sign-in window was closed.' : /unauthorized-domain/.test(m) ? 'This website address is not allowed yet in Firebase settings.' : (e && e.message) || 'Something went wrong.'; }
+    function err(e) { var m = (e && e.code) || ''; return /wrong-password|invalid-credential|user-not-found/.test(m) ? 'Wrong email or password.' : /email-already/.test(m) ? 'An account with this email already exists. Please log in.' : /weak-password/.test(m) ? 'Password must be at least 6 characters.' : /popup/.test(m) ? 'Sign-in window was closed.' : /invalid-phone/.test(m) ? 'Please enter a valid mobile number with country code, e.g. +91 98765 43210.' : /invalid-verification-code|code-expired/.test(m) ? 'That code is wrong or expired. Please try again.' : /too-many-requests|quota/.test(m) ? 'Too many SMS codes requested. Please try again later or log in with email or Google.' : /operation-not-allowed|billing/.test(m) ? 'Phone login is not available right now. Please use email or Google.' : /unauthorized-domain/.test(m) ? 'This website address is not allowed yet in Firebase settings.' : (e && e.message) || 'Something went wrong.'; }
     function loginForm() {
       var mode = 'in';
       function paint() {
@@ -476,7 +476,7 @@
           '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
           '<button class="btn block" type="submit">' + (mode === 'in' ? 'Log in' : 'Create account') + '</button></form><div id="amsg" class="msg err"></div>' +
           (mode === 'in' ? '<p style="text-align:right;margin:6px 0"><button class="link lnk" id="forgot">Forgot password?</button></p>' : '') +
-          '<div class="or"><span>or</span></div><button class="btn secondary block" id="gbtn">Continue with Google</button>' +
+          '<div class="or"><span>or</span></div><button class="btn secondary block" id="gbtn">Continue with Google</button><button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
           '<p style="text-align:center;margin-top:18px">' + (mode === 'in' ? 'New customer? <button class="link lnk" id="sw">Create an account</button>' : 'Already have an account? <button class="link lnk" id="sw">Log in</button>') + '</p>' +
           '<p style="text-align:center"><a class="link" href="/track">Track an order without an account</a></p>';
         $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
@@ -485,12 +485,29 @@
           (mode === 'in' ? f.auth.signInWithEmailAndPassword(d.email, d.pw) : f.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); })).catch(function (x) { m.textContent = err(x); });
         };
         $('#gbtn').onclick = function () { f.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (x) { $('#amsg').textContent = err(x); }); };
+        $('#pbtn').onclick = phoneForm;
         var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } f.auth.sendPasswordResetEmail(em).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
+      }
+      function phoneForm() {
+        el.innerHTML = '<h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 "></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p>';
+        $('#back').onclick = paint;
+        var rv = null;
+        $('#pf').onsubmit = function (e) {
+          e.preventDefault(); var m = $('#amsg'); m.textContent = ''; var raw = e.target.elements.phone.value.trim(), dg = raw.replace(/\D/g, '');
+          var num = raw.charAt(0) === '+' ? '+' + dg : (dg.length === 10 ? '+91' + dg : '+' + dg);
+          var btn = $('#psend'); btn.disabled = true; btn.textContent = 'Sending…';
+          try { if (!rv) rv = new firebase.auth.RecaptchaVerifier('recap', { size: 'invisible' }); } catch (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; return; }
+          f.auth.signInWithPhoneNumber(num, rv).then(function (conf) {
+            el.innerHTML = '<h1>Enter the code</h1><p class="sub">Sent to ' + esc(num) + '</p><form id="cf"><div class="field"><label>6-digit code</label><input name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" style="letter-spacing:.4em;font-size:20px;text-align:center"></div><button class="btn block" type="submit">Verify and log in</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Use a different number</button></p>';
+            $('#back').onclick = phoneForm;
+            $('#cf').onsubmit = function (ev) { ev.preventDefault(); $('#amsg').textContent = ''; conf.confirm(ev.target.elements.code.value.trim()).catch(function (x) { $('#amsg').textContent = err(x); }); };
+          }).catch(function (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; try { rv.clear(); } catch (z) {} rv = null; $('#recap').innerHTML = ''; });
+        };
       }
       paint();
     }
     function dash(u) {
-      el.innerHTML = '<div class="ah"><div><h1 style="margin:0">My account</h1><p class="sub" style="margin:0">' + esc(u.displayName || '') + ' · ' + esc(u.email || '') + '</p></div><button class="btn secondary" id="lo">Log out</button></div><h3 style="margin-top:24px">My orders</h3><div id="ol"><p class="msg">Loading orders…</p></div>';
+      el.innerHTML = '<div class="ah"><div><h1 style="margin:0">My account</h1><p class="sub" style="margin:0">' + esc([u.displayName, u.email, u.phoneNumber].filter(Boolean).join(' · ')) + '</p></div><button class="btn secondary" id="lo">Log out</button></div><h3 style="margin-top:24px">My orders</h3><div id="ol"><p class="msg">Loading orders…</p></div>';
       $('#lo').onclick = function () { f_out(); };
       function f_out() { FB.auth.signOut(); }
       FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
