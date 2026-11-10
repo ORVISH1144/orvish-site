@@ -58,7 +58,7 @@ function start(u){
 function since(){var d=new Date();d.setHours(0,0,0,0);return range==='today'?d.getTime():d.getTime()-(Number(range)-1)*86400000}
 function fetchData(u){
   if(unsub){unsub();unsub=null}
-  var q=db.collection('visits').where('t','>=',since()).orderBy('t','desc').limit(20000);
+  var q=db.collection('visits').where('t','>=',since()).orderBy('t','desc').limit(10000);
   var bad=function(x){$('#dash').innerHTML=/permission/i.test(x.message||x.code||'')?'<div class="card"><h2>Not authorised</h2><p>You are signed in as <b>'+esc(u.email||u.phoneNumber||'')+'</b>, which is not listed as an owner in the Firestore rules. Add this email to the rules (the line with the owner emails), publish, and refresh.</p></div>':'<p class="err">Could not load traffic: '+esc(x.message||'')+'</p>'};
   if(range==='today')unsub=q.onSnapshot(function(s){docs=s.docs.map(function(d){return d.data()});draw()},bad);
   else q.get().then(function(s){docs=s.docs.map(function(d){return d.data()});draw()}).catch(bad);
