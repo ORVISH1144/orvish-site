@@ -399,7 +399,7 @@
     var ph = phoneNo();
     $('#header').classList.add('h2');
     $('#header').innerHTML = '<div class="wrap"><div class="hleft"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><button class="hsearch" id="open-search" aria-label="Search">' + ico('search') + '<span>What are you looking for?</span></button></div>' +
-      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions">' + (ph ? '<a class="hphone" href="tel:' + esc(ph.tel) + '">' + ico('phone') + '<span>' + esc(ph.text) + '</span></a>' : '') + '<a class="icon-btn acct" href="/account" aria-label="My account">' + ico('user') + '<i id="acct-dot"></i></a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>' +
+      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions">' + '<a class="icon-btn acct" href="/account" aria-label="My account">' + ico('user') + '<i id="acct-dot"></i></a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>' +
       '<div class="navrow"><nav class="nav">' + navHTML() + '</nav></div>';
     var li = function (a) { return (a || []).map(function (l) { return '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>'; }).join(''); };
     var cols = (S.footer_columns || []).map(function (c) { return '<div><h6>' + esc(c.title) + '</h6><ul>' + li(c.links) + '</ul></div>'; }).join('');

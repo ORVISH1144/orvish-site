@@ -684,3 +684,15 @@ body[data-page=home] .card .badge:not(.so){display:none}
 @media(prefers-reduced-motion:reduce){.capp{animation:none}}
 .cextra{margin-top:18px}
 @media(max-width:640px),(max-height:720px){.d-foot .paylogos{display:none}}
+
+/* v47 – header in one colour: menu row is part of the maroon header, gold text, thin gold divider */
+.header.h2 .wrap{min-height:70px}
+.navrow{background:none;border-bottom:0;border-top:1px solid #ffe9af2e}
+.header.h2 .navrow .nav{min-height:42px;gap:38px}
+.header.h2 .navrow a{color:var(--gold)}
+.header.h2 .navrow .ni>a:hover,.header.h2 .navrow .nav>a:hover{color:#fff}
+.header.h2 .navrow .dd a{color:var(--ink)}.header.h2 .navrow .dd a:hover{color:var(--ink)}
+.header.h2.scrolled .navrow .nav{min-height:36px}
+.header.h2 .navrow .ni>a,.header.h2 .navrow .nav>a{padding-top:13px;padding-bottom:13px}
+.header.h2.scrolled .navrow .ni>a,.header.h2.scrolled .navrow .nav>a{padding-top:10px;padding-bottom:10px}
+.header.h2 .navrow .ni>a::after{bottom:8px}.header.h2.scrolled .navrow .ni>a::after{bottom:6px}
