@@ -732,7 +732,6 @@ collections:
       name: owner_email
       widget: string
       required: false
-      hint: A copy always goes to the Google account that owns the order sheet as well.
     - label: 'Order placed (sent right after the customer orders)'
       name: placed
       widget: object
