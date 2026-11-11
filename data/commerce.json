@@ -4,18 +4,24 @@
       "code": "FIRST5",
       "percent": 5,
       "min_items": 1,
+      "max_uses": 5,
+      "stack_with_bundles": true,
       "max_discount": null
     },
     {
       "code": "BUY3",
       "percent": 30,
       "min_items": 3,
+      "max_uses": null,
+      "stack_with_bundles": true,
       "max_discount": 900
     },
     {
       "code": "WELCOME40",
       "percent": 40,
       "min_items": 2,
+      "max_uses": 1,
+      "stack_with_bundles": true,
       "max_discount": 1200
     }
   ],
