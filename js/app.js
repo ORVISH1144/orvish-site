@@ -316,7 +316,7 @@
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' + (t.off && discount ? '<div class="row"><span>Discount <span class="cotag">' + ico('ticket') + esc(discount.code) + ' applied</span></span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
       '<div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
-    m.classList.add('open'); $('#ov').classList.add('on');
+    $('#cart').classList.remove('open'); m.classList.add('open'); $('#ov').classList.add('on');
     var fm0 = $('#co-form'), flds = $('#co-fields'), sum0 = $('#co-saved');
     var expand = function () { if (flds) flds.hidden = false; if (sum0) sum0.remove(); };
     if ($('#co-change')) $('#co-change').onclick = function () { expand(); fm0.address.focus(); };
@@ -409,14 +409,15 @@
     document.body.insertAdjacentHTML('beforeend',
       '<div class="mobile-nav" id="mnav">' + mobileNavHTML() + '</div><div class="overlay" id="ov"></div>' +
       '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
-      '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb"><div class="in"><input id="sq" placeholder="Search products" autocomplete="off"><button class="icon-btn" style="color:var(--ink)" id="close-search">' + ico('close') + '</button></div>' +
-      ((S.trending || []).length ? '<div class="trend"><b>Trending searches</b>' + S.trending.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</div>' : '') + '<div class="hits" id="hits"></div></div><div class="toast" id="toast"></div>' +
+      '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb" role="dialog" aria-label="Search"><div class="sbin"><label class="sfield">' + ico('search') + '<input id="sq" type="search" placeholder="Search perfumes, brands or notes" autocomplete="off" enterkeyhint="search"></label><button class="lnk" id="close-search" type="button">Cancel</button></div>' +
+      '<div class="sbody"><div id="sdef">' + ((S.trending || []).length ? '<h6>Trending</h6><div class="trend">' + S.trending.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</div>' : '') + '<h6>Popular right now</h6><div class="hits">' + P.filter(function (x) { return x.best_seller; }).concat(P.filter(function (x) { return !x.best_seller; })).slice(0, 4).map(hitHTML).join('') + '</div></div><div class="hits" id="hits"></div></div></div><div class="toast" id="toast"></div>' +
       '<nav class="bnav" id="bnav"><a href="/">' + ico('home') + 'Home</a><a href="/shop">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><a href="/account">' + ico('user') + 'Account</a><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
       (waLink() ? '<a class="wa" href="' + waLink() + '" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><img src="/images/whatsapp.png" alt="WhatsApp"></a>' : ''));
     if (!/orvish/i.test(document.title)) document.title = (document.title ? document.title + ' – ' : '') + 'ORVISH';
     renderCart();
   }
-  function closeAll() { openCart(false); $('#mnav').classList.remove('open'); $('#checkout-modal').classList.remove('open'); var f = $('#fpanel'); if (f) f.classList.remove('open'); $('#ov').classList.remove('on'); }
+  function hitHTML(p) { return '<a class="hit" href="/product?id=' + encodeURIComponent(p.id) + '"><img src="' + esc(p.images[0]) + '" alt="" loading="lazy"><div>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '<b>' + esc(p.title) + '</b><span>' + money(p.price) + (pct(p) ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</span></div></a>'; }
+  function closeAll() { openCart(false); var sbx = $('#sb'); if (sbx) sbx.classList.remove('open'); $('#mnav').classList.remove('open'); $('#checkout-modal').classList.remove('open'); var f = $('#fpanel'); if (f) f.classList.remove('open'); $('#ov').classList.remove('on'); }
   function events() {
     document.addEventListener('click', function (e) {
       var t = e.target.closest('button,a,[data-close-modal]'); if (!t) return;
@@ -424,8 +425,8 @@
       if (t.id === 'open-cart' || t.id === 'b-cart') openCart(true);
       else if (t.id === 'close-cart') openCart(false);
       else if (t.id === 'burger') { $('#mnav').classList.add('open'); $('#ov').classList.add('on'); }
-      else if (t.id === 'open-search' || t.id === 'b-search') { $('#sb').classList.add('open'); $('#sq').focus(); }
-      else if (t.id === 'close-search') $('#sb').classList.remove('open');
+      else if (t.id === 'open-search' || t.id === 'b-search') { closeAll(); $('#sb').classList.add('open'); $('#ov').classList.add('on'); $('#sq').focus(); }
+      else if (t.id === 'close-search') closeAll();
       else if (t.hasAttribute('data-close-modal')) closeAll();
       else if (t.dataset.inc) { kk(t.dataset.inc).q++; saveCart(); }
       else if (t.dataset.dec) { var l = kk(t.dataset.dec); l.q = Math.max(1, l.q - 1); saveCart(); }
@@ -440,12 +441,11 @@
     var hd = $('#header'), sc = function () { hd.classList.toggle('scrolled', window.scrollY > 30); }; window.addEventListener('scroll', sc, { passive: true }); sc();
     $('#news').addEventListener('submit', function (e) { e.preventDefault(); location.href = 'mailto:' + S.support_email + '?subject=Subscribe&body=Please add ' + encodeURIComponent(e.target.querySelector('input').value) + ' to your mailing list.'; });
     $('#sq').addEventListener('input', function (e) {
-      var q = e.target.value.toLowerCase().trim();
-      $('#hits').innerHTML = !q ? '' : P.filter(function (p) { return (p.title + ' ' + (p.short_description || '') + ' ' + (p.notes || []).join(' ')).toLowerCase().indexOf(q) > -1; }).slice(0, 8).map(function (p) {
-        return '<a class="hit" href="/product?id=' + encodeURIComponent(p.id) + '"><img src="' + esc(p.images[0]) + '" alt=""><div><div style="font-family:var(--font-sub)">' + esc(p.title) + '</div><div class="price" style="padding:0">' + money(p.price) + '</div></div></a>';
-      }).join('') || '<p class="empty">No results</p>';
+      var q = e.target.value.toLowerCase().trim(), r = !q ? [] : P.filter(function (p) { return (p.title + ' ' + (p.brand || '') + ' ' + (p.type || '') + ' ' + (p.short_description || '') + ' ' + (p.notes || []).join(' ')).toLowerCase().indexOf(q) > -1; });
+      $('#sdef').hidden = !!q && r.length > 0;
+      $('#hits').innerHTML = !q ? '' : r.length ? '<h6>' + r.length + (r.length === 1 ? ' product' : ' products') + '</h6>' + r.slice(0, 8).map(hitHTML).join('') + (r.length > 8 ? '<a class="sall" href="/shop?q=' + encodeURIComponent(q) + '">See all ' + r.length + ' results</a>' : '') : '<p class="snone">Nothing matches “' + esc(e.target.value.trim()) + '”. Try a brand, a note such as rose or oud, or pick from below.</p>';
     });
-    $('#sq').addEventListener('keydown', function (e) { if (e.key === 'Enter') location.href = '/shop?q=' + encodeURIComponent(e.target.value); if (e.key === 'Escape') $('#sb').classList.remove('open'); });
+    $('#sq').addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.value.trim()) location.href = '/shop?q=' + encodeURIComponent(e.target.value.trim()); if (e.key === 'Escape') closeAll(); });
   }
 
   function swipe(el, cb) {
