@@ -3,23 +3,28 @@
     {
       "code": "FIRST5",
       "percent": 5,
-      "min_items": 1
+      "min_items": 1,
+      "max_discount": null
     },
     {
       "code": "BUY3",
       "percent": 30,
-      "min_items": 3
+      "min_items": 3,
+      "max_discount": 900
     },
     {
       "code": "WELCOME40",
       "percent": 40,
-      "min_items": 1
+      "min_items": 1,
+      "max_discount": 600
     }
   ],
   "shipping_fee": 49,
   "free_shipping_above": 999,
   "razorpay_key_id": "rzp_test_TyY2VwmXyCpL2r",
   "cod_enabled": true,
+  "delivery_days_min": 3,
+  "delivery_days_max": 6,
   "order_thanks_message": "Your order has been placed successfully.",
   "return_window_days": 5,
   "payment_logos": [
@@ -43,7 +48,5 @@
       "name": "Apple Pay",
       "image": "/images/uploads/pay-applepay.png"
     }
-  ],
-  "delivery_days_min": 3,
-  "delivery_days_max": 6
+  ]
 }
