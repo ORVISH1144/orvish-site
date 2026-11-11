@@ -544,6 +544,19 @@ collections:
         name: min_items
         widget: number
         default: 1
+      - label: How many times one customer can use this coupon (leave empty or 0 for no limit)
+        name: max_uses
+        widget: number
+        value_type: int
+        min: 0
+        required: false
+        hint: 1 = once per customer, 2 = twice. Checked against the customer's phone number and email in your order sheet.
+      - label: Can be used together with bundle prices (Buy 2, Buy 3)
+        name: stack_with_bundles
+        widget: boolean
+        default: true
+        required: false
+        hint: Switch off for big coupons, so a customer cannot add them on top of a bundle price.
       - label: Maximum discount in ₹ (leave empty or 0 for no limit)
         name: max_discount
         widget: number

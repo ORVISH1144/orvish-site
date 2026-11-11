@@ -799,3 +799,15 @@ body[data-page=home] .card .badge:not(.so){display:none}
   .acct-tabs{display:flex}.acct-tabs button{flex:1;padding:10px 8px}
 }
 @media(prefers-reduced-motion:reduce){.cart-count.bump{animation:none}}
+
+/* v53 – no badges on product cards (Sold out stays); bundle choices with real prices */
+.card .badge:not(.so){display:none}
+.bundles{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.bundles b{font-size:14px}
+.bnd{position:relative;align-items:flex-start;text-align:left;gap:3px;padding:12px 14px;border:1px solid #22071333;border-radius:14px;background:#fff;transition:border-color .2s,box-shadow .2s,background .2s}
+.bnd:hover{border-color:var(--maroon)}
+.bnd span{font:600 13px var(--font-accent);opacity:.75}
+.bnd strong{font:700 16px var(--font-accent);color:var(--ink)}
+.bnd em{align-self:flex-start;border-radius:99px;padding:2px 9px;background:#0c6b3a14;color:#0c6b3a;font:600 11.5px var(--font-accent)}
+.bnd.on{background:#fffaf0;border-color:var(--maroon);box-shadow:0 0 0 1px var(--maroon);color:var(--ink)}
+.bnd.on em{background:#0c6b3a;color:#fff}.bnd.on span{opacity:1;color:var(--maroon)}
