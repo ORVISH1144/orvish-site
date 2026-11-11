@@ -646,3 +646,41 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 /* v43 – home page: no "Best seller" or discount badges on product cards (Sold out stays) */
 body[data-page=home] .card .badge:not(.so){display:none}
+
+/* v44 – applied coupon states */
+.cp.on{border-style:solid;border-color:#0c6b3a;background:linear-gradient(90deg,#f3fbf5,#dff5e7 140%)}
+.cp>div{flex:1;min-width:0}
+.cpb{flex:none;display:inline-flex;align-items:center;border-radius:99px;padding:3px 10px;background:#0c6b3a;color:#fff;font:600 11px var(--font-accent);animation:cppop .35s cubic-bezier(.3,1.6,.5,1)}
+.cpb.wait{background:#9a5b00}
+.cp button.on{color:var(--ink);opacity:.7}.cp button.on svg{width:16px;height:16px}
+.cchips button.on{border-style:solid;border-color:#0c6b3a;background:#eaf7ee}.cchips button.on svg{stroke:#0c6b3a}.cchips button.on b{color:#0c6b3a}
+.cchips button span{flex:1;min-width:0}
+.cchips em{flex:none;font-style:normal;border-radius:99px;padding:2px 9px;background:#0c6b3a;color:#fff;font:600 10.5px var(--font-accent)}
+.cotag{display:inline-flex;align-items:center;gap:5px;margin-left:6px;border-radius:99px;padding:2px 9px;background:#eaf7ee;color:#0c6b3a;font:600 11px var(--font-accent);vertical-align:middle}
+.cotag svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7}
+@media(prefers-reduced-motion:reduce){.cpb{animation:none}}
+
+/* v45 – cart summary: joined coupon field, applied coupon card, tidy totals */
+.cextra .disc{display:flex;gap:0;margin:0 0 6px;border:1px solid #2207133d;border-radius:12px;background:#fff;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.cextra .disc:focus-within{border-color:var(--maroon);box-shadow:0 0 0 3px #76194122}
+.cextra .disc input{flex:1;min-width:0;border:0;border-radius:0;background:none;padding:12px 14px;font:500 14px var(--font-accent);letter-spacing:.04em;outline:0;text-transform:uppercase}
+.cextra .disc input::placeholder{text-transform:none;letter-spacing:0;font-weight:400;opacity:.6}
+.cextra .disc button{flex:none;border:0;background:var(--maroon);color:var(--gold);padding:0 20px;font:600 13px var(--font-accent);letter-spacing:.06em;cursor:pointer}
+.cextra .disc button:hover{background:#5e1332}
+.cextra #dc-msg:empty{display:none}.cextra #dc-msg{margin:0 0 8px;color:#a11}
+.capp{display:flex;align-items:center;gap:12px;border:1px solid #0c6b3a;border-radius:12px;background:#eaf7ee;padding:11px 14px;margin-bottom:6px;animation:cppop .35s cubic-bezier(.3,1.6,.5,1)}
+.capp svg{width:22px;height:22px;stroke:#0c6b3a;fill:none;stroke-width:1.6;flex:none}.capp div{flex:1;min-width:0}
+.capp b{display:block;font:700 14px var(--font-accent);color:#0c6b3a;letter-spacing:.03em}.capp small{font:400 12px var(--font-accent);color:#0c6b3a}
+.capp .lnk{font:600 12px var(--font-accent);text-decoration:underline;color:var(--ink)}
+.cmore{margin:2px 0 12px}.cmore summary{cursor:pointer;font:600 12px var(--font-accent);color:var(--maroon);padding:4px 0;list-style:none;display:flex;align-items:center;gap:6px}
+.cmore summary::-webkit-details-marker{display:none}.cmore summary::after{content:"+";font-weight:400;font-size:15px;line-height:1}.cmore[open] summary::after{content:"–"}
+.cmore .cchips{margin:6px 0 0}
+.csum{border:1px solid var(--line);border-radius:14px;background:#ffffff8c;padding:6px 14px 12px}
+.csum .row{margin:0;padding:9px 0;font:400 14px var(--font-accent);border-bottom:1px solid var(--line)}
+.csum .row.off{color:#0c6b3a;font-weight:600}.csum .free{color:#0c6b3a;font-weight:600}
+.csum .row.total{border-bottom:0;padding-top:12px;align-items:flex-end;font:700 19px var(--font-accent);color:var(--maroon)}
+.csum .row.total small{display:block;font:400 11px var(--font-accent);color:var(--ink);opacity:.6;margin-top:1px}
+.csum .saved{margin-top:4px}
+@media(prefers-reduced-motion:reduce){.capp{animation:none}}
+.cextra{margin-top:18px}
+@media(max-width:640px),(max-height:720px){.d-foot .paylogos{display:none}}
