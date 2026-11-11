@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Rebuilds everything that is generated from the product files:
+   data/products.json, one real page per product at /p/<id>/ (title, description, image and
+   structured data are in the page itself, so Google and WhatsApp/Facebook previews see them), and sitemap.xml.
+   Runs in the GitHub workflow on every product change; run it by hand after editing product.html."""
+import json, glob, os, re, shutil, html
+from urllib.parse import quote
+SITE = 'https://www.orvish.com'
+items = [json.load(open(f, encoding='utf8')) for f in glob.glob('data/products/*.json')]
+items.sort(key=lambda p: (p.get('position', 100), p.get('title', '')))
+for p in items: p.pop('position', None)
+json.dump({'products': items}, open('data/products.json', 'w', encoding='utf8'), indent=2, ensure_ascii=False)
+shown = [p for p in items if not p.get('hidden')]
+commerce = json.load(open('data/commerce.json', encoding='utf8'))
+tpl = open('product.html', encoding='utf8').read().replace('href="css/', 'href="/css/').replace('src="js/', 'src="/js/')
+esc = lambda t: html.escape(str(t or ''), quote=True)
+absu = lambda u: u if re.match(r'https?://', u or '') else SITE + quote(u or '/images/share.jpg', safe='/')
+def plain(md):
+    t = re.sub(r'[#*_`>]+', '', str(md or '')); t = re.sub(r'\[([^\]]*)\]\([^)]*\)', r'\1', t); return re.sub(r'\s+', ' ', t).strip()
+def clip(t, n):
+    return t if len(t) <= n else t[:n - 1].rsplit(' ', 1)[0].rstrip(',.;:') + '…'
+keep = set()
+for p in shown:
+    pid = p['id']; keep.add(pid); url = f'{SITE}/p/{quote(pid)}/'
+    imgs = [absu(i) for i in (p.get('images') or [])] or [SITE + '/images/share.jpg']
+    brand = p.get('brand') or ''; price = p.get('price') or 0; notes = ', '.join(p.get('notes') or [])
+    title = clip(f"{p['title']} | Buy Online – ORVISH", 70)
+    free = commerce.get('free_shipping_above')
+    desc = clip(' '.join(x for x in [
+        f"Buy {p['title']}{' by ' + brand if brand else ''} online at ORVISH for ₹{price:,}.",
+        f"Notes of {notes.lower()}." if notes else '',
+        plain(p.get('short_description') or ''),
+        'Authentic, with express shipping across India' + (f' and free shipping above ₹{free}.' if free else '.')] if x), 160)
+    ld = [{'@context': 'https://schema.org', '@type': 'Product', 'name': p['title'], 'image': imgs, 'description': clip(plain(p.get('description') or p.get('short_description') or p['title']), 500), 'sku': pid,
+           'offers': {'@type': 'Offer', 'url': url, 'priceCurrency': 'INR', 'price': price, 'availability': 'https://schema.org/' + ('InStock' if p.get('in_stock', True) else 'OutOfStock'), 'itemCondition': 'https://schema.org/NewCondition'}},
+          {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+              {'@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': SITE + '/'}, {'@type': 'ListItem', 'position': 2, 'name': 'Shop', 'item': SITE + '/shop'}, {'@type': 'ListItem', 'position': 3, 'name': p['title'], 'item': url}]}]
+    if brand: ld[0]['brand'] = {'@type': 'Brand', 'name': brand}
+    rd = commerce.get('return_window_days'); fee = commerce.get('shipping_fee') or 0
+    if isinstance(rd, (int, float)) and rd > 0:
+        ld[0]['offers']['hasMerchantReturnPolicy'] = {'@type': 'MerchantReturnPolicy', 'applicableCountry': 'IN', 'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow', 'merchantReturnDays': int(rd)}
+    ld[0]['offers']['shippingDetails'] = {'@type': 'OfferShippingDetails', 'shippingRate': {'@type': 'MonetaryAmount', 'value': 0 if (free and price >= free) else fee, 'currency': 'INR'},
+        'shippingDestination': {'@type': 'DefinedRegion', 'addressCountry': 'IN'},
+        'deliveryTime': {'@type': 'ShippingDeliveryTime', 'handlingTime': {'@type': 'QuantitativeValue', 'minValue': 0, 'maxValue': 1, 'unitCode': 'DAY'},
+                         'transitTime': {'@type': 'QuantitativeValue', 'minValue': int(commerce.get('delivery_days_min') or 3), 'maxValue': int(commerce.get('delivery_days_max') or 6), 'unitCode': 'DAY'}}}
+    head = (f'<title>{esc(title)}</title><meta name="description" content="{esc(desc)}"><link rel="canonical" href="{url}">'
+            f'<meta property="og:type" content="product"><meta property="og:title" content="{esc(p["title"])}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}">'
+            f'<meta property="og:image" content="{esc(imgs[0])}"><meta property="product:price:amount" content="{price}"><meta property="product:price:currency" content="INR"><meta name="twitter:card" content="summary_large_image">'
+            + ''.join(f'<script type="application/ld+json" data-static-ld>{json.dumps(x, ensure_ascii=False).replace("</", "<\\/")}</script>' for x in ld))
+    page = re.sub(r'<title>.*?</title><meta name="description" content="[^"]*">', lambda m: head, tpl, count=1, flags=re.S)
+    page = re.sub(r'<meta property="og:image" content="https://www\.orvish\.com/images/share\.jpg">', '', page, count=1)
+    fallback = (f'<noscript><h1>{esc(p["title"])}</h1><img src="{esc(imgs[0])}" alt="{esc(p["title"])}" width="400"><p>{esc(brand)}</p><p>₹{price:,}</p><p>{esc(plain(p.get("description") or ""))}</p></noscript>')
+    page = page.replace('<div class="pdp" id="pdp"></div>', '<div class="pdp" id="pdp">' + fallback + '</div>', 1)
+    assert 'data-static-ld' in page and fallback in page, 'product.html template changed: update tools/build.py'
+    os.makedirs(f'p/{pid}', exist_ok=True); open(f'p/{pid}/index.html', 'w', encoding='utf8').write(page)
+for d in glob.glob('p/*'):
+    if os.path.isdir(d) and os.path.basename(d) not in keep: shutil.rmtree(d)
+# plain links to every product inside the home and shop pages, so search engines find them without running the page script
+links = '<noscript><ul>' + ''.join(f'<li><a href="/p/{quote(p["id"])}/">{esc(p["title"])}</a></li>' for p in shown) + '</ul></noscript>'
+for f in ('index.html', 'shop.html'):
+    t = open(f, encoding='utf8').read(); assert '<!--plinks-->' in t, f + ' lost its <!--plinks--> marker'
+    open(f, 'w', encoding='utf8').write(re.sub(r'<!--plinks-->.*?<!--/plinks-->', lambda m: '<!--plinks-->' + links + '<!--/plinks-->', t, flags=re.S))
+pages = json.load(open('data/pages.json', encoding='utf8'))['pages']
+urls = [SITE + '/', SITE + '/shop'] + [f'{SITE}/p/{quote(p["id"])}/' for p in shown] + [SITE + '/page?p=' + x['slug'] for x in pages]
+open('sitemap.xml', 'w', encoding='utf8').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join('  <url><loc>%s</loc></url>\n' % u.replace('&', '&amp;') for u in urls) + '</urlset>\n')
+print('built', len(shown), 'product pages,', len(urls), 'sitemap urls')

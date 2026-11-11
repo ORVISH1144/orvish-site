@@ -21,6 +21,8 @@
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
     check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    card: '<rect x="3" y="5.5" width="18" height="13" rx="2.500"/><path d="M3 10h18M7 15h4"/>',
+    cash: '<rect x="3" y="6.500" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.500"/><path d="M6.500 9.500v5M17.500 9.500v5"/>',
     phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
     pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.500C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
     locate: '<circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
@@ -120,7 +122,7 @@
     var f = function (n) { return new Date(Date.now() + n * 86400000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); };
     return f(a) + ' – ' + f(b);
   }
-  function couponText(d) { return d.percent + '% off ' + (Number(d.min_items) > 1 ? 'when you buy ' + d.min_items + ' or more' : 'your order'); }
+  function couponText(d) { return d.percent + '% off ' + (Number(d.min_items) > 1 ? 'when you buy ' + d.min_items + ' or more' : 'your order') + (Number(d.max_discount) > 0 ? ', up to ' + money(Number(d.max_discount)) : ''); }
   var onCoupon = null;   /* set by the product page so its coupon cards redraw */
   function pickedCoupon() { return discount ? discount.code : store.get('orvish_coupon', ''); }
   function applyCode(c) {
@@ -206,6 +208,8 @@
       window.addEventListener('resize', up); setTimeout(up, 400); try { new MutationObserver(up).observe(r, { childList: true }); } catch (e) {}
     });
   }
+  function purl(id) { return '/p/' + encodeURIComponent(id) + '/'; }
+  function pageId() { var m = /^\/p\/([^\/]+)/.exec(location.pathname); return qs.get('id') || (m ? decodeURIComponent(m[1]) : ''); }
   function payLogos() {
     var L = (S.payment_logos || []).filter(function (x) { return x && x.image; });
     if (L.length) return '<div class="paylogos img" aria-label="Accepted payments">' + L.map(function (x) { return '<span class="pl"><img src="' + esc(x.image) + '" alt="' + esc(x.name || 'Payment method') + '" loading="lazy"></span>'; }).join('') + '</div>';
@@ -226,7 +230,7 @@
   function geo() {
     var c = store.get('orvish_geo', null); if (c && c.city && Date.now() - c.t < 43200000) return Promise.resolve(c);
     var save = function (g) { g.t = Date.now(); store.set('orvish_geo', g); return g; };
-    var j = function (u) { return fetch(u).then(function (x) { return x.json(); }); };
+    var j = function (u) { var ac = window.AbortController ? new AbortController() : null; if (ac) setTimeout(function () { ac.abort(); }, 2000); return fetch(u, ac ? { signal: ac.signal } : {}).then(function (x) { return x.json(); }); };
     var mk = function (c, r, city, zip) { city = String(city || '').trim(); zip = String(zip || '').trim(); if (!c || !city) throw 0; return save({ c: String(c).slice(0, 40), r: String(r || '').slice(0, 40), city: (city + (zip ? ' ' + zip : '')).slice(0, 40) }); };
     return j('https://ipapi.co/json/').then(function (d) { if (!d || d.error) throw 0; return mk(d.country_name, d.region, d.city, d.postal); })
       .catch(function () { return j('https://ipwho.is/').then(function (d) { if (!d || d.success === false) throw 0; return mk(d.country, d.region, d.city, d.postal); }); })
@@ -239,9 +243,13 @@
       var sid = sessionStorage.getItem('orvish_sid'); if (!sid) { sid = Math.random().toString(36).slice(2, 12); sessionStorage.setItem('orvish_sid', sid); }
       var ref = ''; try { ref = document.referrer && new URL(document.referrer).hostname.replace(/^www\./, ''); if (ref === location.hostname.replace(/^www\./, '')) ref = ''; } catch (e) {}
       var src = (qs.get('utm_source') || (qs.get('fbclid') ? 'facebook' : '') || (qs.get('gclid') ? 'google-ads' : '') || sessionStorage.getItem('orvish_src') || '').slice(0, 40); if (src) sessionStorage.setItem('orvish_src', src);
-      Promise.all([fbReady(), geo()]).then(function (a) {
-        if (!a[0]) return; var g = a[1], n = new Date();
-        a[0].db.collection('visits').add({ t: Date.now(), ev: ev, p: location.pathname.slice(0, 80), pid: String(pid || '').slice(0, 80), ref: String(ref || '').slice(0, 60), src: src, c: String(g.c || '').slice(0, 40), r: String(g.r || '').slice(0, 40), city: String(g.city || '').slice(0, 40), dev: window.innerWidth < 821 ? 'Mobile' : 'Desktop', sid: sid }).catch(function () {});
+      var cfg = S.firebase_config, wait = new Promise(function (ok) { setTimeout(function () { ok(store.get('orvish_geo', null) || { c: '', r: '', city: '' }); }, 2500); });
+      Promise.race([geo(), wait]).then(function (g) {
+        var sv = function (v) { return { stringValue: String(v || '') }; };
+        var doc = { fields: { t: { integerValue: String(Date.now()) }, ev: sv(ev), p: sv(location.pathname.slice(0, 80)), pid: sv(String(pid || '').slice(0, 80)), ref: sv(String(ref || '').slice(0, 60)), src: sv(src), c: sv(String(g.c || '').slice(0, 40)), r: sv(String(g.r || '').slice(0, 40)), city: sv(String(g.city || '').slice(0, 40)), dev: sv(window.innerWidth < 821 ? 'Mobile' : 'Desktop'), sid: sv(sid) } };
+        /* written straight to the database so a quick visit still counts; if that is refused, fall back to the full Firebase library */
+        var viaSdk = function () { fbReady().then(function (f) { if (!f) return; var d = {}; Object.keys(doc.fields).forEach(function (k) { d[k] = k === 't' ? Number(doc.fields.t.integerValue) : doc.fields[k].stringValue; }); f.db.collection('visits').add(d).catch(function () {}); }); };
+        fetch('https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(cfg.projectId) + '/databases/(default)/documents/visits?key=' + encodeURIComponent(cfg.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(doc), keepalive: true }).then(function (r) { if (!r.ok) viaSdk(); }).catch(viaSdk);
       });
     } catch (e) {}
   }
@@ -259,13 +267,13 @@
     if (!inStock(p, label)) return; label = label || '';
     var l = cart.filter(function (x) { return x.id === id && (x.v || '') === label; })[0];
     if (l) l.q += q || 1; else cart.push({ id: id, v: label, q: q || 1 });
-    saveCart(); toast('Added to cart'); logVisit('cart', id); fbq_('track', 'AddToCart', { content_ids: [id], content_name: p.title, content_type: 'product', value: unit({ id: id, v: label }).price * (q || 1), currency: 'INR' });
+    saveCart(); toast('Added to cart'); $$('.cart-count').forEach(function (e) { e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump'); }); logVisit('cart', id); fbq_('track', 'AddToCart', { content_ids: [id], content_name: p.title, content_type: 'product', value: unit({ id: id, v: label }).price * (q || 1), currency: 'INR' });
   }
   function totals() {
     var items = 0, sub = 0;
     cart.forEach(function (l) { if (findP(l.id)) { items += l.q; sub += unit(l).price * l.q; } });
     var off = 0;
-    if (discount && items >= (discount.min_items || 1)) off = Math.round(sub * discount.percent) / 100;
+    if (discount && items >= (discount.min_items || 1)) { off = Math.round(sub * discount.percent) / 100; if (Number(discount.max_discount) > 0) off = Math.min(off, Number(discount.max_discount)); }
     var after = sub - off, thr = S.free_shipping_above || 0;
     var ship = items === 0 ? 0 : (thr && after >= thr ? 0 : (S.shipping_fee || 0));
     return { items: items, sub: sub, off: off, ship: ship, total: after + ship };
@@ -318,9 +326,9 @@
       '<div class="field"><label>Address (house or flat no., building, street)</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc(saved('address')) + '</textarea></div>' +
       '<div class="two"><div class="field"><label>City</label><input name="city" required value="' + esc(saved('city')) + '"></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric" value="' + esc(saved('pin')) + '"></div></div>' +
       (saved('address') ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') + '</div>' +
-      '<h6 class="co-h">Payment</h6><div class="pay">' + ms.map(function (x, i) { return '<label><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '> ' + x[1] + '</label>'; }).join('') + '</div>' +
+      '<h6 class="co-h">Payment</h6><div class="pay2">' + ms.map(function (x, i) { var on = x[0] === 'online'; return '<label class="pm"><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '><span class="pmi">' + ico(on ? 'card' : 'cash') + '</span><span class="pmt"><b>' + (on ? 'Pay online' : 'Cash on delivery') + '</b><small>' + (on ? 'UPI, cards, netbanking and wallets' : 'Pay when your order arrives') + '</small></span><span class="pmr"></span></label>'; }).join('') + '</div><div class="csum co">' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' + (t.off && discount ? '<div class="row"><span>Discount <span class="cotag">' + ico('ticket') + esc(discount.code) + ' applied</span></span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
-      '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
+      '<div class="row total"><span>Total<small>Inclusive of all taxes</small></span><span>' + money(t.total) + '</span></div></div>' +
       '<div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
     $('#cart').classList.remove('open'); m.classList.add('open'); $('#ov').classList.add('on');
     var fm0 = $('#co-form'), flds = $('#co-fields'), sum0 = $('#co-saved');
@@ -422,7 +430,7 @@
     if (!/orvish/i.test(document.title)) document.title = (document.title ? document.title + ' – ' : '') + 'ORVISH';
     renderCart();
   }
-  function hitHTML(p) { return '<a class="hit" href="/product?id=' + encodeURIComponent(p.id) + '"><img src="' + esc(p.images[0]) + '" alt="" loading="lazy"><div>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '<b>' + esc(p.title) + '</b><span>' + money(p.price) + (pct(p) ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</span></div></a>'; }
+  function hitHTML(p) { return '<a class="hit" href="' + purl(p.id) + '"><img src="' + esc(p.images[0]) + '" alt="" loading="lazy"><div>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '<b>' + esc(p.title) + '</b><span>' + money(p.price) + (pct(p) ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</span></div></a>'; }
   function closeAll() { openCart(false); var sbx = $('#sb'); if (sbx) sbx.classList.remove('open'); $('#mnav').classList.remove('open'); $('#checkout-modal').classList.remove('open'); var f = $('#fpanel'); if (f) f.classList.remove('open'); $('#ov').classList.remove('on'); }
   function events() {
     document.addEventListener('click', function (e) {
@@ -462,7 +470,7 @@
   /* views */
   function pct(p) { return p.compare_at_price && p.compare_at_price > p.price ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0; }
   function cardHTML(p) {
-    var sale = pct(p), so = !inStock(p), href = '/product?id=' + encodeURIComponent(p.id), multi = vs(p);
+    var sale = pct(p), so = !inStock(p), href = '' + purl(p.id), multi = vs(p);
     return '<div class="card"><a class="img" href="' + href + '">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (p.best_seller && !so ? '<span class="badge l">Best seller</span>' : '') +
       '<img loading="lazy" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" src="' + esc(p.images[1]) + '" alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
@@ -552,12 +560,13 @@
     return '<div class="notes"><h4>Fragrance notes</h4><div>' + [['Top notes', n.top], ['Heart notes', n.heart], ['Base notes', n.base]].filter(function (x) { return x[1]; }).map(function (x) { return '<div><b>' + x[0] + '</b><span>' + esc(x[1]) + '</span></div>'; }).join('') + '</div></div>';
   }
   function product() {
-    var p = findP(qs.get('id')), el = $('#pdp');
+    var p = findP(pageId()), el = $('#pdp');
     if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="/shop">Back to shop</a></p>'; return; }
     document.title = p.title + ' – ORVISH';
     (function () { var rt = rateOf(p.id), m = document.querySelector('meta[name=description]'); if (m) m.content = (p.short_description || p.title) + ' Buy online at ORVISH with express shipping across India.';
-      var ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.title, image: p.images.map(function (i) { return new URL(i, location.origin).href; }), description: p.short_description || p.title, sku: p.id, offers: { '@type': 'Offer', url: location.href, priceCurrency: 'INR', price: p.price, availability: 'https://schema.org/' + (inStock(p) ? 'InStock' : 'OutOfStock') } };
+      var ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.title, image: p.images.map(function (i) { return new URL(i, location.origin).href; }), description: p.short_description || p.title, sku: p.id, offers: { '@type': 'Offer', url: 'https://www.orvish.com' + purl(p.id), priceCurrency: 'INR', price: p.price, availability: 'https://schema.org/' + (inStock(p) ? 'InStock' : 'OutOfStock') } };
       if (p.brand) ld.brand = { '@type': 'Brand', name: p.brand }; if (rt) ld.aggregateRating = { '@type': 'AggregateRating', ratingValue: rt.avg.toFixed(1), reviewCount: rt.n };
+      $$('script[data-static-ld]').forEach(function (x) { x.remove(); }); if (!$('link[rel=canonical]')) { var cn = document.createElement('link'); cn.rel = 'canonical'; cn.href = 'https://www.orvish.com' + purl(p.id); document.head.appendChild(cn); }
       var sc = document.createElement('script'); sc.type = 'application/ld+json'; sc.textContent = JSON.stringify(ld); document.head.appendChild(sc); })();
     fbq_('track', 'ViewContent', { content_ids: [p.id], content_name: p.title, content_type: 'product', value: p.price, currency: 'INR' }); var q = 1, v = vs(p), cur = v ? (v.filter(function (x) { return x.in_stock !== false; })[0] || v[0]).label : '';
     function info() { var u = unit({ id: p.id, v: cur, q: q }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
@@ -646,6 +655,8 @@
     var pg = PAGES.filter(function (x) { return x.slug === qs.get('p'); })[0], el = $('#page-body');
     if (!el) return;
     if (!pg) { el.innerHTML = '<h2>Page not found</h2>'; return; }
+    var md0 = document.querySelector('meta[name=description]'), tx = String(pg.body || '').replace(/[#*_`>\[\]]+/g, '').replace(/\s+/g, ' ').trim(); if (md0 && tx) md0.content = tx.slice(0, 155);
+    var cn0 = document.createElement('link'); cn0.rel = 'canonical'; cn0.href = 'https://www.orvish.com/page?p=' + encodeURIComponent(pg.slug); document.head.appendChild(cn0);
     document.title = pg.title + ' – ORVISH'; el.innerHTML = '<h1 style="font-size:40px">' + esc(pg.title) + '</h1>' + md(pg.body);
   }
   /* order helpers shared by the tracking page and the account page */
@@ -662,7 +673,7 @@
     if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } }
     var ids = (list || []).map(function (x) { return x.id; });
     var bought = P.filter(function (pp) { return ids.indexOf(pp.id) > -1 || (!ids.length && String(itemsText || '').toLowerCase().indexOf(pp.title.toLowerCase()) > -1); });
-    return bought.length ? '<div class="revlinks"><b>Bought it? Share your review</b>' + bought.map(function (pp) { return '<a class="btn secondary" href="/product?id=' + encodeURIComponent(pp.id) + '&oid=' + encodeURIComponent(oid) + '&ph=' + encodeURIComponent(ph) + '#reviews">Review ' + esc(pp.title) + '</a>'; }).join('') + '</div>' : '';
+    return bought.length ? '<div class="revlinks"><b>Bought it? Share your review</b>' + bought.map(function (pp) { return '<a class="btn secondary" href="' + purl(pp.id) + '?oid=' + encodeURIComponent(oid) + '&ph=' + encodeURIComponent(ph) + '#reviews">Review ' + esc(pp.title) + '</a>'; }).join('') + '</div>' : '';
   }
   /* return request (the order script checks the order is delivered and still inside the return window) */
   function returnBox(box, id, ph, d, onDone) {
@@ -766,9 +777,12 @@
         $('#tab-details').innerHTML = '<form id="df" class="acct-card"><h3>Delivery details</h3><p class="sub">We fill these in for you at checkout, so you never have to type them again.</p>' +
           '<div class="two"><div class="field"><label>Full name</label><input name="name" autocomplete="name" value="' + (g('name') || esc(u.displayName || '')) + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || u.phoneNumber || '', false) + '</div></div>' +
           '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(u.email || saved('email')) + '"' + (u.email ? ' readonly' : '') + '></div>' +
-          '<div class="field"><label>Address</label><textarea name="address" rows="2" autocomplete="street-address">' + g('address') + '</textarea></div>' +
+          '<div class="locbtns"><button type="button" class="btn secondary" id="df-here">' + ico('locate') + 'Use my current location</button><button type="button" class="btn secondary" id="df-map">' + ico('pin') + 'Choose on map</button></div><input type="hidden" name="loc" value="' + g('loc') + '">' +
+          '<div class="field"><label>Address (house or flat no., building, street)</label><textarea name="address" rows="2" autocomplete="street-address">' + g('address') + '</textarea></div>' +
           '<div class="two"><div class="field"><label>City</label><input name="city" value="' + g('city') + '"></div><div class="field"><label>PIN code</label><input name="pin" pattern="[0-9]{6}" inputmode="numeric" value="' + g('pin') + '"></div></div>' +
           '<div class="msg" id="dmsg"></div><button class="btn" type="submit">Save details</button></form>';
+        var dfm = $('#df'), dset = function (pl) { if (pl.address) dfm.address.value = pl.address; if (pl.city) dfm.city.value = pl.city; if (pl.pin) dfm.pin.value = pl.pin; dfm.loc.value = pl.loc || ''; };
+        $('#df-here').onclick = function () { pickLocation(dset, true); }; $('#df-map').onclick = function () { pickLocation(dset, false); };
         $('#df').onsubmit = function (e) {
           e.preventDefault(); var m = $('#dmsg'), b = $('#df button[type=submit]'); b.disabled = true; m.className = 'msg'; m.textContent = 'Saving…';
           var fd = Object.fromEntries(new FormData(e.target)); fd.phone = fullPhone(fd.phone);
@@ -823,7 +837,7 @@
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})(); railNav();
-    document.body.classList.add('ready'); logVisit('view', document.body.dataset.page === 'product' ? qs.get('id') : '');
+    document.body.classList.add('ready'); logVisit('view', document.body.dataset.page === 'product' ? pageId() : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
     if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();

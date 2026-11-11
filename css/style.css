@@ -729,3 +729,73 @@ body[data-page=home] .card .badge:not(.so){display:none}
 .ccph:focus-within{border-color:var(--maroon)}
 .ccph span{display:grid;place-items:center;padding:0 11px;border-right:1px solid #dfdfdf;background:#7619410f;font:600 14px var(--font-accent);color:var(--maroon)}
 .field .ccph input{flex:1;min-width:0;border:0;border-radius:0;background:none;outline:0}
+
+/* v52 – design pass: forms, checkout, payment choices, cart, account, map picker */
+.field{margin-bottom:14px}
+.field label{font:600 12px var(--font-accent);margin-bottom:6px;color:#220713cc}
+.field input,.field textarea,.field select{border:1px solid #22071333;border-radius:12px;background:#fff;padding:13px 14px;font:400 15px var(--font-accent);outline:0;transition:border-color .2s,box-shadow .2s}
+.field textarea{resize:vertical;min-height:74px;line-height:1.45}
+.field input:hover,.field textarea:hover,.field select:hover{border-color:#22071366}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #76194122}
+.field input[readonly]{background:#2207130a;color:#220713a6}
+.ccph{border:1px solid #22071333;border-radius:12px;background:#fff;transition:border-color .2s,box-shadow .2s}
+.ccph:focus-within{border-color:var(--maroon);box-shadow:0 0 0 3px #76194122}
+.ccph span{padding:0 13px;border-right:1px solid #22071326;font-size:15px}
+.field .ccph input,.field .ccph input:focus{border:0;box-shadow:none;border-radius:0}
+.two{gap:12px}
+/* checkout sheet */
+.modal .box{border-radius:20px;padding:26px 26px 24px;box-shadow:0 30px 80px -30px #220713}
+.modal .box>h4{font-size:28px;margin-bottom:14px}
+.sum{border-radius:14px;background:#fff;border-color:#2207131f;padding:8px 12px}
+.sum-l img{border-radius:8px}
+.co-h{font:700 15px var(--font-accent);color:var(--ink);margin:18px 0 10px}
+.pay2{display:grid;gap:10px}
+.pm{position:relative;display:flex;align-items:center;gap:14px;border:1px solid #22071326;border-radius:14px;background:#fff;padding:14px 16px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s}
+.pm:hover{border-color:#22071366}
+.pm input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.pmi{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#7619410f;color:var(--maroon)}
+.pmi svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+.pmt{flex:1;min-width:0}.pmt b{display:block;font:600 15px var(--font-accent)}.pmt small{font:400 12.5px var(--font-accent);opacity:.7}
+.pmr{flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid #22071359;transition:border-color .2s,background .2s,box-shadow .2s}
+.pm:has(input:checked){border-color:var(--maroon);box-shadow:0 0 0 1px var(--maroon);background:#fffaf0}
+.pm:has(input:checked) .pmi{background:var(--maroon);color:var(--gold)}
+.pm:has(input:checked) .pmr{border-color:var(--maroon);background:var(--maroon);box-shadow:inset 0 0 0 4px #fff}
+.pm:has(input:focus-visible){outline:2px solid var(--maroon);outline-offset:2px}
+.csum.co{margin-top:16px;background:#fff}
+#co-form>.btn[type=submit]{margin-top:14px;padding:15px 20px}
+.co-saved{border-radius:14px;background:#fff}
+/* cart */
+.drawer .d-head h4{font-size:26px}
+.ship-bar{padding:12px 14px;margin-bottom:12px;border-radius:14px;background:#7619410d}
+.ship-bar p{margin-bottom:8px}
+.line{grid-template-columns:76px 1fr auto;gap:14px;padding:12px;margin-bottom:10px;border:1px solid #2207131f;border-radius:16px;background:#ffffffa6}
+.line img{width:76px;height:92px;border-radius:12px;object-fit:contain}
+.line .t{font:600 14px/1.35 var(--font-accent)}
+.line>.price{font:700 14px var(--font-accent);white-space:nowrap}
+.line .qty{border:1px solid #22071333;border-radius:99px;background:#fff}
+.rm{text-decoration:none;color:var(--maroon);opacity:1;font:600 12px var(--font-accent)}.rm:hover{text-decoration:underline}
+.cart-count.bump{animation:ccbump .45s cubic-bezier(.3,1.7,.5,1)}
+@keyframes ccbump{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+.toast{border-radius:14px;padding:13px 22px;box-shadow:0 14px 34px -14px #000;font-weight:600}
+/* account */
+.acct-tabs{display:inline-flex;gap:4px;margin:24px 0 18px;padding:4px;border:0;border-radius:99px;background:#7619410f}
+.acct-tabs button{margin:0;padding:9px 20px;border:0;border-radius:99px;opacity:1;color:var(--ink);font:600 13px var(--font-accent);transition:background .2s,color .2s}
+.acct-tabs button.on{background:var(--maroon);color:var(--gold)}
+.acct-card,.ocard{border-radius:18px;border-color:#2207131f;background:#fff}
+.acct-card h3{font-size:22px}
+.tcard{border-radius:18px;background:#fff;border-color:#2207131f}
+.authcard{background:#fff;border-color:#2207131f}
+/* map picker */
+.locbox{border-radius:20px;padding:20px 22px 22px}
+.locbar input{border:1px solid #22071333;border-radius:12px;padding:13px 14px;font-size:15px;outline:0;transition:border-color .2s,box-shadow .2s}
+.locbar input:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #76194122}
+.locbar .btn{text-transform:none;letter-spacing:0;font:600 13px var(--font-accent);border-radius:12px}
+.lochits{margin-top:8px}.lochits button{border-radius:10px;padding:10px 12px}
+.locmap{border-radius:16px;margin-top:12px}
+.locaddr{margin:12px 0 10px;padding:12px 14px;border:1px solid #2207131f;border-radius:12px;background:#fff;min-height:0}
+@media(max-width:640px){
+  .modal .box{border-radius:20px 20px 0 0;padding:22px 18px calc(20px + env(safe-area-inset-bottom))}
+  .locbox{border-radius:20px 20px 0 0}
+  .acct-tabs{display:flex}.acct-tabs button{flex:1;padding:10px 8px}
+}
+@media(prefers-reduced-motion:reduce){.cart-count.bump{animation:none}}

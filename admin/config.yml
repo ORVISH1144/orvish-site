@@ -544,6 +544,13 @@ collections:
         name: min_items
         widget: number
         default: 1
+      - label: Maximum discount in ₹ (leave empty or 0 for no limit)
+        name: max_discount
+        widget: number
+        value_type: int
+        min: 0
+        required: false
+        hint: Example – 10% off with a maximum of 200 means the customer never gets more than ₹200 off.
     - label: Shipping fee (₹)
       name: shipping_fee
       widget: number

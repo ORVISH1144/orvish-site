@@ -22,7 +22,7 @@ button.p{background:var(--maroon);color:var(--gold)}
 .chart u{display:block;width:100%;background:var(--maroon);border-radius:4px 4px 0 0;min-height:2px;text-decoration:none}.chart s{font-size:10px;opacity:.65;text-decoration:none;white-space:nowrap}.chart div:hover u{background:#a8325f}
 .feed{max-height:330px;overflow:auto}.feed div{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13px}.feed div:first-child{border:0}.feed small{opacity:.65}
 .tag{display:inline-block;border-radius:99px;padding:0 8px;font-size:11px;background:var(--gold);color:var(--maroon);margin-right:6px;font-weight:600}
-.empty{opacity:.6;padding:10px 0}.login{max-width:420px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:center}
+.empty{opacity:.6;padding:10px 0}.own{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}.own input{width:auto;padding:0;margin:0}.login{max-width:420px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:center}
 .login input{width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:8px;font:inherit}.err{color:#a11;min-height:20px;font-size:13px}
 @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi.live{grid-column:1/-1}.grid{grid-template-columns:1fr}}
 header.embed span{display:none}header.embed{padding-right:230px}
@@ -35,7 +35,7 @@ if(/embed=1/.test(location.search))document.querySelector('header').classList.ad
 var $=function(s){return document.querySelector(s)},app=$('#app'),esc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var load=function(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
 var auth,db,docs=[],range='today',unsub=null,titles={},timer;
-try{localStorage.setItem('orvish_notrack','true')}catch(e){}
+try{if(localStorage.getItem('orvish_notrack')===null)localStorage.setItem('orvish_notrack','true')}catch(e){}
 Promise.all([fetch('/data/site.json?v='+Date.now()).then(function(r){return r.json()}),fetch('/data/products.json?v='+Date.now()).then(function(r){return r.json()}).catch(function(){return{products:[]}})]).then(function(a){
   var c=a[0].firebase_config;(a[1].products||[]).forEach(function(p){titles[p.id]=p.title});
   if(!c||!c.apiKey){app.innerHTML='<p class="empty">Customer accounts (Firebase) are not set up yet, so traffic cannot be recorded.</p>';return}
@@ -50,8 +50,9 @@ function login(msg){
   $('#f').onsubmit=function(e){e.preventDefault();auth.signInWithEmailAndPassword(e.target.e.value,e.target.p.value).catch(function(){$('#er').textContent='Wrong email or password.'})};
 }
 function start(u){
-  app.innerHTML='<div class="bar"><div class="seg" id="seg"><button data-r="today" class="on">Today</button><button data-r="7">7 days</button><button data-r="30">30 days</button></div><span class="sp"></span><small>'+esc(u.email||u.phoneNumber||'')+'</small><button id="out">Log out</button></div><div id="dash"><p class="empty">Loading traffic…</p></div>';
+  app.innerHTML='<div class="bar"><div class="seg" id="seg"><button data-r="today" class="on">Today</button><button data-r="7">7 days</button><button data-r="30">30 days</button></div><span class="sp"></span><label class="own" title="When ticked, pages you open on this phone or computer are not counted as visits"><input type="checkbox" id="own"> Leave out my own visits (this device)</label><small>'+esc(u.email||u.phoneNumber||'')+'</small><button id="out">Log out</button></div><div id="dash"><p class="empty">Loading traffic…</p></div>';
   $('#out').onclick=function(){auth.signOut()};
+  var ow=$('#own');try{ow.checked=localStorage.getItem('orvish_notrack')!=='false'}catch(e){}ow.onchange=function(){try{localStorage.setItem('orvish_notrack',ow.checked?'true':'false')}catch(e){}};
   $('#seg').onclick=function(e){var b=e.target.closest('button');if(!b)return;range=b.dataset.r;[].forEach.call(document.querySelectorAll('#seg button'),function(x){x.classList.toggle('on',x===b)});fetchData(u)};
   fetchData(u);clearInterval(timer);timer=setInterval(draw,30000);
 }
