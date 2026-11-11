@@ -124,16 +124,18 @@
   }
   function couponText(d) { var n = Number(d.max_uses) || 0; return d.percent + '% off ' + (Number(d.min_items) > 1 ? 'when you buy ' + d.min_items + ' or more' : 'your order') + (Number(d.max_discount) > 0 ? ', up to ' + money(Number(d.max_discount)) : '') + (n === 1 ? ' · once per customer' : n === 2 ? ' · twice per customer' : n > 2 ? ' · ' + n + ' times per customer' : ''); }
   var onCoupon = null;   /* set by the product page so its coupon cards redraw */
+  var pendingQty = 0;    /* quantity chosen on the product page that is not in the cart yet */
   function pickedCoupon() { return discount ? discount.code : store.get('orvish_coupon', ''); }
-  function applyCode(c) {
+  function applyCode(c, pending) {
     c = String(c || '').trim().toUpperCase(); var say = function (x) { var m = $('#dc-msg'); if (m && $('#cart').classList.contains('open')) m.textContent = x; else toast(x); };
     var f = (S.discount_codes || []).filter(function (d) { return d.code.toUpperCase() === c; })[0], tt = totals(), ok = false;
     if (!c) { discount = null; store.set('orvish_coupon', ''); saveCart(); }
     else if (!f) say('This code is not valid');
     else {
       store.set('orvish_coupon', f.code);   /* remembered, so it applies as soon as the cart qualifies */
-      if (tt.items && tt.items < (f.min_items || 1)) { discount = null; saveCart(); say('Add ' + (f.min_items - tt.items) + ' more to use ' + f.code); }
-      else if (!tt.items) { discount = null; saveCart(); toast(f.code + ' selected. It applies when you add to cart'); ok = true; }
+      var min = f.min_items || 1, will = tt.items + (pending || 0);
+      if (tt.items < min && will < min) { discount = null; saveCart(); say('Add ' + (min - will) + ' more to use ' + f.code); }
+      else if (tt.items < min) { discount = null; saveCart(); toast(f.code + ' selected. It applies when you add to cart'); ok = true; }
       else { discount = f; if (!totals().off) { discount = null; saveCart(); say(f.code + ' cannot be used together with bundle prices'); } else { saveCart(); toast(f.code + ' applied'); ok = true; } }
     }
     if (onCoupon) onCoupon();
@@ -458,7 +460,7 @@
       else if (t.dataset.rm) { cart = cart.filter(function (l) { return key(l) !== t.dataset.rm; }); saveCart(); }
       else if (t.dataset.add) { e.preventDefault(); e.stopPropagation(); addToCart(t.dataset.add, 1); openCart(true); }
       else if (t.id === 'dc-apply') { if (($('#dc').value || '').trim()) applyCode($('#dc').value); else { $('#dc-msg').textContent = 'Type a coupon code first'; $('#dc').focus(); } }
-      else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} } applyCode(pickedCoupon() === t.dataset.coupon ? '' : t.dataset.coupon); }
+      else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} } applyCode(pickedCoupon() === t.dataset.coupon ? '' : t.dataset.coupon, t.dataset.copy ? pendingQty : 0); }
       else if (t.dataset.rail) { var rl = t.parentNode.querySelector('.rail'); if (rl) rl.scrollBy({ left: Number(t.dataset.rail) * rl.clientWidth * .8, behavior: 'smooth' }); }
       else if (t.id === 'checkout') openCheckout();
     });
@@ -601,11 +603,12 @@
       if ($('#pdx')) pdx();
     }
     function pdx() {
+      pendingQty = q;
       var where = [saved('city'), saved('pin')].filter(Boolean).join(' '), tt = totals(), thr = S.free_shipping_above || 0, price = info().u.price * q;
       var free = thr && price >= thr, cs = S.discount_codes || [];
       $('#pdx').innerHTML = '<button class="dlv" id="dlv" type="button">' + ico('pin') + '<span>' + (where ? 'Deliver to <b>' + esc(where) + '</b>' : 'Add your delivery location') + '</span>' + ico('edit') + '</button>' +
         '<div class="eta">' + ico('truck') + '<span>Standard delivery<b>Arrives ' + etaText() + '</b></span><em>' + (free || !S.shipping_fee ? 'Free' : money(S.shipping_fee)) + '</em></div>' +
-        (cs.length ? '<div class="cpn"><h6>' + ico('ticket') + 'Save extra with coupons</h6>' + cs.map(function (d) { return '<div class="cp' + (pickedCoupon() === d.code ? ' on' : '') + '"><div><b>' + esc(couponText(d).replace(/^./, function (c) { return c.toUpperCase(); })) + '</b><small>' + esc(d.code) + '</small></div>' + (function () { var on = pickedCoupon() === d.code, have = tt.items || q, need = on && have < (d.min_items || 1); return (on ? '<span class="cpb' + (need ? ' wait' : '') + '">' + (need ? 'Add ' + ((d.min_items || 1) - have) + ' more' : 'Applied') + '</span>' : '') + '<button type="button" data-coupon="' + esc(d.code) + '"' + (on ? ' class="on" aria-label="Remove coupon ' + esc(d.code) + '">' + ico('close') + 'Remove' : ' data-copy="1">' + ico('copy') + 'Copy') + '</button>'; })() + '</div>'; }).join('') + '</div>' : '');
+        (cs.length ? '<div class="cpn"><h6>' + ico('ticket') + 'Save extra with coupons</h6>' + cs.map(function (d) { return '<div class="cp' + (pickedCoupon() === d.code ? ' on' : '') + '"><div><b>' + esc(couponText(d).replace(/^./, function (c) { return c.toUpperCase(); })) + '</b><small>' + esc(d.code) + '</small></div>' + (function () { var on = pickedCoupon() === d.code, have = tt.items + q, need = on && have < (d.min_items || 1); return (on ? '<span class="cpb' + (need ? ' wait' : '') + '">' + (need ? 'Add ' + ((d.min_items || 1) - have) + ' more' : 'Applied') + '</span>' : '') + '<button type="button" data-coupon="' + esc(d.code) + '"' + (on ? ' class="on" aria-label="Remove coupon ' + esc(d.code) + '">' + ico('close') + 'Remove' : ' data-copy="1">' + ico('copy') + 'Copy') + '</button>'; })() + '</div>'; }).join('') + '</div>' : '');
       $('#dlv').onclick = function () { pickLocation(function (pl) { saveLocation(pl); pdx(); }, !where); };
     }
     onCoupon = function () { if ($('#pdx')) pdx(); };

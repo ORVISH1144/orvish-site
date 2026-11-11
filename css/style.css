@@ -811,3 +811,15 @@ body[data-page=home] .card .badge:not(.so){display:none}
 .bnd em{align-self:flex-start;border-radius:99px;padding:2px 9px;background:#0c6b3a14;color:#0c6b3a;font:600 11.5px var(--font-accent)}
 .bnd.on{background:#fffaf0;border-color:var(--maroon);box-shadow:0 0 0 1px var(--maroon);color:var(--ink)}
 .bnd.on em{background:#0c6b3a;color:#fff}.bnd.on span{opacity:1;color:var(--maroon)}
+
+/* v54 – bundle choices: compact tiles in the store colours (chosen one filled maroon) */
+.bundles{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px}
+.bundles b{flex:0 0 100%;font:600 13px var(--font-accent)}
+.bnd{flex:0 1 150px;min-width:118px;align-items:center;text-align:center;gap:2px;padding:11px 12px 10px;border:1px solid #76194166;border-radius:12px;background:#ffffff80;box-shadow:none;transition:background .2s,border-color .2s,color .2s,transform .15s}
+.bnd:hover{border-color:var(--maroon);background:#fff}
+.bnd:active{transform:scale(.98)}
+.bnd span{font:700 14px var(--font-accent);opacity:1;color:var(--ink)}
+.bnd strong{font:500 13px var(--font-accent);color:var(--ink)}
+.bnd em{align-self:center;margin-top:3px;padding:0;border-radius:0;background:none;color:var(--maroon);font:600 11.5px var(--font-accent)}
+.bnd.on{background:var(--maroon);border-color:var(--maroon);box-shadow:0 8px 18px -10px var(--maroon);color:var(--gold)}
+.bnd.on span,.bnd.on strong,.bnd.on em{color:var(--gold);background:none;opacity:1}
