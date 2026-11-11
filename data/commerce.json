@@ -9,12 +9,18 @@
       "code": "BUY3",
       "percent": 30,
       "min_items": 3
+    },
+    {
+      "code": "WELCOME40",
+      "percent": 40,
+      "min_items": 1
     }
   ],
   "shipping_fee": 49,
   "free_shipping_above": 999,
   "razorpay_key_id": "rzp_test_TyY2VwmXyCpL2r",
   "cod_enabled": true,
+  "order_thanks_message": "Your order has been placed successfully.",
   "return_window_days": 5,
   "payment_logos": [
     {
@@ -37,6 +43,5 @@
       "name": "Apple Pay",
       "image": "/images/uploads/pay-applepay.png"
     }
-  ],
-  "order_thanks_message": "Your order has been placed successfully."
+  ]
 }
