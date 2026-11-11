@@ -125,12 +125,16 @@
   function couponText(d) { var n = Number(d.max_uses) || 0; return d.percent + '% off ' + (Number(d.min_items) > 1 ? 'when you buy ' + d.min_items + ' or more' : 'your order') + (Number(d.max_discount) > 0 ? ', up to ' + money(Number(d.max_discount)) : '') + (n === 1 ? ' · once per customer' : n === 2 ? ' · twice per customer' : n > 2 ? ' · ' + n + ' times per customer' : ''); }
   var onCoupon = null;   /* set by the product page so its coupon cards redraw */
   var pendingQty = 0;    /* quantity chosen on the product page that is not in the cart yet */
+  /* coupons with a per-customer limit: uses are remembered on this device as well as checked against the order sheet */
+  function usedUp(d) { var n = Number(d && d.max_uses) || 0; return n > 0 && (store.get('orvish_coupon_used', {})[d.code] || 0) >= n; }
+  function timesText(n) { return n === 1 ? 'once' : n === 2 ? 'twice' : n + ' times'; }
   function pickedCoupon() { return discount ? discount.code : store.get('orvish_coupon', ''); }
   function applyCode(c, pending) {
     c = String(c || '').trim().toUpperCase(); var say = function (x) { var m = $('#dc-msg'); if (m && $('#cart').classList.contains('open')) m.textContent = x; else toast(x); };
     var f = (S.discount_codes || []).filter(function (d) { return d.code.toUpperCase() === c; })[0], tt = totals(), ok = false;
     if (!c) { discount = null; store.set('orvish_coupon', ''); saveCart(); }
     else if (!f) say('This code is not valid');
+    else if (usedUp(f)) { discount = null; store.set('orvish_coupon', ''); saveCart(); say(f.code + ' can be used ' + timesText(Number(f.max_uses)) + ' per customer and you have already used it'); }
     else {
       store.set('orvish_coupon', f.code);   /* remembered, so it applies as soon as the cart qualifies */
       var min = f.min_items || 1, will = tt.items + (pending || 0);
@@ -287,7 +291,8 @@
   function renderCart() {
     cart = cart.filter(function (l) { return findP(l.id); });
     if (discount && cart.reduce(function (a, l) { return a + l.q; }, 0) < (discount.min_items || 1)) discount = null;
-    if (!discount && cart.length) { var rc = store.get('orvish_coupon', ''), rd = (S.discount_codes || []).filter(function (d) { return d.code === rc; })[0]; if (rd && cart.reduce(function (a, l) { return a + l.q; }, 0) >= (rd.min_items || 1)) { discount = rd; if (!totals().off) discount = null; } }
+    if (discount && usedUp(discount)) discount = null;
+    if (!discount && cart.length) { var rc = store.get('orvish_coupon', ''), rd = (S.discount_codes || []).filter(function (d) { return d.code === rc && !usedUp(d); })[0]; if (rd && cart.reduce(function (a, l) { return a + l.q; }, 0) >= (rd.min_items || 1)) { discount = rd; if (!totals().off) discount = null; } }
     var t = totals();
     $$('.cart-count').forEach(function (e) { e.textContent = t.items; e.style.display = t.items ? 'grid' : 'none'; });
     var body = $('#cart-body'), foot = $('#cart-foot'); if (!body) return;
@@ -301,11 +306,11 @@
         '<br><button class="rm" data-rm="' + k + '">Remove</button></div><div class="price">' + money(u.price * l.q) + '</div></div>';
     }).join('');
     var codes = S.discount_codes || [], sv = t.off + cart.reduce(function (a, l) { var u = unit(l); return a + (u.old && u.old > u.price ? (u.old - u.price) * l.q : 0); }, 0);
-    var chips = codes.map(function (d) { var on = discount && discount.code === d.code, need = !on && pickedCoupon() === d.code; return '<button type="button" class="' + (on ? 'on' : '') + '" data-coupon="' + esc(d.code) + '" title="' + (on ? 'Tap to remove' : esc(couponText(d))) + '">' + ico(on ? 'check' : 'ticket') + '<b>' + esc(d.code) + '</b><span>' + esc(need ? 'Add ' + Math.max(1, (d.min_items || 1) - t.items) + ' more to use this' : couponText(d)) + '</span>' + (on ? '<em>Applied</em>' : '') + '</button>'; }).join('');
+    var chips = codes.filter(function (d) { return !usedUp(d); }).map(function (d) { var on = discount && discount.code === d.code, need = !on && pickedCoupon() === d.code; return '<button type="button" class="' + (on ? 'on' : '') + '" data-coupon="' + esc(d.code) + '" title="' + (on ? 'Tap to remove' : esc(couponText(d))) + '">' + ico(on ? 'check' : 'ticket') + '<b>' + esc(d.code) + '</b><span>' + esc(need ? 'Add ' + Math.max(1, (d.min_items || 1) - t.items) + ' more to use this' : couponText(d)) + '</span>' + (on ? '<em>Applied</em>' : '') + '</button>'; }).join('');
     body.insertAdjacentHTML('beforeend', '<div class="cextra">' + (discount && t.off ?
         '<div class="capp">' + ico('ticket') + '<div><b>' + esc(discount.code) + ' applied</b><small>You save ' + money(t.off) + ' with this coupon</small></div><button type="button" class="lnk" data-coupon="' + esc(discount.code) + '">Remove</button></div>' :
         '<div class="disc"><input id="dc" placeholder="Enter coupon code" aria-label="Coupon code" autocapitalize="characters"><button id="dc-apply" type="button">Apply</button></div>') + '<div class="msg" id="dc-msg"></div>' +
-      (codes.length ? '<details class="cmore"' + (discount ? '' : ' open') + '><summary>' + (discount ? 'Use a different coupon' : 'Available coupons') + '</summary><div class="cchips">' + chips + '</div></details>' : '') +
+      (chips ? '<details class="cmore"' + (discount ? '' : ' open') + '><summary>' + (discount ? 'Use a different coupon' : 'Available coupons') + '</summary><div class="cchips">' + chips + '</div></details>' : '') +
       '<div class="csum"><div class="row"><span>Subtotal</span><span>' + money(t.base) + '</span></div>' + (t.bsave > 0 ? '<div class="row off"><span>Bundle saving</span><span>−' + money(t.bsave) + '</span></div>' : '') +
       (t.off ? '<div class="row off"><span>Coupon discount</span><span>−' + money(t.off) + '</span></div>' : '') +
       '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : '<b class="free">Free</b>') + '</span></div>' +
@@ -351,7 +356,7 @@
       var lbl = sb.textContent; sb.disabled = true; sb.textContent = 'Checking coupon…';
       fetch(S.order_webhook_url + '?action=coupon_uses&code=' + encodeURIComponent(discount.code) + '&phone=' + encodeURIComponent(f.phone) + '&email=' + encodeURIComponent(f.email || '') + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
         sb.disabled = false; sb.textContent = lbl;
-        if (d && Number(d.uses) >= lim) { var code = discount.code; saveProfile(f); applyCode(''); openCheckout(); $('#co-msg').textContent = code + ' can be used ' + (lim === 1 ? 'once' : lim === 2 ? 'twice' : lim + ' times') + ' per customer and you have already used it. It has been removed, please check the new total.'; return; }
+        if (d && Number(d.uses) >= lim) { var code = discount.code, cu2 = store.get('orvish_coupon_used', {}); cu2[code] = Math.max(cu2[code] || 0, Number(d.uses)); store.set('orvish_coupon_used', cu2); saveProfile(f); applyCode(''); openCheckout(); $('#co-msg').textContent = code + ' can be used ' + timesText(lim) + ' per customer and you have already used it. It has been removed, please check the new total.'; return; }
         go();
       }).catch(function () { sb.disabled = false; sb.textContent = lbl; go(); }); });
   }
@@ -361,6 +366,7 @@
     var url = S.order_webhook_url; if (!url) return null;
     var id = 'ORV-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     var items = itemsDetail();
+    if (t.off && discount) { var cu = store.get('orvish_coupon_used', {}); cu[discount.code] = (cu[discount.code] || 0) + 1; store.set('orvish_coupon_used', cu); }
     var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address + (f.loc ? ' (Map pin: https://maps.google.com/?q=' + f.loc + ')' : ''), city: f.city, pin: f.pin, items: orderLines().join('; '), items_json: JSON.stringify(items), total: String(t.total), coupon: t.off && discount ? discount.code + ' (' + money(t.off) + ' off)' : '', payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
     var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; '), items_detail: items }); store.set('orvish_orders', o.slice(0, 20));
@@ -608,7 +614,7 @@
       var free = thr && price >= thr, cs = S.discount_codes || [];
       $('#pdx').innerHTML = '<button class="dlv" id="dlv" type="button">' + ico('pin') + '<span>' + (where ? 'Deliver to <b>' + esc(where) + '</b>' : 'Add your delivery location') + '</span>' + ico('edit') + '</button>' +
         '<div class="eta">' + ico('truck') + '<span>Standard delivery<b>Arrives ' + etaText() + '</b></span><em>' + (free || !S.shipping_fee ? 'Free' : money(S.shipping_fee)) + '</em></div>' +
-        (cs.length ? '<div class="cpn"><h6>' + ico('ticket') + 'Save extra with coupons</h6>' + cs.map(function (d) { return '<div class="cp' + (pickedCoupon() === d.code ? ' on' : '') + '"><div><b>' + esc(couponText(d).replace(/^./, function (c) { return c.toUpperCase(); })) + '</b><small>' + esc(d.code) + '</small></div>' + (function () { var on = pickedCoupon() === d.code, have = tt.items + q, need = on && have < (d.min_items || 1); return (on ? '<span class="cpb' + (need ? ' wait' : '') + '">' + (need ? 'Add ' + ((d.min_items || 1) - have) + ' more' : 'Applied') + '</span>' : '') + '<button type="button" data-coupon="' + esc(d.code) + '"' + (on ? ' class="on" aria-label="Remove coupon ' + esc(d.code) + '">' + ico('close') + 'Remove' : ' data-copy="1">' + ico('copy') + 'Copy') + '</button>'; })() + '</div>'; }).join('') + '</div>' : '');
+        (cs.length ? '<div class="cpn"><h6>' + ico('ticket') + 'Save extra with coupons</h6>' + cs.map(function (d) { return '<div class="cp' + (pickedCoupon() === d.code ? ' on' : '') + '"><div><b>' + esc(couponText(d).replace(/^./, function (c) { return c.toUpperCase(); })) + '</b><small>' + esc(d.code) + '</small></div>' + (function () { if (usedUp(d)) return '<span class="cpb used">Already used</span>'; var on = pickedCoupon() === d.code, have = tt.items + q, need = on && have < (d.min_items || 1); return (on ? '<span class="cpb' + (need ? ' wait' : '') + '">' + (need ? 'Add ' + ((d.min_items || 1) - have) + ' more' : 'Applied') + '</span>' : '') + '<button type="button" data-coupon="' + esc(d.code) + '"' + (on ? ' class="on" aria-label="Remove coupon ' + esc(d.code) + '">' + ico('close') + 'Remove' : ' data-copy="1">' + ico('copy') + 'Copy') + '</button>'; })() + '</div>'; }).join('') + '</div>' : '');
       $('#dlv').onclick = function () { pickLocation(function (pl) { saveLocation(pl); pdx(); }, !where); };
     }
     onCoupon = function () { if ($('#pdx')) pdx(); };
