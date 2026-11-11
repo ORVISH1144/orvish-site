@@ -21,6 +21,13 @@
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
     check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+    pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.500C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    locate: '<circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16zM13.500 6.500l4 4"/>',
+    copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+    ticket: '<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/>',
+    left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>',
     home: '<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>', grid: '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
     whatsapp: '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>', plus: '<path d="M12 5v14M5 12h14"/>',
     lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', chat: '<path d="M4 5h16v11H9l-5 4z"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.2-6 8-6s7 1.5 8 6"/>', filter: '<path d="M4 6h16M7 12h10M10 18h4"/>', down: '<path d="M6 9l6 6 6-6"/>', left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>'
@@ -82,7 +89,7 @@
     return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; fillCheckout(); return PROFILE; }).catch(function () { PROFILE = null; return null; });
   }
   function saveProfile(f) {
-    var d = { name: f.name || '', phone: f.phone || '', email: f.email || '', address: f.address || '', city: f.city || '', pin: f.pin || '', updated: Date.now() };
+    var d = { name: f.name || '', phone: f.phone || '', email: f.email || '', address: f.address || '', city: f.city || '', pin: f.pin || '', loc: f.loc || '', updated: Date.now() };
     store.set('orvish_details', d);
     if (!FB || !USER) return Promise.resolve(false);
     PROFILE = Object.assign({}, PROFILE, d);
@@ -96,6 +103,94 @@
       firebase.initializeApp(c); FB = { auth: firebase.auth(), db: firebase.firestore() };
       return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; (u ? loadProfile() : (PROFILE = null, Promise.resolve())).then(function () { ok(FB); }); }); });
     }).catch(function () { return null; });
+  }
+  /* ---------- delivery location: current location or a pin on the map (OpenStreetMap, no account needed) ---------- */
+  function phoneNo() {
+    var d = String(S.contact_phone || S.whatsapp_number || '').replace(/\D/g, ''); if (d.length < 8) return null;
+    return { tel: '+' + d, text: d.length === 12 && d.slice(0, 2) === '91' ? '+91 ' + d.slice(2, 7) + ' ' + d.slice(7) : '+' + d };
+  }
+  function etaText() {
+    var a = Number(S.delivery_days_min) || 3, b = Math.max(a, Number(S.delivery_days_max) || 6);
+    var f = function (n) { return new Date(Date.now() + n * 86400000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); };
+    return f(a) + ' – ' + f(b);
+  }
+  function couponText(d) { return d.percent + '% off ' + (Number(d.min_items) > 1 ? 'when you buy ' + d.min_items + ' or more' : 'your order'); }
+  function applyCode(c) {
+    c = String(c || '').trim().toUpperCase(); var m = $('#dc-msg'), say = function (x) { if (m) m.textContent = x; else toast(x); };
+    var f = (S.discount_codes || []).filter(function (d) { return d.code.toUpperCase() === c; })[0], tt = totals();
+    if (!c) { discount = null; saveCart(); return false; }
+    if (!f) { say('This code is not valid'); return false; }
+    if (tt.items < (f.min_items || 1)) { say('Add at least ' + f.min_items + ' items to use ' + f.code); return false; }
+    discount = f; saveCart(); toast(f.code + ' applied'); return true;
+  }
+  var LMAP = null;
+  function leaflet() {
+    if (window.L) return Promise.resolve();
+    var c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(c);
+    return loadJS('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+  }
+  function placeOf(a) {
+    a = a || {}; var city = a.city || a.town || a.village || a.municipality || a.county || a.state_district || '';
+    var line = [[a.house_number, a.road].filter(Boolean).join(' '), a.neighbourhood, a.suburb || a.city_district, (a.village || a.town) && (a.village || a.town) !== city ? (a.village || a.town) : '', a.state].filter(Boolean);
+    return { address: line.filter(function (x, i) { return line.indexOf(x) === i && x !== city; }).join(', '), city: city, pin: String(a.postcode || '').replace(/\D/g, '').slice(0, 6) };
+  }
+  /* opens the picker; cb gets { address, city, pin, loc:'lat,lng' }. auto = ask for the current location straight away */
+  function pickLocation(cb, auto) {
+    var m = $('#locm');
+    if (!m) { document.body.insertAdjacentHTML('beforeend', '<div class="locm" id="locm" role="dialog" aria-label="Choose delivery location"><div class="locbox"><div class="lochead"><h4>Choose delivery location</h4><button class="icon-btn" id="loc-x" aria-label="Close" style="color:var(--ink)">' + ico('close') + '</button></div>' +
+      '<div class="locbar"><input id="loc-q" placeholder="Search area, street or PIN code" autocomplete="off"><button class="btn secondary" id="loc-me" type="button">' + ico('locate') + 'Use my current location</button></div><div class="lochits" id="loc-hits"></div>' +
+      '<div class="locmap"><div id="loc-map"></div><div class="locpin" aria-hidden="true">' + ico('pin') + '</div></div><p class="locaddr" id="loc-addr">Move the map so the pin sits on your delivery spot.</p><div class="msg err" id="loc-msg"></div><button class="btn block" id="loc-ok" type="button" disabled>Confirm location</button></div></div>'); m = $('#locm'); }
+    var cur = null, tmr = null, seq = 0, addr = $('#loc-addr'), ok = $('#loc-ok'), msg = $('#loc-msg');
+    var close = function () { m.classList.remove('open'); };
+    $('#loc-x').onclick = close; m.onclick = function (e) { if (e.target === m) close(); };
+    ok.disabled = true; msg.textContent = ''; $('#loc-hits').innerHTML = ''; $('#loc-q').value = ''; m.classList.add('open');
+    var rev = function () {
+      var c = LMAP.getCenter(), n = ++seq; addr.textContent = 'Finding the address…'; ok.disabled = true;
+      fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + c.lat + '&lon=' + c.lng).then(function (x) { return x.json(); }).then(function (d) {
+        if (n !== seq) return; cur = placeOf(d && d.address); cur.loc = c.lat.toFixed(6) + ',' + c.lng.toFixed(6);
+        addr.innerHTML = cur.city || cur.address ? '<b>' + esc([cur.city, cur.pin].filter(Boolean).join(' ')) + '</b><br>' + esc(cur.address) : 'Pin placed. You can type the address at checkout.'; ok.disabled = false;
+      }).catch(function () { if (n !== seq) return; cur = { address: '', city: '', pin: '', loc: c.lat.toFixed(6) + ',' + c.lng.toFixed(6) }; addr.textContent = 'Pin placed. You can type the address at checkout.'; ok.disabled = false; });
+    };
+    var me = function () {
+      if (!navigator.geolocation) { msg.textContent = 'This browser cannot share its location. Search for your area or move the map instead.'; return; }
+      var b = $('#loc-me'); b.disabled = true; msg.textContent = '';
+      navigator.geolocation.getCurrentPosition(function (p) { b.disabled = false; LMAP.setView([p.coords.latitude, p.coords.longitude], 17); },
+        function (e) { b.disabled = false; msg.textContent = e && e.code === 1 ? 'Location permission is off. Allow it in your browser, or search for your area and move the map.' : 'Could not find your location. Search for your area or move the map instead.'; }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+    };
+    $('#loc-me').onclick = me;
+    $('#loc-q').oninput = function (e) {
+      var q = e.target.value.trim(); clearTimeout(tmr); if (q.length < 3) { $('#loc-hits').innerHTML = ''; return; }
+      tmr = setTimeout(function () {
+        fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=in&q=' + encodeURIComponent(q)).then(function (x) { return x.json(); }).then(function (r) {
+          $('#loc-hits').innerHTML = (r || []).map(function (h) { return '<button type="button" data-lat="' + esc(h.lat) + '" data-lon="' + esc(h.lon) + '">' + esc(h.display_name) + '</button>'; }).join('') || '<p class="msg">No place found. Try a nearby landmark or the PIN code.</p>';
+          $$('#loc-hits button').forEach(function (b) { b.onclick = function () { LMAP.setView([Number(b.dataset.lat), Number(b.dataset.lon)], 16); $('#loc-hits').innerHTML = ''; }; });
+        }).catch(function () {});
+      }, 500);
+    };
+    ok.onclick = function () { if (!cur) return; close(); cb(cur); };
+    leaflet().then(function () {
+      var s = String(saved('loc') || '').split(','), has = s.length === 2 && !isNaN(Number(s[0]));
+      if (!LMAP) {
+        LMAP = L.map('loc-map', { zoomControl: true, attributionControl: true }).setView(has ? [Number(s[0]), Number(s[1])] : [20.5937, 78.9629], has ? 16 : 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(LMAP); LMAP.attributionControl.setPrefix(false);
+        LMAP.on('moveend', function () { if (LMAP.getZoom() >= 13) LMAP._orvRev(); else { $('#loc-addr').textContent = 'Zoom in and move the map so the pin sits on your delivery spot.'; $('#loc-ok').disabled = true; } });
+      }
+      LMAP._orvRev = rev; setTimeout(function () { LMAP.invalidateSize(); if (auto) me(); else if (has) rev(); }, 60);
+    }).catch(function () { msg.textContent = 'The map could not load. Please type your address at checkout.'; });
+  }
+  function saveLocation(p) {
+    var d = {}; ['name', 'phone', 'email', 'address', 'city', 'pin'].forEach(function (k) { d[k] = saved(k); });
+    if (p.address) d.address = p.address; if (p.city) d.city = p.city; if (p.pin) d.pin = p.pin; d.loc = p.loc || '';
+    saveProfile(d);
+  }
+  /* previous / next arrows on product rows that scroll */
+  function railNav() {
+    $$('.rail').forEach(function (r) {
+      if (r.dataset.nav) return; r.dataset.nav = '1'; var w = r.parentNode; w.classList.add('railwrap');
+      w.insertAdjacentHTML('beforeend', '<button class="rnav p" data-rail="-1" aria-label="Previous products">' + ico('left') + '</button><button class="rnav n" data-rail="1" aria-label="Next products">' + ico('right') + '</button>');
+      var up = function () { w.classList.toggle('scrolls', r.scrollWidth > r.clientWidth + 4); };
+      window.addEventListener('resize', up); setTimeout(up, 400); try { new MutationObserver(up).observe(r, { childList: true }); } catch (e) {}
+    });
   }
   function payLogos() {
     var L = (S.payment_logos || []).filter(function (x) { return x && x.image; });
@@ -164,6 +259,7 @@
   var key = function (l) { return l.id + '|' + (l.v || ''); };
   function renderCart() {
     cart = cart.filter(function (l) { return findP(l.id); });
+    if (!discount && cart.length) { var rc = store.get('orvish_coupon', ''), rd = (S.discount_codes || []).filter(function (d) { return d.code === rc; })[0]; if (rd && cart.reduce(function (a, l) { return a + l.q; }, 0) >= (rd.min_items || 1)) discount = rd; }
     var t = totals();
     $$('.cart-count').forEach(function (e) { e.textContent = t.items; e.style.display = t.items ? 'grid' : 'none'; });
     var body = $('#cart-body'), foot = $('#cart-foot'); if (!body) return;
@@ -177,10 +273,12 @@
         '<br><button class="rm" data-rm="' + k + '">Remove</button></div><div class="price">' + money(u.price * l.q) + '</div></div>';
     }).join('');
     foot.innerHTML = '<div class="disc"><input id="dc" placeholder="Discount code" value="' + esc(discount ? discount.code : '') + '"><button class="btn secondary" id="dc-apply" style="padding:9px 16px">Apply</button></div><div class="msg" id="dc-msg"></div>' +
+      ((S.discount_codes || []).length && !discount ? '<div class="cchips">' + S.discount_codes.map(function (d) { return '<button type="button" data-coupon="' + esc(d.code) + '" title="' + esc(couponText(d)) + '">' + ico('ticket') + '<b>' + esc(d.code) + '</b><span>' + esc(couponText(d)) + '</span></button>'; }).join('') + '</div>' : '') +
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' +
       (t.off ? '<div class="row"><span>Discount (' + esc(discount.code) + ')</span><span>−' + money(t.off) + '</span></div>' : '') +
       '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
+      (function () { var sv = t.off + cart.reduce(function (a, l) { var u = unit(l); return a + (u.old && u.old > u.price ? (u.old - u.price) * l.q : 0); }, 0); return sv > 0 ? '<div class="saved">You save ' + money(Math.round(sv)) + ' on this order</div>' : ''; })() +
       '<button class="btn block" id="checkout" style="margin-top:10px">Checkout · ' + money(t.total) + '</button>' + payLogos();
   }
   function openCart(o) { $('#cart').classList.toggle('open', o); $('#ov').classList.toggle('on', o); }
@@ -191,20 +289,27 @@
   function openCheckout() {
     var t = totals(); if (!t.items) return; logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
+    var quick = !!(saved('name') && /^[0-9+ ]{10,15}$/.test(saved('phone')) && saved('address') && saved('city') && /^[0-9]{6}$/.test(saved('pin')) && (!saved('email') || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(saved('email'))));
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc(saved('phone') || (USER && USER.phoneNumber) || '') + '"></div></div>' +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('address'), saved('city'), saved('pin')].join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc(saved('phone') || (USER && USER.phoneNumber) || '') + '"></div></div>' +
       '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc((USER && USER.email) || saved('email')) + '"></div>' +
-      '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc(saved('address')) + '</textarea></div>' +
+      '<div class="locbtns"><button type="button" class="btn secondary" id="co-here">' + ico('locate') + 'Use my current location</button><button type="button" class="btn secondary" id="co-map">' + ico('pin') + 'Choose on map</button></div><input type="hidden" name="loc" value="' + esc(saved('loc')) + '">' +
+      '<div class="field"><label>Address (house or flat no., building, street)</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc(saved('address')) + '</textarea></div>' +
       '<div class="two"><div class="field"><label>City</label><input name="city" required value="' + esc(saved('city')) + '"></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric" value="' + esc(saved('pin')) + '"></div></div>' +
-      (saved('address') ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') +
+      (saved('address') ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') + '</div>' +
       '<h6 class="co-h">Payment</h6><div class="pay">' + ms.map(function (x, i) { return '<label><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '> ' + x[1] + '</label>'; }).join('') + '</div>' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' + (t.off ? '<div class="row"><span>Discount</span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
       '<div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
     m.classList.add('open'); $('#ov').classList.add('on');
-    if ($('#co-clear')) $('#co-clear').onclick = function () { var fm = $('#co-form'); fm.address.value = ''; fm.city.value = ''; fm.pin.value = ''; $('#co-clear').closest('.msg').remove(); fm.address.focus(); };
+    var fm0 = $('#co-form'), flds = $('#co-fields'), sum0 = $('#co-saved');
+    var expand = function () { if (flds) flds.hidden = false; if (sum0) sum0.remove(); };
+    if ($('#co-change')) $('#co-change').onclick = function () { expand(); fm0.address.focus(); };
+    if ($('#co-clear')) $('#co-clear').onclick = function () { fm0.address.value = ''; fm0.city.value = ''; fm0.pin.value = ''; fm0.loc.value = ''; $('#co-clear').closest('.msg').remove(); fm0.address.focus(); };
+    var setLoc = function (pl) { if (pl.address) fm0.address.value = pl.address; if (pl.city) fm0.city.value = pl.city; if (pl.pin) fm0.pin.value = pl.pin; fm0.loc.value = pl.loc || ''; fm0.address.focus(); toast('Location added. Add your house or flat number'); };
+    $('#co-here').onclick = function () { pickLocation(setLoc, true); }; $('#co-map').onclick = function () { pickLocation(setLoc, false); };
     $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); if (f.pm === 'online') {
         if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
         payRazorpay(f, t);
@@ -216,7 +321,7 @@
     var url = S.order_webhook_url; if (!url) return null;
     var id = 'ORV-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     var items = itemsDetail();
-    var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), items_json: JSON.stringify(items), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
+    var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address + (f.loc ? ' (Map pin: https://maps.google.com/?q=' + f.loc + ')' : ''), city: f.city, pin: f.pin, items: orderLines().join('; '), items_json: JSON.stringify(items), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
     var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; '), items_detail: items }); store.set('orvish_orders', o.slice(0, 20));
     if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), items_detail: items, total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} }
@@ -278,11 +383,14 @@
     var anns = (S.announcements || []).filter(function (x) { return x && String(x).trim(); }); if (!anns.length) $('#announce').style.display = 'none';
     $('#announce').innerHTML = anns.map(function (a, i) { return '<span class="' + (i ? '' : 'on') + '">' + esc(a) + '</span>'; }).join('');
     var ai = 0, sp = $$('#announce span'); if (sp.length > 1) setInterval(function () { sp[ai].classList.remove('on'); ai = (ai + 1) % sp.length; sp[ai].classList.add('on'); }, 4000);
-    $('#header').innerHTML = '<div class="wrap"><div style="display:flex;align-items:center;gap:20px"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><nav class="nav">' + navHTML() + '</nav></div>' +
-      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions"><button class="icon-btn" id="open-search" aria-label="Search">' + ico('search') + '</button><a class="icon-btn acct" href="/account" aria-label="My account">' + ico('user') + '<i id="acct-dot"></i></a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>';
+    var ph = phoneNo();
+    $('#header').classList.add('h2');
+    $('#header').innerHTML = '<div class="wrap"><div class="hleft"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><button class="hsearch" id="open-search" aria-label="Search">' + ico('search') + '<span>What are you looking for?</span></button></div>' +
+      '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions">' + (ph ? '<a class="hphone" href="tel:' + esc(ph.tel) + '">' + ico('phone') + '<span>' + esc(ph.text) + '</span></a>' : '') + '<a class="icon-btn acct" href="/account" aria-label="My account">' + ico('user') + '<i id="acct-dot"></i></a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>' +
+      '<div class="navrow"><nav class="nav">' + navHTML() + '</nav></div>';
     var li = function (a) { return (a || []).map(function (l) { return '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>'; }).join(''); };
     var cols = (S.footer_columns || []).map(function (c) { return '<div><h6>' + esc(c.title) + '</h6><ul>' + li(c.links) + '</ul></div>'; }).join('');
-    $('#footer').innerHTML = '<div class="wrap"><div class="f-top"><div><div class="logo">' + logoHTML() + '</div><p style="font-size:13px;color:#555;margin:6px 0 0">' + esc(S.tagline || '') + '<br>Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a></p></div>' +
+    $('#footer').innerHTML = '<div class="wrap"><div class="f-top"><div><div class="logo">' + logoHTML() + '</div><p style="font-size:13px;color:#555;margin:6px 0 0">' + esc(S.tagline || '') + '<br>Email : <a href="mailto:' + esc(S.support_email) + '">' + esc(S.support_email) + '</a>' + (ph ? '<br>Phone : <a href="tel:' + esc(ph.tel) + '">' + esc(ph.text) + '</a>' : '') + '</p></div>' +
       '<div class="nl"><h6><em>Get In Touch</em></h6><p style="font-size:13px;margin:0">' + esc(S.footer_newsletter_text) + '</p><form class="news" id="news"><input type="email" placeholder="Email" required><button class="btn" type="submit">Sign up</button></form></div></div>' +
       '<div class="f-grid">' + cols + '</div>' + payLogos() + '<div class="copy">© ' + new Date().getFullYear() + ' ' + esc(S.store_name) + '. All rights reserved.</div></div>';
     document.body.insertAdjacentHTML('beforeend',
@@ -310,13 +418,10 @@
       else if (t.dataset.dec) { var l = kk(t.dataset.dec); l.q = Math.max(1, l.q - 1); saveCart(); }
       else if (t.dataset.rm) { cart = cart.filter(function (l) { return key(l) !== t.dataset.rm; }); saveCart(); }
       else if (t.dataset.add) { e.preventDefault(); e.stopPropagation(); addToCart(t.dataset.add, 1); openCart(true); }
-      else if (t.id === 'dc-apply') {
-        var c = ($('#dc').value || '').trim().toUpperCase(), f = (S.discount_codes || []).filter(function (d) { return d.code.toUpperCase() === c; })[0], tt = totals();
-        if (!c) { discount = null; saveCart(); return; }
-        if (!f) { $('#dc-msg').textContent = 'Invalid code'; return; }
-        if (tt.items < (f.min_items || 1)) { $('#dc-msg').textContent = 'Add at least ' + f.min_items + ' items to use this code'; return; }
-        discount = f; saveCart(); toast('Code applied');
-      } else if (t.id === 'checkout') openCheckout();
+      else if (t.id === 'dc-apply') applyCode($('#dc').value);
+      else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} store.set('orvish_coupon', t.dataset.coupon); if (!applyCode(t.dataset.coupon)) toast(t.dataset.coupon + ' copied. Use it in your cart'); } else applyCode(t.dataset.coupon); }
+      else if (t.dataset.rail) { var rl = t.parentNode.querySelector('.rail'); if (rl) rl.scrollBy({ left: Number(t.dataset.rail) * rl.clientWidth * .8, behavior: 'smooth' }); }
+      else if (t.id === 'checkout') openCheckout();
     });
     $('#ov').addEventListener('click', closeAll);
     var hd = $('#header'), sc = function () { hd.classList.toggle('scrolled', window.scrollY > 30); }; window.addEventListener('scroll', sc, { passive: true }); sc();
@@ -339,7 +444,7 @@
   function pct(p) { return p.compare_at_price && p.compare_at_price > p.price ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0; }
   function cardHTML(p) {
     var sale = pct(p), so = !inStock(p), href = '/product?id=' + encodeURIComponent(p.id), multi = vs(p);
-    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) +
+    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (p.best_seller && !so ? '<span class="badge l">Best seller</span>' : '') +
       '<img loading="lazy" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" src="' + esc(p.images[1]) + '" alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
@@ -442,7 +547,7 @@
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" src="' + esc(im) + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</a><div class="price" id="pp"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
-      '<div id="buyarea"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
+      '<div id="buyarea"></div><div id="pdx"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
       '<div class="desc">' + md(p.description) + '</div>' + noteBlock(p) +
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
     function paint() {
@@ -454,6 +559,15 @@
       $('#add').onclick = function () { addToCart(p.id, q, cur); openCart(true); };
       $('#buy').onclick = function () { addToCart(p.id, q, cur); openCheckout(); };
       var s = $('#s-add'); if (s) { $('#s-price').textContent = money(i.u.price); }
+      if ($('#pdx')) pdx();
+    }
+    function pdx() {
+      var where = [saved('city'), saved('pin')].filter(Boolean).join(' '), tt = totals(), thr = S.free_shipping_above || 0, price = info().u.price * q;
+      var free = thr && price >= thr, cs = S.discount_codes || [];
+      $('#pdx').innerHTML = '<button class="dlv" id="dlv" type="button">' + ico('pin') + '<span>' + (where ? 'Deliver to <b>' + esc(where) + '</b>' : 'Add your delivery location') + '</span>' + ico('edit') + '</button>' +
+        '<div class="eta">' + ico('truck') + '<span>Standard delivery<b>Arrives ' + etaText() + '</b></span><em>' + (free || !S.shipping_fee ? 'Free' : money(S.shipping_fee)) + '</em></div>' +
+        (cs.length ? '<div class="cpn"><h6>' + ico('ticket') + 'Save extra with coupons</h6>' + cs.map(function (d) { return '<div class="cp"><div><b>' + esc(couponText(d).replace(/^./, function (c) { return c.toUpperCase(); })) + '</b><small>' + esc(d.code) + '</small></div><button type="button" data-coupon="' + esc(d.code) + '" data-copy="1">' + ico('copy') + 'Copy</button></div>'; }).join('') + '</div>' : '');
+      $('#dlv').onclick = function () { pickLocation(function (pl) { saveLocation(pl); pdx(); }, !where); };
     }
     $$('#vopts button').forEach(function (b) { b.onclick = function () { if (b.classList.contains('off')) return; cur = b.dataset.v; $$('#vopts button').forEach(function (x) { x.classList.toggle('on', x === b); }); paint(); }; });
     paint();
@@ -687,7 +801,7 @@
     S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     applyTheme(); metaInit(); shell(); events();
-    var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})();
+    var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})(); railNav();
     document.body.classList.add('ready'); logVisit('view', document.body.dataset.page === 'product' ? qs.get('id') : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }

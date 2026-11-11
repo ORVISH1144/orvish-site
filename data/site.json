@@ -24,5 +24,6 @@
     "projectId": "orvish-93305",
     "appId": "1:1013527301298:web:c8a5d05ff0d7f96d608dab"
   },
-  "order_webhook_url": "https://script.google.com/macros/s/AKfycbztmccRaxy6cHVvcMLm-ilBwFcYyARCvh61ughqiTrwB54pMqtJdWnRtNnBysFZKLnkXw/exec"
+  "order_webhook_url": "https://script.google.com/macros/s/AKfycbztmccRaxy6cHVvcMLm-ilBwFcYyARCvh61ughqiTrwB54pMqtJdWnRtNnBysFZKLnkXw/exec",
+  "contact_phone": ""
 }

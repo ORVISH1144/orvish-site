@@ -43,5 +43,7 @@
       "name": "Apple Pay",
       "image": "/images/uploads/pay-applepay.png"
     }
-  ]
+  ],
+  "delivery_days_min": 3,
+  "delivery_days_max": 6
 }

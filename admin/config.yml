@@ -558,6 +558,20 @@ collections:
       name: cod_enabled
       widget: boolean
       default: true
+    - label: Fastest delivery time in days (used for the "Arrives" dates on the product page)
+      name: delivery_days_min
+      widget: number
+      value_type: int
+      min: 0
+      default: 3
+      required: false
+    - label: Slowest delivery time in days
+      name: delivery_days_max
+      widget: number
+      value_type: int
+      min: 0
+      default: 6
+      required: false
     - label: Message shown to the customer right after they place an order
       name: order_thanks_message
       widget: string
@@ -610,6 +624,10 @@ collections:
       required: false
     - label: WhatsApp number with country code, digits only (e.g. 919876543210). Shows a WhatsApp button.
       name: whatsapp_number
+      widget: string
+      required: false
+    - label: Contact phone number shown in the header and footer (leave empty to use the WhatsApp number)
+      name: contact_phone
       widget: string
       required: false
     - label: Colours, fonts and buttons
