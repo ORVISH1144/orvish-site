@@ -503,3 +503,42 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .rev p{margin:8px 0 0}
 
 .revlinks{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.revlinks b{font:600 13px var(--font-accent)}.revlinks .btn{font-size:11px;padding:10px 14px;white-space:normal;text-align:center}
+
+/* v38 – account area, order cards, returns */
+#acct-body.wide{max-width:860px}
+.authcard{border:1px solid var(--line);background:#ffffffa6;border-radius:18px;padding:34px 30px 26px;box-shadow:0 18px 50px -30px #22071366}
+.authcard h1{font-size:clamp(30px,4vw,40px);margin-bottom:6px}.authcard .sub{margin:0 0 20px}
+.acct-head{display:flex;align-items:center;gap:16px;padding:22px 24px;border-radius:18px;background:var(--maroon);color:var(--gold)}
+.acct-head .av{flex:none;width:58px;height:58px;border-radius:50%;background:var(--gold);color:var(--maroon);display:grid;place-items:center;font:400 28px var(--font-heading)}
+.acct-head .who{flex:1;min-width:0}.acct-head h1{margin:0;font-size:clamp(24px,3.4vw,34px);color:var(--gold)}
+.acct-head p{margin:2px 0 0;font:400 13px var(--font-accent);opacity:.85;overflow-wrap:anywhere}
+.acct-head .btn{border-color:var(--gold);color:var(--gold);padding:9px 18px;font-size:13px}.acct-head .btn:hover{background:#ffffff1f}
+.acct-tabs{display:flex;gap:26px;margin:26px 0 18px;border-bottom:1px solid var(--line)}
+.acct-tabs button{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:0 0 12px;font:600 14px var(--font-accent);color:var(--ink);opacity:.55;cursor:pointer}
+.acct-tabs button.on{opacity:1;color:var(--maroon);border-bottom-color:var(--maroon)}
+.acct-card{border:1px solid var(--line);background:#ffffffa6;border-radius:16px;padding:24px}.acct-card h3{font-size:24px;margin-bottom:4px}.acct-card .sub{margin:0 0 18px}
+.acct-empty{text-align:center;padding:44px 24px}
+.ocard{border:1px solid var(--line);background:#ffffffa6;border-radius:16px;padding:20px 22px;margin-bottom:16px}
+.ocard header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.ocard header small,.ocard footer small{display:block;font:400 11px var(--font-accent);opacity:.65;letter-spacing:.02em}
+.ocard header b{font:700 16px var(--font-accent);overflow-wrap:anywhere}
+.ocard footer{display:flex;flex-wrap:wrap;align-items:center;gap:14px 30px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.ocard footer b{font:600 14px var(--font-accent)}.ocard footer .btn{margin-left:auto;padding:9px 18px;font-size:13px}
+.ois{display:grid;gap:10px}
+.oi{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center}
+.oi img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:radial-gradient(circle at 50% 40%,#fffdf5,#f6e9c9)}
+.oi b{display:block;font:600 14px/1.35 var(--font-accent)}.oi small{font:400 12px var(--font-accent);opacity:.65}.oi>span{font:600 14px var(--font-accent);white-space:nowrap}
+.oi-text{margin:0;font:400 13px/1.5 var(--font-accent)}
+.tcard .ois{margin-bottom:12px}
+.pill{white-space:nowrap}.pill.ok{background:#0c6b3a;color:#fff}.pill.warn{background:#9a5b00;color:#fff}
+.retbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:14px;padding:12px 14px;border-radius:12px;background:#7619410d;font:400 13px/1.5 var(--font-accent)}
+.retbar span{flex:1;min-width:220px}.retbar .btn{padding:9px 16px;font-size:13px}
+.retform{margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff}.retform h6{margin:0 0 10px;font:700 14px var(--font-accent)}
+.retact{display:flex;gap:8px;flex-wrap:wrap}.retact .btn{padding:10px 18px;font-size:13px}
+.retok{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:#0c6b3a14;color:#0c6b3a;font:500 13px var(--font-accent)}
+@media(max-width:560px){
+  .acct-head{flex-wrap:wrap;padding:18px}.acct-head .who{flex:1 1 calc(100% - 80px)}.acct-head .btn{margin-left:auto;padding:7px 16px}
+  .ocard{padding:16px}.ocard footer .btn{margin-left:0;width:100%}
+  .authcard{padding:26px 20px 20px}
+  .steps li span{font-size:9px}
+}

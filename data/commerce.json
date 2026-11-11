@@ -36,5 +36,6 @@
       "name": "Apple Pay",
       "image": "/images/uploads/pay-applepay.png"
     }
-  ]
+  ],
+  "return_window_days": 7
 }

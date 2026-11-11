@@ -70,13 +70,22 @@
   /* customer accounts (Firebase Auth + Firestore, free plan) */
   var FB = null, USER = null, PROFILE = null, fbWait = [];
   function loadJS(u) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+  /* saved delivery details: kept on this device for everyone, and in the account (Firestore) when logged in */
+  function saved(k) { var l = store.get('orvish_details', null) || {}; return (PROFILE && PROFILE[k]) || l[k] || ''; }
+  function fillCheckout() {
+    var fm = $('#co-form'); if (!fm) return;
+    ['name', 'phone', 'email', 'address', 'city', 'pin'].forEach(function (k) { var i = fm.elements[k]; if (i && !i.value && saved(k)) i.value = saved(k); });
+  }
   function loadProfile() {
     if (!FB || !USER) { PROFILE = null; return Promise.resolve(null); }
-    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; return PROFILE; }).catch(function () { PROFILE = null; return null; });
+    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; fillCheckout(); return PROFILE; }).catch(function () { PROFILE = null; return null; });
   }
   function saveProfile(f) {
-    if (!FB || !USER) return;
-    try { FB.db.collection('customers').doc(USER.uid).set({ name: f.name || '', phone: f.phone || '', email: f.email || '', address: f.address || '', city: f.city || '', pin: f.pin || '', updated: Date.now() }, { merge: true }).then(function () { PROFILE = Object.assign({}, PROFILE, f); }).catch(function () {}); } catch (e) {}
+    var d = { name: f.name || '', phone: f.phone || '', email: f.email || '', address: f.address || '', city: f.city || '', pin: f.pin || '', updated: Date.now() };
+    store.set('orvish_details', d);
+    if (!FB || !USER) return Promise.resolve(false);
+    PROFILE = Object.assign({}, PROFILE, d);
+    try { return FB.db.collection('customers').doc(USER.uid).set(d, { merge: true }).then(function () { return true; }).catch(function () { return false; }); } catch (e) { return Promise.resolve(false); }
   }
   function fbReady() {
     var c = S.firebase_config; if (!c || !c.apiKey) return Promise.resolve(null);
@@ -180,11 +189,11 @@
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc((USER && USER.displayName) || (PROFILE && PROFILE.name) || '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc((USER && USER.phoneNumber) || (PROFILE && PROFILE.phone) || '') + '"></div></div>' +
-      '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(USER ? USER.email || (PROFILE && PROFILE.email) || '' : '') + '"></div>' +
-      '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc((PROFILE && PROFILE.address) || '') + '</textarea></div>' +
-      '<div class="two"><div class="field"><label>City</label><input name="city" required value="' + esc((PROFILE && PROFILE.city) || '') + '"></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric" value="' + esc((PROFILE && PROFILE.pin) || '') + '"></div></div>' +
-      (USER && PROFILE && PROFILE.address ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc(saved('phone') || (USER && USER.phoneNumber) || '') + '"></div></div>' +
+      '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc((USER && USER.email) || saved('email')) + '"></div>' +
+      '<div class="field"><label>Address</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc(saved('address')) + '</textarea></div>' +
+      '<div class="two"><div class="field"><label>City</label><input name="city" required value="' + esc(saved('city')) + '"></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric" value="' + esc(saved('pin')) + '"></div></div>' +
+      (saved('address') ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') +
       '<h6 class="co-h">Payment</h6><div class="pay">' + ms.map(function (x, i) { return '<label><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '> ' + x[1] + '</label>'; }).join('') + '</div>' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.sub) + '</span></div>' + (t.off ? '<div class="row"><span>Discount</span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total</span><span>' + money(t.total) + '</span></div>' +
@@ -205,7 +214,8 @@
     var body = new URLSearchParams({ date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }), order_id: id, name: f.name, phone: f.phone, email: f.email || '', address: f.address, city: f.city, pin: f.pin, items: orderLines().join('; '), items_json: JSON.stringify(items), total: String(t.total), payment_status: status, order_status: 'New', payment_id: payId || '', rzp_order_id: (extra && extra.o) || '', rzp_signature: (extra && extra.s) || '' });
     try { fetch(url, { method: 'POST', mode: 'no-cors', body: body }).catch(function () {}); } catch (e) {}
     var o = store.get('orvish_orders', []); o.unshift({ id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), total: t.total, date: Date.now(), items: orderLines().join('; '), items_detail: items }); store.set('orvish_orders', o.slice(0, 20));
-    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), items_detail: items, total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} saveProfile(f); }
+    if (FB && USER) { try { FB.db.collection('orders').doc(id).set({ uid: USER.uid, order_id: id, phone: String(f.phone).replace(/\D/g, '').slice(-10), items: orderLines().join('; '), items_detail: items, total: t.total, created: Date.now() }).catch(function () {}); } catch (e) {} }
+    saveProfile(f);
     return id;
   }
   function emailOrder(f, t) {
@@ -491,30 +501,66 @@
   }
   function page() {
     var pg = PAGES.filter(function (x) { return x.slug === qs.get('p'); })[0], el = $('#page-body');
+    if (!el) return;
     if (!pg) { el.innerHTML = '<h2>Page not found</h2>'; return; }
     document.title = pg.title + ' – ORVISH'; el.innerHTML = '<h1 style="font-size:40px">' + esc(pg.title) + '</h1>' + md(pg.body);
   }
+  /* order helpers shared by the tracking page and the account page */
+  var STEPS = ['New', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'], STEP_LABEL = ['Placed', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'];
+  function stInfo(st) { st = String(st || 'New').trim(); var i = STEPS.map(function (s) { return s.toLowerCase(); }).indexOf(st.toLowerCase()); return { st: st, i: i, cls: /cancel/i.test(st) ? ' bad' : /return|refund/i.test(st) ? ' warn' : /delivered/i.test(st) ? ' ok' : '', off: i < 0 }; }
+  function stepsHTML(i) { return STEP_LABEL.map(function (s, k) { return '<li class="' + (k <= i ? 'on' : '') + '"><i></i><span>' + s + '</span></li>'; }).join(''); }
+  function itemRows(list, text) {
+    if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } }
+    list = (list || []).filter(function (x) { return x && x.title; });
+    if (!list.length) return text ? '<p class="oi-text">' + esc(text) + '</p>' : '';
+    return list.map(function (it) { return '<div class="oi"><img src="' + esc(it.image || '/images/perfume-1.svg') + '" alt="" loading="lazy"><div><b>' + esc(it.title) + '</b><small>Qty ' + esc(it.qty || 1) + '</small></div><span>' + money(Number(it.price || 0) * Number(it.qty || 1)) + '</span></div>'; }).join('');
+  }
+  function reviewLinks(list, itemsText, oid, ph) {
+    if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } }
+    var ids = (list || []).map(function (x) { return x.id; });
+    var bought = P.filter(function (pp) { return ids.indexOf(pp.id) > -1 || (!ids.length && String(itemsText || '').toLowerCase().indexOf(pp.title.toLowerCase()) > -1); });
+    return bought.length ? '<div class="revlinks"><b>Bought it? Share your review</b>' + bought.map(function (pp) { return '<a class="btn secondary" href="/product?id=' + encodeURIComponent(pp.id) + '&oid=' + encodeURIComponent(oid) + '&ph=' + encodeURIComponent(ph) + '#reviews">Review ' + esc(pp.title) + '</a>'; }).join('') + '</div>' : '';
+  }
+  /* return request (the order script checks the order is delivered and still inside the return window) */
+  function returnBox(box, id, ph, d, onDone) {
+    if (!box) return;
+    if (!d || !d.can_return) { box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="retbar"><span>Not happy with it? You can ask for a return' + (d.return_until ? ' until <b>' + esc(d.return_until) + '</b>' : '') + '. <a class="link" href="/page?p=refund-policy">Return policy</a></span><button class="btn secondary" type="button">Request a return</button></div>';
+    $('button', box).onclick = function () {
+      box.innerHTML = '<form class="retform"><h6>Request a return</h6><div class="field"><label>Reason</label><select name="why" required><option value="">Choose a reason</option><option>Damaged or leaking</option><option>Wrong item received</option><option>Not as described</option><option>Changed my mind</option><option>Other</option></select></div><div class="field"><label>Tell us more (optional)</label><textarea name="more" rows="2" maxlength="200"></textarea></div><div class="msg err"></div><div class="retact"><button class="btn" type="submit">Send request</button><button class="btn secondary" type="button" data-x>Cancel</button></div></form>';
+      $('[data-x]', box).onclick = function () { returnBox(box, id, ph, d, onDone); };
+      $('form', box).onsubmit = function (e) {
+        e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)), m = $('.msg', box), b = $('button[type=submit]', box);
+        b.disabled = true; b.textContent = 'Sending…'; m.textContent = '';
+        fetch(S.order_webhook_url + '?action=return_request&order_id=' + encodeURIComponent(id) + '&phone=' + encodeURIComponent(ph) + '&reason=' + encodeURIComponent(f.why + (f.more ? ' – ' + f.more : '')) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (r) {
+          if (r && r.ok) { box.innerHTML = '<p class="retok">Return requested. We will review it and contact you about the next steps.</p>'; if (onDone) onDone(); return; }
+          b.disabled = false; b.textContent = 'Send request';
+          m.textContent = r && r.error === 'window_closed' ? 'Sorry, the return window for this order has closed.' : r && r.error === 'not_delivered' ? 'A return can be requested only after the order is delivered.' : 'Could not send the request. Please try again or contact us.';
+        }).catch(function () { b.disabled = false; b.textContent = 'Send request'; m.textContent = 'Could not send the request. Please check your connection and try again.'; });
+      };
+    };
+  }
   /* order tracking (looks the order up in the Google Sheet through the Apps Script web app) */
   function track() {
-    var el = $('#track-body'), mine = store.get('orvish_orders', []);
-    var steps = ['New', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'];
-    el.innerHTML = '<h1>Track your order</h1><p class="sub">Enter your order ID and the phone number you used when ordering.</p><form id="tf" class="tf"><div class="field"><label>Order ID</label><input name="id" required placeholder="ORV-261107-AB12" value="' + esc(qs.get('id') || '') + '"></div><div class="field"><label>Phone number</label><input name="phone" type="tel" required placeholder="10-digit mobile number" value="' + esc(mine[0] ? mine[0].phone : '') + '"></div><button class="btn block" type="submit">Track order</button></form><div id="tres"></div>' +
+    var el = $('#track-body'), mine = store.get('orvish_orders', []), qph = (qs.get('ph') || '').replace(/\D/g, '');
+    el.innerHTML = '<h1>Track your order</h1><p class="sub">Enter your order ID and the phone number you used when ordering.</p><form id="tf" class="tf"><div class="field"><label>Order ID</label><input name="id" required placeholder="ORV-261107-AB12" value="' + esc(qs.get('id') || '') + '"></div><div class="field"><label>Phone number</label><input name="phone" type="tel" required placeholder="10-digit mobile number" value="' + esc(qph || (mine[0] ? mine[0].phone : '')) + '"></div><button class="btn block" type="submit">Track order</button></form><div id="tres"></div>' +
       (mine.length ? '<h3 style="margin-top:30px">Orders placed on this device</h3><div class="mine">' + mine.map(function (o) { return '<button data-id="' + esc(o.id) + '" data-ph="' + esc(o.phone) + '"><b>' + esc(o.id) + '</b><span>' + money(o.total) + ' · ' + new Date(o.date).toLocaleDateString('en-IN') + '</span></button>'; }).join('') + '</div>' : '');
     function look(id, phone) {
-      var r = $('#tres'); if (!S.order_webhook_url) { r.innerHTML = '<p class="msg">Tracking is not available right now.</p>'; return; }
+      var r = $('#tres'), ph = String(phone).replace(/\D/g, ''); if (!S.order_webhook_url) { r.innerHTML = '<p class="msg">Tracking is not available right now.</p>'; return; }
       r.innerHTML = '<p class="msg">Looking up your order…</p>';
-      fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(id.trim()) + '&phone=' + encodeURIComponent(phone.replace(/\D/g, '')) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
+      fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(id.trim()) + '&phone=' + encodeURIComponent(ph) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
         if (!d || !d.found) { r.innerHTML = '<p class="msg err">We could not find an order with these details. Please check the order ID and phone number, or <a class="link" href="' + (waLink('Hi, I need help with order ' + id) || '/page?p=contact') + '">contact us</a>.</p>'; return; }
-        var st = String(d.order_status || 'New'), i = steps.map(function (s) { return s.toLowerCase(); }).indexOf(st.toLowerCase()), bad = /cancel|return|refund/i.test(st);
-        r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + (bad ? ' bad' : '') + '">' + esc(st) + '</span></div>' +
-          (bad ? '' : '<ol class="steps">' + steps.map(function (s, k) { return '<li class="' + (k <= i ? 'on' : '') + '"><i></i><span>' + s + '</span></li>'; }).join('') + '</ol>') +
-          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(d.items) + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div>' + (d.tracking ? '<div class="row"><span>Tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
-          (bad ? '' : (function () { var bought = P.filter(function (pp) { return String(d.items || '').toLowerCase().indexOf(pp.title.toLowerCase()) > -1; }); return bought.length ? '<div class="revlinks"><b>Bought it? Share your review</b>' + bought.map(function (pp) { return '<a class="btn secondary" href="/product?id=' + encodeURIComponent(pp.id) + '&oid=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(phone.replace(/\D/g, '')) + '#reviews">Review ' + esc(pp.title) + '</a>'; }).join('') + '</div>' : ''; })()) + '</div>';
+        var s = stInfo(d.order_status);
+        r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
+          (s.off ? '' : '<ol class="steps">' + stepsHTML(s.i) + '</ol>') + '<div class="ois">' + itemRows(d.items_json, d.items) + '</div>' +
+          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
+          '<div class="ret"></div>' + (/delivered/i.test(s.st) ? reviewLinks(d.items_json, d.items, d.order_id, ph) : '') + '</div>';
+        returnBox($('.ret', r), d.order_id, ph, d, function () { $('.pill', r).className = 'pill warn'; $('.pill', r).textContent = 'Return requested'; var o = $('.steps', r); if (o) o.remove(); });
       }).catch(function () { r.innerHTML = '<p class="msg err">Could not load the status right now. Please try again in a moment.</p>'; });
     }
     $('#tf').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); look(f.id, f.phone); });
     $$('.mine button').forEach(function (b) { b.onclick = function () { $('#tf').elements.id.value = b.dataset.id; $('#tf').elements.phone.value = b.dataset.ph; look(b.dataset.id, b.dataset.ph); }; });
-    if (qs.get('id') && mine[0]) look(qs.get('id'), mine[0].phone);
+    if (qs.get('id') && (qph || mine[0])) look(qs.get('id'), qph || mine[0].phone);
   }
 
   function account() {
@@ -529,13 +575,14 @@
     function loginForm() {
       var mode = 'in';
       function paint() {
-        el.innerHTML = '<h1>' + (mode === 'in' ? 'Log in' : 'Create account') + '</h1><form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name"></div>' : '') +
+        el.classList.remove('wide');
+        el.innerHTML = '<div class="authcard"><h1>' + (mode === 'in' ? 'Welcome back' : 'Create your account') + '</h1><p class="sub">' + (mode === 'in' ? 'Log in to see your orders, track deliveries and check out faster.' : 'Save your address, track every order and check out faster.') + '</p><form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name"></div>' : '') +
           '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
           '<button class="btn block" type="submit">' + (mode === 'in' ? 'Log in' : 'Create account') + '</button></form><div id="amsg" class="msg err"></div>' +
           (mode === 'in' ? '<p style="text-align:right;margin:6px 0"><button class="link lnk" id="forgot">Forgot password?</button></p>' : '') +
           '<div class="or"><span>or</span></div><button class="btn secondary block" id="gbtn">Continue with Google</button><button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
           '<p style="text-align:center;margin-top:18px">' + (mode === 'in' ? 'New customer? <button class="link lnk" id="sw">Create an account</button>' : 'Already have an account? <button class="link lnk" id="sw">Log in</button>') + '</p>' +
-          '<p style="text-align:center"><a class="link" href="/track">Track an order without an account</a></p>';
+          '<p style="text-align:center"><a class="link" href="/track">Track an order without an account</a></p></div>';
         $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
         $('#af').onsubmit = function (e) {
           e.preventDefault(); var d = Object.fromEntries(new FormData(e.target)), m = $('#amsg'); m.textContent = '';
@@ -546,7 +593,7 @@
         var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } FB.auth.sendPasswordResetEmail(em).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
       }
       function phoneForm() {
-        el.innerHTML = '<h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 "></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p>';
+        el.innerHTML = '<div class="authcard"><h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 "></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p></div>';
         $('#back').onclick = paint;
         var rv = null;
         $('#pf').onsubmit = function (e) {
@@ -555,7 +602,7 @@
           var btn = $('#psend'); btn.disabled = true; btn.textContent = 'Sending…';
           try { if (!rv) rv = new firebase.auth.RecaptchaVerifier('recap', { size: 'invisible' }); } catch (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; return; }
           FB.auth.signInWithPhoneNumber(num, rv).then(function (conf) {
-            el.innerHTML = '<h1>Enter the code</h1><p class="sub">Sent to ' + esc(num) + '</p><form id="cf"><div class="field"><label>6-digit code</label><input name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" style="letter-spacing:.4em;font-size:20px;text-align:center"></div><button class="btn block" type="submit">Verify and log in</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Use a different number</button></p>';
+            el.innerHTML = '<div class="authcard"><h1>Enter the code</h1><p class="sub">Sent to ' + esc(num) + '</p><form id="cf"><div class="field"><label>6-digit code</label><input name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" style="letter-spacing:.4em;font-size:20px;text-align:center"></div><button class="btn block" type="submit">Verify and log in</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Use a different number</button></p></div>';
             $('#back').onclick = phoneForm;
             $('#cf').onsubmit = function (ev) { ev.preventDefault(); $('#amsg').textContent = ''; conf.confirm(ev.target.elements.code.value.trim()).catch(function (x) { $('#amsg').textContent = err(x); }); };
           }).catch(function (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; try { rv.clear(); } catch (z) {} rv = null; $('#recap').innerHTML = ''; });
@@ -564,23 +611,52 @@
       paint();
     }
     function dash(u) {
-      el.innerHTML = '<div class="ah"><div><h1 style="margin:0">My account</h1><p class="sub" style="margin:0">' + esc([u.displayName, u.email, u.phoneNumber].filter(Boolean).join(' · ')) + '</p></div><button class="btn secondary" id="lo">Log out</button></div><h3 style="margin-top:24px">My orders</h3><div id="ol"><p class="msg">Loading orders…</p></div>';
-      $('#lo').onclick = function () { f_out(); };
-      function f_out() { FB.auth.signOut(); }
+      el.classList.add('wide');
+      var nm = u.displayName || saved('name') || '', first = nm.trim().split(' ')[0];
+      el.innerHTML = '<div class="acct-head"><div class="av">' + esc((nm || u.email || 'O').trim().charAt(0).toUpperCase()) + '</div><div class="who"><h1>' + (first ? 'Hello, ' + esc(first) : 'My account') + '</h1><p>' + esc([u.email, u.phoneNumber].filter(Boolean).join(' · ')) + '</p></div><button class="btn secondary" id="lo">Log out</button></div>' +
+        '<div class="acct-tabs"><button class="on" data-tab="orders">My orders</button><button data-tab="details">Address &amp; details</button></div><div id="tab-orders"><p class="msg">Loading your orders…</p></div><div id="tab-details" hidden></div>';
+      $('#lo').onclick = function () { el.classList.remove('wide'); FB.auth.signOut(); };
+      $$('.acct-tabs button', el).forEach(function (b) { b.onclick = function () { $$('.acct-tabs button', el).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#tab-orders').hidden = b.dataset.tab !== 'orders'; $('#tab-details').hidden = b.dataset.tab !== 'details'; }; });
+      /* saved address and contact details */
+      function drawDetails() {
+        var g = function (k) { return esc(saved(k)); };
+        $('#tab-details').innerHTML = '<form id="df" class="acct-card"><h3>Delivery details</h3><p class="sub">We fill these in for you at checkout, so you never have to type them again.</p>' +
+          '<div class="two"><div class="field"><label>Full name</label><input name="name" autocomplete="name" value="' + (g('name') || esc(u.displayName || '')) + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + (g('phone') || esc(u.phoneNumber || '')) + '"></div></div>' +
+          '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(u.email || saved('email')) + '"' + (u.email ? ' readonly' : '') + '></div>' +
+          '<div class="field"><label>Address</label><textarea name="address" rows="2" autocomplete="street-address">' + g('address') + '</textarea></div>' +
+          '<div class="two"><div class="field"><label>City</label><input name="city" value="' + g('city') + '"></div><div class="field"><label>PIN code</label><input name="pin" pattern="[0-9]{6}" inputmode="numeric" value="' + g('pin') + '"></div></div>' +
+          '<div class="msg" id="dmsg"></div><button class="btn" type="submit">Save details</button></form>';
+        $('#df').onsubmit = function (e) {
+          e.preventDefault(); var m = $('#dmsg'), b = $('#df button[type=submit]'); b.disabled = true; m.className = 'msg'; m.textContent = 'Saving…';
+          saveProfile(Object.fromEntries(new FormData(e.target))).then(function (ok) { b.disabled = false; m.className = ok ? 'msg' : 'msg err'; m.textContent = ok ? 'Saved. These details will be filled in at checkout.' : 'Saved on this device only. We could not save to your account right now.'; });
+        };
+      }
+      loadProfile().then(drawDetails);
+      /* orders */
       FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
-        var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; });
-        if (!o.length) { $('#ol').innerHTML = '<p class="empty" style="padding:24px 0">No orders yet. <a class="link" href="/shop">Start shopping</a></p>'; return; }
-        $('#ol').innerHTML = o.map(function (x) {
-          var thumbs = (x.items_detail || []).map(function (it) { return '<img src="' + esc(it.image || '/images/perfume-1.svg') + '" alt="' + esc(it.title || '') + '" title="' + esc((it.qty || 1) + ' x ' + (it.title || '')) + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid var(--line, #2207131f);margin:0 4px 4px 0">'; }).join('');
-          return '<div class="tcard" style="margin-top:12px" data-id="' + esc(x.order_id) + '" data-ph="' + esc(x.phone) + '"><div class="th"><div><small>' + new Date(x.created).toLocaleDateString('en-IN') + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st">…</span></div>' +
-            (thumbs ? '<div style="display:flex;flex-wrap:wrap;margin-top:8px">' + thumbs + '</div>' : '') +
-            '<div class="row"><span>Items</span><span style="text-align:right;max-width:65%">' + esc(x.items) + '</span></div><div class="row"><span>Total</span><span>' + money(x.total) + '</span></div></div>';
+        var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; }), box = $('#tab-orders');
+        if (!o.length) { box.innerHTML = '<div class="acct-card acct-empty"><h3>No orders yet</h3><p class="sub">When you place an order while logged in, it will appear here with its live status.</p><a class="btn" href="/shop">Start shopping</a></div>'; return; }
+        box.innerHTML = o.map(function (x) {
+          return '<article class="ocard" data-id="' + esc(x.order_id) + '" data-ph="' + esc(x.phone) + '"><header><div><small>Placed on ' + new Date(x.created).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st">Checking…</span></header>' +
+            '<ol class="steps" hidden></ol><div class="ois">' + itemRows(x.items_detail, x.items) + '</div>' +
+            '<footer><div><small>Total</small><b>' + money(x.total) + '</b></div><div><small>Payment</small><b class="ps">–</b></div><div class="trk" hidden><small>Courier tracking</small><b></b></div><a class="btn secondary" href="/track?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(x.phone) + '">Track order</a></footer><div class="ret"></div><div class="rvl"></div></article>';
         }).join('');
-        $$('#ol .tcard').forEach(function (c) {
-          if (!S.order_webhook_url) return;
-          fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(c.dataset.id) + '&phone=' + c.dataset.ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) { $('.st', c).textContent = d.found ? d.order_status : 'Received'; }).catch(function () { $('.st', c).textContent = 'Received'; });
+        $$('.ocard', box).forEach(function (c, n) {
+          var x = o[n], pill = $('.st', c);
+          function paint(d) {
+            var s = stInfo(d && d.found ? d.order_status : 'New'); pill.className = 'pill st' + s.cls; pill.textContent = d && d.found ? s.st : 'Received';
+            var ol = $('.steps', c); ol.hidden = s.off; if (!s.off) ol.innerHTML = stepsHTML(d && d.found ? s.i : 0);
+            if (d && d.found) {
+              $('.ps', c).textContent = d.payment_status || '–';
+              if (d.tracking) { $('.trk', c).hidden = false; $('.trk b', c).textContent = d.tracking; }
+              returnBox($('.ret', c), x.order_id, x.phone, d, function () { paint({ found: true, order_status: 'Return requested', payment_status: d.payment_status, tracking: d.tracking }); });
+              $('.rvl', c).innerHTML = /delivered/i.test(s.st) ? reviewLinks(x.items_detail, x.items, x.order_id, x.phone) : '';
+            }
+          }
+          if (!S.order_webhook_url) { paint(null); return; }
+          fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(x.order_id) + '&phone=' + encodeURIComponent(x.phone) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(paint).catch(function () { paint(null); });
         });
-      }).catch(function () { $('#ol').innerHTML = '<p class="msg err">Could not load orders.</p>'; });
+      }).catch(function () { $('#tab-orders').innerHTML = '<p class="msg err">Could not load your orders. Please refresh.</p>'; });
     }
   }
 

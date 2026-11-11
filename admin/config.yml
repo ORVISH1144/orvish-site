@@ -558,6 +558,14 @@ collections:
       name: cod_enabled
       widget: boolean
       default: true
+    - label: Return window – days after delivery in which a customer can request a return (0 switches return requests off)
+      name: return_window_days
+      widget: number
+      value_type: int
+      min: 0
+      default: 7
+      required: false
+      hint: Keep this the same as the number of days written in your Return & Refund Policy page.
     - label: Payment logos (upload the official logo images – Visa, Mastercard, RuPay, UPI etc.)
       name: payment_logos
       widget: list
@@ -699,6 +707,232 @@ collections:
       widget: string
       required: false
   icon: settings
+- name: emails
+  label: Customer emails
+  files:
+  - name: emails
+    label: Order emails – which ones are sent and what they say
+    file: data/emails.json
+    format: json
+    fields:
+    - label: Logo shown at the top of emails (leave empty to use the store logo)
+      name: logo
+      widget: image
+      required: false
+    - label: Line at the bottom of every email
+      name: reply_line
+      widget: string
+      required: false
+    - label: 'Order placed (sent right after the customer orders)'
+      name: placed
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Order confirmed'
+      name: confirmed
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: false
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Order packed'
+      name: packed
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: false
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Order shipped'
+      name: shipped
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Out for delivery'
+      name: out_for_delivery
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Delivered'
+      name: delivered
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Cancelled'
+      name: cancelled
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Return requested (sent when the customer asks for a return)'
+      name: return_requested
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Return approved'
+      name: return_approved
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Returned product received'
+      name: returned
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: false
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Refunded'
+      name: refunded
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - label: Send this email
+        name: send
+        widget: boolean
+        default: true
+        required: false
+      - label: Subject
+        name: subject
+        widget: string
+        hint: 'You can use {id} for the order ID and {name} for the customer name.'
+      - label: Message
+        name: message
+        widget: text
+        hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+  icon: mail
 - name: pages
   label: Pages & policies
   files:

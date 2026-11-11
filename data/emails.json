@@ -1,0 +1,59 @@
+{
+  "logo": "",
+  "reply_line": "Questions? Simply reply to this email and we will help you.",
+  "placed": {
+    "send": true,
+    "subject": "We have received your order {id}",
+    "message": "Thank you for shopping with ORVISH. We have received your order and will email you as soon as it is on its way."
+  },
+  "confirmed": {
+    "send": false,
+    "subject": "Your order {id} is confirmed",
+    "message": "Good news. Your order is confirmed and we are getting it ready."
+  },
+  "packed": {
+    "send": false,
+    "subject": "Your order {id} is packed",
+    "message": "Your order is packed and will be handed to the courier soon."
+  },
+  "shipped": {
+    "send": true,
+    "subject": "Your order {id} has been shipped",
+    "message": "Your order has been shipped and is on its way to you."
+  },
+  "out_for_delivery": {
+    "send": true,
+    "subject": "Your order {id} is out for delivery",
+    "message": "Your order is out for delivery today. Please keep your phone nearby so the courier can reach you."
+  },
+  "delivered": {
+    "send": true,
+    "subject": "Your order {id} has been delivered",
+    "message": "Your order has been delivered. We hope you love it. If anything is not right, simply reply to this email."
+  },
+  "cancelled": {
+    "send": true,
+    "subject": "Your order {id} has been cancelled",
+    "message": "Your order has been cancelled. If this is a mistake or you have a question, simply reply to this email."
+  },
+  "return_requested": {
+    "send": true,
+    "subject": "We received your return request for order {id}",
+    "message": "We have received your return request. Our team will review it and email you the next steps shortly."
+  },
+  "return_approved": {
+    "send": true,
+    "subject": "Your return for order {id} is approved",
+    "message": "Your return is approved. We will contact you to arrange the pickup. Please keep the product and its packaging ready."
+  },
+  "returned": {
+    "send": false,
+    "subject": "We received your returned order {id}",
+    "message": "Your returned product has reached us. Your refund will be processed shortly."
+  },
+  "refunded": {
+    "send": true,
+    "subject": "Your refund for order {id} has been processed",
+    "message": "Your refund has been processed. Depending on your bank, it can take 5 to 7 working days to show in your account."
+  }
+}
