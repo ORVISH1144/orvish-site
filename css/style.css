@@ -643,3 +643,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 @keyframes cptick{0%,80%,100%{transform:rotate(0)}85%{transform:rotate(-12deg)}92%{transform:rotate(10deg)}}
 @keyframes cppop{from{transform:scale(.7)}to{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.cp,.cp::after,.cchips button::after,.cpn h6 svg,.cp button.done{animation:none}.cp::after,.cchips button::after{display:none}.cp:hover{transform:none}}
+
+/* v43 – home page: no "Best seller" or discount badges on product cards (Sold out stays) */
+body[data-page=home] .card .badge:not(.so){display:none}
