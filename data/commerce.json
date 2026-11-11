@@ -15,7 +15,7 @@
     {
       "code": "WELCOME40",
       "percent": 40,
-      "min_items": 1,
+      "min_items": 2,
       "max_discount": 1200
     }
   ],
