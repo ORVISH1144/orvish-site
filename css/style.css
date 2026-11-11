@@ -542,3 +542,18 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .authcard{padding:26px 20px 20px}
   .steps li span{font-size:9px}
 }
+
+/* v39 – order confirmation, faster account */
+.box.thanks{text-align:center;padding:34px 28px 28px}
+.thanks .tick{width:58px;height:58px;margin:0 auto 14px;border-radius:50%;background:var(--maroon);color:var(--gold);display:grid;place-items:center}
+.thanks .tick svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.thanks h4{font-size:28px;margin-bottom:6px}.thanks>p{margin:0 0 16px}
+.tsum{text-align:left;border:1px solid var(--line);border-radius:12px;padding:4px 16px;background:#ffffff80;margin-bottom:12px}
+.tsum .row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--line);font:400 13px var(--font-accent)}.tsum .row:first-child{border:0}
+.tsum .row span:first-child{opacity:.65;flex:none}.tsum .row span:last-child{text-align:right;overflow-wrap:anywhere}
+.tact{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}.tact .btn{flex:1;min-width:150px}
+.pill.wait{background:#2207131a;color:var(--ink)}
+.ocard.sk i{display:block;height:16px;border-radius:8px;background:linear-gradient(90deg,#2207130f,#2207131f,#2207130f);background-size:200% 100%;animation:sk 1.2s linear infinite;margin:10px 0}
+.ocard.sk i:first-child{width:40%}.ocard.sk i:last-child{width:70%}
+@keyframes sk{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.ocard.sk i{animation:none}}

@@ -67,7 +67,11 @@ function top(list,key,n){var m={};list.forEach(function(d){var k=key(d);if(!k)re
 function rows(t){if(!t.length)return'<p class="empty">No data yet.</p>';var mx=t[0][1];return t.map(function(x){return'<div class="row"><span title="'+esc(x[0])+'">'+esc(x[0])+'</span><i><b style="width:'+Math.max(3,Math.round(x[1]/mx*100))+'%"></b></i><em>'+x[1]+'</em></div>'}).join('')}
 function uniq(l){var m={};l.forEach(function(d){m[d.sid]=1});return Object.keys(m).length}
 function label(d){return d.pid?(titles[d.pid]||d.pid):({'/':'Home','/index.html':'Home','/shop':'Shop','/track':'Track order','/account':'Account','/page':'Info page','/product':'Product'}[d.p]||d.p)}
-function place(d){return[d.city,d.r,d.c].filter(Boolean).join(', ')}
+var CC={IN:'India',AE:'United Arab Emirates',SA:'Saudi Arabia',QA:'Qatar',OM:'Oman',KW:'Kuwait',BH:'Bahrain',US:'United States',GB:'United Kingdom',SG:'Singapore',MY:'Malaysia',CA:'Canada',AU:'Australia'};
+function country(d){var c=String(d.c||'');return CC[c]||c}
+function place(d){return[d.city,d.r,country(d)].filter(Boolean).join(', ')}
+function state(d){return d.r?[d.r,country(d)].filter(Boolean).join(', '):''}
+function area(d){return d.city?[d.city,d.r].filter(Boolean).join(', '):''}
 function draw(){
   var el=$('#dash');if(!el)return;var now=Date.now(),views=docs.filter(function(d){return d.ev==='view'});
   var live=uniq(docs.filter(function(d){return d.t>now-300000}));
@@ -79,7 +83,7 @@ function draw(){
   var feed=docs.slice(0,25).map(function(d){var t=new Date(d.t),ev={view:'Viewed',cart:'Added to cart',checkout:'Started checkout',order:'Placed order'}[d.ev]||d.ev;return'<div><small>'+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+'</small><span>'+(d.ev!=='view'?'<span class="tag">'+esc(ev)+'</span>':'')+esc(d.ev==='view'?'Viewed '+label(d):label(d))+'<br><small>'+esc(place(d)||'Unknown location')+' · '+esc(d.dev||'')+(d.src||d.ref?' · from '+esc(d.src||d.ref):'')+'</small></span></div>'}).join('');
   el.innerHTML='<div class="kpis">'+k('<span class="dot"></span>Visitors right now (last 5 min)',live,' live')+k('Visitors',uniq(docs))+k('Page views',views.length)+k('Added to cart',docs.filter(function(d){return d.ev==='cart'}).length)+k('Orders placed',docs.filter(function(d){return d.ev==='order'}).length)+'</div>'+
    '<div class="grid"><div class="card full"><h2>Page views '+(range==='today'?'by hour (today)':'by day')+'</h2><div class="chart">'+buckets.map(function(v,i){return'<div title="'+v+' views"><u style="height:'+Math.round(v/mx*100)+'%"></u><s>'+lab[i]+'</s></div>'}).join('')+'</div></div>'+
-   '<div class="card"><h2>Top locations (visitors)</h2>'+rows(top(docs,place,10))+'</div>'+
+   '<div class="card"><h2>Top cities and areas (visitors)</h2>'+rows(top(docs,area,12))+'<p class="empty" style="font-size:12px">The number after a city is its postal area, when known. Location comes from the visitor\'s internet connection, so on mobile data it can show a nearby larger town.</p><h2 style="margin-top:18px">Top states</h2>'+rows(top(docs,state,8))+'<h2 style="margin-top:18px">Countries</h2>'+rows(top(docs,country,5))+'</div>'+
    '<div class="card"><h2>Live activity</h2><div class="feed">'+(feed||'<p class="empty">No visits yet in this period.</p>')+'</div></div>'+
    '<div class="card"><h2>Most viewed pages and products</h2>'+rows(top(views,label,10))+'</div>'+
    '<div class="card"><h2>Where visitors come from</h2>'+rows(top(docs,function(d){return d.src||d.ref||'Direct / typed address'},8))+'<h2 style="margin-top:18px">Device</h2>'+rows(top(docs,function(d){return d.dev},2))+'</div></div>';

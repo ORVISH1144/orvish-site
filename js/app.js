@@ -20,6 +20,7 @@
     bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
     home: '<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>', grid: '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>',
     whatsapp: '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>', plus: '<path d="M12 5v14M5 12h14"/>',
     lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', chat: '<path d="M4 5h16v11H9l-5 4z"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.2-6 8-6s7 1.5 8 6"/>', filter: '<path d="M4 6h16M7 12h10M10 18h4"/>', down: '<path d="M6 9l6 6 6-6"/>', left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>'
@@ -91,7 +92,7 @@
     var c = S.firebase_config; if (!c || !c.apiKey) return Promise.resolve(null);
     if (FB) return Promise.resolve(FB);
     var b = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
-    return loadJS(b + 'app-compat.js').then(function () { return loadJS(b + 'auth-compat.js'); }).then(function () { return loadJS(b + 'firestore-compat.js'); }).then(function () {
+    return loadJS(b + 'app-compat.js').then(function () { return Promise.all([loadJS(b + 'auth-compat.js'), loadJS(b + 'firestore-compat.js')]); }).then(function () {
       firebase.initializeApp(c); FB = { auth: firebase.auth(), db: firebase.firestore() };
       return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; (u ? loadProfile() : (PROFILE = null, Promise.resolve())).then(function () { ok(FB); }); }); });
     }).catch(function () { return null; });
@@ -114,10 +115,14 @@
   }
   /* visit tracking for the admin traffic dashboard (page, rough location, source – no names, no IP addresses) */
   function geo() {
-    var c = store.get('orvish_geo', null); if (c && Date.now() - c.t < 86400000) return Promise.resolve(c);
+    var c = store.get('orvish_geo', null); if (c && c.city && Date.now() - c.t < 43200000) return Promise.resolve(c);
     var save = function (g) { g.t = Date.now(); store.set('orvish_geo', g); return g; };
-    return fetch('https://ipapi.co/json/').then(function (x) { return x.json(); }).then(function (d) { if (!d || d.error) throw 0; return save({ c: d.country_name || '', r: d.region || '', city: d.city || '' }); })
-      .catch(function () { return fetch('https://www.cloudflare.com/cdn-cgi/trace').then(function (x) { return x.text(); }).then(function (t) { var m = /loc=(\w+)/.exec(t); return save({ c: m ? m[1] : '', r: '', city: '' }); }).catch(function () { return { c: '', r: '', city: '' }; }); });
+    var j = function (u) { return fetch(u).then(function (x) { return x.json(); }); };
+    var mk = function (c, r, city, zip) { city = String(city || '').trim(); zip = String(zip || '').trim(); if (!c || !city) throw 0; return save({ c: String(c).slice(0, 40), r: String(r || '').slice(0, 40), city: (city + (zip ? ' ' + zip : '')).slice(0, 40) }); };
+    return j('https://ipapi.co/json/').then(function (d) { if (!d || d.error) throw 0; return mk(d.country_name, d.region, d.city, d.postal); })
+      .catch(function () { return j('https://ipwho.is/').then(function (d) { if (!d || d.success === false) throw 0; return mk(d.country, d.region, d.city, d.postal); }); })
+      .catch(function () { return j('https://get.geojs.io/v1/ip/geo.json').then(function (d) { return mk(d.country, d.region, d.city, ''); }); })
+      .catch(function () { return fetch('https://www.cloudflare.com/cdn-cgi/trace').then(function (x) { return x.text(); }).then(function (t) { var m = /loc=(\w+)/.exec(t); return { c: m ? m[1] : '', r: '', city: '' }; }).catch(function () { return { c: '', r: '', city: '' }; }); });
   }
   function logVisit(ev, pid) {
     try {
@@ -220,7 +225,7 @@
   }
   function emailOrder(f, t) {
     var oid = sendOrder(f, t, 'COD');
-    if (oid) { done('Thank you! Your order ' + oid + ' has been received. We will contact you on ' + f.phone + ' to confirm it.', oid, t.total); return; }
+    if (oid) { done({ id: oid, total: t.total, f: f, pay: 'Cash on delivery' }); return; }
     var wa = waLink('Hi, I want to place an order: ' + orderLines().join(', ') + ' Total ' + money(t.total));
     $('#checkout-modal').innerHTML = '<div class="box"><h4>Ordering is unavailable</h4><p>Sorry, we could not place your order online right now.' + (wa ? ' Please order on WhatsApp instead.' : ' Please try again later.') + '</p>' + (wa ? '<a class="btn" href="' + wa + '" target="_blank" rel="noopener">Order on WhatsApp</a>' : '') + '</div>';
   }
@@ -234,7 +239,7 @@
           notes: { items: orderLines().join(' | ').slice(0, 250), address: (f.address + ', ' + f.city + ' - ' + f.pin).slice(0, 250), phone: f.phone },
           theme: { color: '#761941' },
           modal: { ondismiss: function () { if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment · ' + money(t.total); } } },
-          handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id, { o: r.razorpay_order_id || '', s: r.razorpay_signature || '' }); done('Payment successful! Payment ID: ' + r.razorpay_payment_id + '.' + (oid ? ' Your order ID is ' + oid + '.' : ''), oid, t.total); }
+          handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id, { o: r.razorpay_order_id || '', s: r.razorpay_signature || '' }); done({ id: oid, total: t.total, f: f, pay: 'Paid online', pid: r.razorpay_payment_id }); }
         };
         if (rzOrder) o.order_id = rzOrder;
         new window.Razorpay(o).open();
@@ -245,10 +250,14 @@
     if (!S.order_webhook_url) return open('');
     fetch(S.order_webhook_url + '?action=rzp_order&amount=' + Math.round(t.total * 100) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) { open(d && d.id ? d.id : ''); }).catch(function () { open(''); });
   }
-  function done(msg, oid, tot) {
-    if (tot != null) { fbq_('track', 'Purchase', { value: tot, currency: 'INR' }); logVisit('order'); }
+  function done(o) {
+    fbq_('track', 'Purchase', { value: o.total, currency: 'INR' }); logVisit('order');
     cart = []; discount = null; saveCart(); openCart(false);
-    $('#checkout-modal').innerHTML = '<div class="box" style="text-align:center"><h4>Thank you</h4><p>' + esc(msg) + '</p>' + (oid ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(oid) + '">Track my order</a> ' : '') + '<a class="btn" href="/">Back to home</a></div>';
+    var f = o.f || {}, ph = String(f.phone || '').replace(/\D/g, '').slice(-10), row = function (a, b) { return b ? '<div class="row"><span>' + a + '</span><span>' + b + '</span></div>' : ''; };
+    $('#checkout-modal').innerHTML = '<div class="box thanks"><div class="tick">' + ico('check') + '</div><h4>Thank you for your order</h4><p>' + esc(S.order_thanks_message || 'Your order has been placed successfully.') + '</p>' +
+      '<div class="tsum">' + row('Order ID', o.id ? '<b>' + esc(o.id) + '</b>' : '') + row('Total', '<b>' + money(o.total) + '</b>') + row('Payment', esc(o.pay)) + row('Payment reference', esc(o.pid || '')) + row('Delivering to', esc([f.address, f.city, f.pin].filter(Boolean).join(', '))) + '</div>' +
+      (f.email ? '<p class="msg">A confirmation email is on its way to ' + esc(f.email) + '.</p>' : '') +
+      '<div class="tact">' + (o.id ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(o.id) + '&ph=' + encodeURIComponent(ph) + '">Track my order</a>' : '') + '<a class="btn" href="/shop">Continue shopping</a></div></div>';
   }
 
   /* shell */
@@ -632,31 +641,44 @@
         };
       }
       loadProfile().then(drawDetails);
-      /* orders */
-      FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
-        var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; }), box = $('#tab-orders');
+      /* orders: shown at once from the copy saved on this device, then refreshed in the background with one request */
+      var ck = 'orvish_acct_' + u.uid, mem = store.get(ck, null) || { orders: null, status: {} }, box = $('#tab-orders');
+      function paint(c, x, d) {
+        var pill = $('.st', c), s = stInfo(d && d.found ? d.order_status : 'New');
+        pill.className = 'pill st' + (d ? s.cls : ' wait'); pill.textContent = d ? (d.found ? s.st : 'Received') : 'Updating…';
+        var ol = $('.steps', c); ol.hidden = s.off; if (!s.off) ol.innerHTML = stepsHTML(d && d.found ? s.i : 0);
+        if (!d || !d.found) return;
+        $('.ps', c).textContent = d.payment_status || '–';
+        $('.trk', c).hidden = !d.tracking; $('.trk b', c).textContent = d.tracking || '';
+        returnBox($('.ret', c), x.order_id, x.phone, d, function () { d.order_status = 'Return requested'; d.can_return = false; mem.status[x.order_id] = d; store.set(ck, mem); paint(c, x, d); });
+        $('.rvl', c).innerHTML = /delivered/i.test(s.st) ? reviewLinks(x.items_detail, x.items, x.order_id, x.phone) : '';
+      }
+      function show(o) {
         if (!o.length) { box.innerHTML = '<div class="acct-card acct-empty"><h3>No orders yet</h3><p class="sub">When you place an order while logged in, it will appear here with its live status.</p><a class="btn" href="/shop">Start shopping</a></div>'; return; }
         box.innerHTML = o.map(function (x) {
-          return '<article class="ocard" data-id="' + esc(x.order_id) + '" data-ph="' + esc(x.phone) + '"><header><div><small>Placed on ' + new Date(x.created).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st">Checking…</span></header>' +
-            '<ol class="steps" hidden></ol><div class="ois">' + itemRows(x.items_detail, x.items) + '</div>' +
+          return '<article class="ocard" data-id="' + esc(x.order_id) + '"><header><div><small>Placed on ' + new Date(x.created).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st wait">Updating…</span></header>' +
+            '<ol class="steps"></ol><div class="ois">' + itemRows(x.items_detail, x.items) + '</div>' +
             '<footer><div><small>Total</small><b>' + money(x.total) + '</b></div><div><small>Payment</small><b class="ps">–</b></div><div class="trk" hidden><small>Courier tracking</small><b></b></div><a class="btn secondary" href="/track?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(x.phone) + '">Track order</a></footer><div class="ret"></div><div class="rvl"></div></article>';
         }).join('');
-        $$('.ocard', box).forEach(function (c, n) {
-          var x = o[n], pill = $('.st', c);
-          function paint(d) {
-            var s = stInfo(d && d.found ? d.order_status : 'New'); pill.className = 'pill st' + s.cls; pill.textContent = d && d.found ? s.st : 'Received';
-            var ol = $('.steps', c); ol.hidden = s.off; if (!s.off) ol.innerHTML = stepsHTML(d && d.found ? s.i : 0);
-            if (d && d.found) {
-              $('.ps', c).textContent = d.payment_status || '–';
-              if (d.tracking) { $('.trk', c).hidden = false; $('.trk b', c).textContent = d.tracking; }
-              returnBox($('.ret', c), x.order_id, x.phone, d, function () { paint({ found: true, order_status: 'Return requested', payment_status: d.payment_status, tracking: d.tracking }); });
-              $('.rvl', c).innerHTML = /delivered/i.test(s.st) ? reviewLinks(x.items_detail, x.items, x.order_id, x.phone) : '';
-            }
-          }
-          if (!S.order_webhook_url) { paint(null); return; }
-          fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(x.order_id) + '&phone=' + encodeURIComponent(x.phone) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(paint).catch(function () { paint(null); });
-        });
-      }).catch(function () { $('#tab-orders').innerHTML = '<p class="msg err">Could not load your orders. Please refresh.</p>'; });
+        $$('.ocard', box).forEach(function (c, n) { paint(c, o[n], mem.status[o[n].order_id] || null); });
+      }
+      function refresh(o) {
+        if (!o.length) return;
+        var cards = $$('.ocard', box), set = function (n, d) { mem.status[o[n].order_id] = d; if (cards[n]) paint(cards[n], o[n], d); };
+        var one = function (n) { return fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(o[n].order_id) + '&phone=' + encodeURIComponent(o[n].phone) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) { set(n, d); }).catch(function () { if (!mem.status[o[n].order_id]) set(n, { found: false }); }); };
+        if (!S.order_webhook_url) { o.forEach(function (x, n) { set(n, { found: false }); }); return; }
+        var list = o.slice(0, 25);
+        fetch(S.order_webhook_url + '?action=track_many&orders=' + encodeURIComponent(list.map(function (x) { return x.order_id + ':' + x.phone; }).join(',')) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+          if (!d || !d.orders) return Promise.all(list.map(function (x, n) { return one(n); }));   /* older order script: ask one by one */
+          list.forEach(function (x, n) { set(n, d.orders[x.order_id] || { found: false }); });
+        }).catch(function () { list.forEach(function (x, n) { if (!mem.status[x.order_id]) set(n, { found: false }); }); }).then(function () { store.set(ck, mem); });
+      }
+      if (mem.orders) show(mem.orders); else box.innerHTML = '<div class="ocard sk"><i></i><i></i><i></i></div>';
+      FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
+        var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; });
+        if (!mem.orders || JSON.stringify(mem.orders) !== JSON.stringify(o)) { mem.orders = o; show(o); }
+        store.set(ck, mem); refresh(o);
+      }).catch(function () { if (!mem.orders) box.innerHTML = '<p class="msg err">Could not load your orders. Please refresh.</p>'; });
     }
   }
 

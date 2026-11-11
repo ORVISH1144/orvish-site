@@ -55,5 +55,6 @@
     "send": true,
     "subject": "Your refund for order {id} has been processed",
     "message": "Your refund has been processed. Depending on your bank, it can take 5 to 7 working days to show in your account."
-  }
+  },
+  "owner_email": "sales@orvish.com"
 }

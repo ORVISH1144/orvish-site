@@ -558,6 +558,11 @@ collections:
       name: cod_enabled
       widget: boolean
       default: true
+    - label: Message shown to the customer right after they place an order
+      name: order_thanks_message
+      widget: string
+      required: false
+      default: Your order has been placed successfully.
     - label: Return window – days after delivery in which a customer can request a return (0 switches return requests off)
       name: return_window_days
       widget: number
@@ -723,6 +728,11 @@ collections:
       name: reply_line
       widget: string
       required: false
+    - label: Where new-order and return alerts are sent (your own email; separate several with commas)
+      name: owner_email
+      widget: string
+      required: false
+      hint: A copy always goes to the Google account that owns the order sheet as well.
     - label: 'Order placed (sent right after the customer orders)'
       name: placed
       widget: object
