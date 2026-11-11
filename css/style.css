@@ -723,3 +723,9 @@ body[data-page=home] .card .badge:not(.so){display:none}
 @media(max-width:640px){.search-box .hits{grid-template-columns:1fr}.sbin{padding-left:16px;padding-right:16px}.sbody{padding:0 16px 20px}}
 .locbtns .btn{min-width:0;text-transform:none;letter-spacing:0;font:600 13px var(--font-accent);white-space:normal;line-height:1.25;padding:11px 8px}
 @media(max-width:420px){.locbtns .btn{font-size:12px}}
+
+/* v51 – phone field with the fixed country code */
+.ccph{display:flex;border:1px solid #dfdfdf;border-radius:4px;background:#ffffffc7;overflow:hidden}
+.ccph:focus-within{border-color:var(--maroon)}
+.ccph span{display:grid;place-items:center;padding:0 11px;border-right:1px solid #dfdfdf;background:#7619410f;font:600 14px var(--font-accent);color:var(--maroon)}
+.field .ccph input{flex:1;min-width:0;border:0;border-radius:0;background:none;outline:0}

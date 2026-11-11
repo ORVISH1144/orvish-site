@@ -78,11 +78,17 @@
   /* customer accounts (Firebase Auth + Firestore, free plan) */
   var FB = null, USER = null, PROFILE = null, fbWait = [];
   function loadJS(u) { return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+  /* phone numbers: the country code is fixed and always shown; the customer types the 10-digit number */
+  var CC = '+91';
+  function last10(v) { return String(v || '').replace(/\D/g, '').slice(-10); }
+  function fullPhone(v) { var d = last10(v); return d ? CC + d : ''; }
+  function phoneField(v, req) { return '<div class="ccph"><span>' + CC + '</span><input name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10-digit mobile number" pattern="[0-9]{10}" title="Enter your 10-digit mobile number"' + (req ? ' required' : '') + ' value="' + esc(last10(v)) + '"></div>'; }
+  document.addEventListener('input', function (e) { var i = e.target; if (i && i.matches && i.matches('.ccph input')) { var d = i.value.replace(/\D/g, ''); d = d.length > 10 ? d.slice(-10) : d; if (d !== i.value) i.value = d; } });
   /* saved delivery details: kept on this device for everyone, and in the account (Firestore) when logged in */
   function saved(k) { var l = store.get('orvish_details', null) || {}; return (PROFILE && PROFILE[k]) || l[k] || ''; }
   function fillCheckout() {
     var fm = $('#co-form'); if (!fm) return;
-    ['name', 'phone', 'email', 'address', 'city', 'pin'].forEach(function (k) { var i = fm.elements[k]; if (i && !i.value && saved(k)) i.value = saved(k); });
+    ['name', 'phone', 'email', 'address', 'city', 'pin'].forEach(function (k) { var i = fm.elements[k]; if (i && !i.value && saved(k)) i.value = k === 'phone' ? last10(saved(k)) : saved(k); });
   }
   function loadProfile() {
     if (!FB || !USER) { PROFILE = null; return Promise.resolve(null); }
@@ -306,7 +312,7 @@
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('address'), saved('city'), saved('pin')].join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" required pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + esc(saved('phone') || (USER && USER.phoneNumber) || '') + '"></div></div>' +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('address'), saved('city'), saved('pin')].join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
       '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc((USER && USER.email) || saved('email')) + '"></div>' +
       '<div class="locbtns"><button type="button" class="btn secondary" id="co-here">' + ico('locate') + 'Use my current location</button><button type="button" class="btn secondary" id="co-map">' + ico('pin') + 'Choose on map</button></div><input type="hidden" name="loc" value="' + esc(saved('loc')) + '">' +
       '<div class="field"><label>Address (house or flat no., building, street)</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc(saved('address')) + '</textarea></div>' +
@@ -323,7 +329,7 @@
     if ($('#co-clear')) $('#co-clear').onclick = function () { fm0.address.value = ''; fm0.city.value = ''; fm0.pin.value = ''; fm0.loc.value = ''; $('#co-clear').closest('.msg').remove(); fm0.address.focus(); };
     var setLoc = function (pl) { if (pl.address) fm0.address.value = pl.address; if (pl.city) fm0.city.value = pl.city; if (pl.pin) fm0.pin.value = pl.pin; fm0.loc.value = pl.loc || ''; fm0.address.focus(); toast('Location added. Add your house or flat number'); };
     $('#co-here').onclick = function () { pickLocation(setLoc, true); }; $('#co-map').onclick = function () { pickLocation(setLoc, false); };
-    $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); if (f.pm === 'online') {
+    $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); f.phone = fullPhone(f.phone); if (f.pm === 'online') {
         if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
         payRazorpay(f, t);
       } else emailOrder(f, t); });
@@ -758,14 +764,15 @@
       function drawDetails() {
         var g = function (k) { return esc(saved(k)); };
         $('#tab-details').innerHTML = '<form id="df" class="acct-card"><h3>Delivery details</h3><p class="sub">We fill these in for you at checkout, so you never have to type them again.</p>' +
-          '<div class="two"><div class="field"><label>Full name</label><input name="name" autocomplete="name" value="' + (g('name') || esc(u.displayName || '')) + '"></div><div class="field"><label>Phone</label><input name="phone" type="tel" pattern="[0-9+ ]{10,15}" autocomplete="tel" value="' + (g('phone') || esc(u.phoneNumber || '')) + '"></div></div>' +
+          '<div class="two"><div class="field"><label>Full name</label><input name="name" autocomplete="name" value="' + (g('name') || esc(u.displayName || '')) + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || u.phoneNumber || '', false) + '</div></div>' +
           '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(u.email || saved('email')) + '"' + (u.email ? ' readonly' : '') + '></div>' +
           '<div class="field"><label>Address</label><textarea name="address" rows="2" autocomplete="street-address">' + g('address') + '</textarea></div>' +
           '<div class="two"><div class="field"><label>City</label><input name="city" value="' + g('city') + '"></div><div class="field"><label>PIN code</label><input name="pin" pattern="[0-9]{6}" inputmode="numeric" value="' + g('pin') + '"></div></div>' +
           '<div class="msg" id="dmsg"></div><button class="btn" type="submit">Save details</button></form>';
         $('#df').onsubmit = function (e) {
           e.preventDefault(); var m = $('#dmsg'), b = $('#df button[type=submit]'); b.disabled = true; m.className = 'msg'; m.textContent = 'Saving…';
-          saveProfile(Object.fromEntries(new FormData(e.target))).then(function (ok) { b.disabled = false; m.className = ok ? 'msg' : 'msg err'; m.textContent = ok ? 'Saved. These details will be filled in at checkout.' : 'Saved on this device only. We could not save to your account right now.'; });
+          var fd = Object.fromEntries(new FormData(e.target)); fd.phone = fullPhone(fd.phone);
+          saveProfile(fd).then(function (ok) { b.disabled = false; m.className = ok ? 'msg' : 'msg err'; m.textContent = ok ? 'Saved. These details will be filled in at checkout.' : 'Saved on this device only. We could not save to your account right now.'; });
         };
       }
       loadProfile().then(drawDetails);
