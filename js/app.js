@@ -419,7 +419,7 @@
       else if (t.dataset.rm) { cart = cart.filter(function (l) { return key(l) !== t.dataset.rm; }); saveCart(); }
       else if (t.dataset.add) { e.preventDefault(); e.stopPropagation(); addToCart(t.dataset.add, 1); openCart(true); }
       else if (t.id === 'dc-apply') applyCode($('#dc').value);
-      else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} store.set('orvish_coupon', t.dataset.coupon); if (!applyCode(t.dataset.coupon)) toast(t.dataset.coupon + ' copied. Use it in your cart'); } else applyCode(t.dataset.coupon); }
+      else if (t.dataset.coupon) { if (t.dataset.copy) { (function (b) { var h = b.innerHTML; b.classList.add('done'); b.innerHTML = ico('check') + 'Copied'; setTimeout(function () { b.classList.remove('done'); b.innerHTML = h; }, 1600); })(t); try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} store.set('orvish_coupon', t.dataset.coupon); if (!applyCode(t.dataset.coupon)) toast(t.dataset.coupon + ' copied. Use it in your cart'); } else applyCode(t.dataset.coupon); }
       else if (t.dataset.rail) { var rl = t.parentNode.querySelector('.rail'); if (rl) rl.scrollBy({ left: Number(t.dataset.rail) * rl.clientWidth * .8, behavior: 'smooth' }); }
       else if (t.id === 'checkout') openCheckout();
     });
