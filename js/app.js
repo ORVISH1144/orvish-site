@@ -245,7 +245,10 @@
   }
   function logVisit(ev, pid) {
     try {
-      if (!(S.firebase_config && S.firebase_config.apiKey) || navigator.webdriver || store.get('orvish_notrack', false)) return;
+      /* add ?trafficcheck=1 to any page address to see on screen whether this device's visit is recorded */
+      var chk = ev === 'view' && qs.get('trafficcheck'), tell = function (m) { if (chk) { var t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('on'); }, 9000); } };
+      if (store.get('orvish_notrack', false)) { tell('Not counted: this device has opened the admin, so its visits are left out. Untick "Leave out my own visits" on the traffic page to count it.'); return; }
+      if (!(S.firebase_config && S.firebase_config.apiKey) || navigator.webdriver) return;
       /* visit id = device part + '.' + session part (no names, no IP address): lets the dashboard count different devices as well as visits */
       var did = store.get('orvish_did', ''); if (!/^[a-z0-9]{8}$/.test(did)) { did = (Math.random().toString(36) + '00000000').slice(2, 10); store.set('orvish_did', did); }
       var sid = sessionStorage.getItem('orvish_sid'); if (!sid || sid.indexOf(did + '.') !== 0) { sid = did + '.' + (Math.random().toString(36) + '00000000').slice(2, 10); sessionStorage.setItem('orvish_sid', sid); }
@@ -258,8 +261,8 @@
         /* a copy goes to the order sheet (Traffic Log tab), which keeps the monthly and yearly totals */
         if (S.order_webhook_url) { try { var fl = doc.fields; fetch(S.order_webhook_url, { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ action: 'visit', ev: ev, p: fl.p.stringValue, pid: fl.pid.stringValue, ref: fl.ref.stringValue, src: fl.src.stringValue, c: fl.c.stringValue, r: fl.r.stringValue, city: fl.city.stringValue, dev: fl.dev.stringValue, sid: sid }) }).catch(function () {}); } catch (e2) {} }
         /* written straight to the database so a quick visit still counts; if that is refused, fall back to the full Firebase library */
-        var viaSdk = function () { fbReady().then(function (f) { if (!f) return; var d = {}; Object.keys(doc.fields).forEach(function (k) { d[k] = k === 't' ? Number(doc.fields.t.integerValue) : doc.fields[k].stringValue; }); f.db.collection('visits').add(d).catch(function () {}); }); };
-        fetch('https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(cfg.projectId) + '/databases/(default)/documents/visits?key=' + encodeURIComponent(cfg.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(doc), keepalive: true }).then(function (r) { if (!r.ok) viaSdk(); }).catch(viaSdk);
+        var viaSdk = function () { fbReady().then(function (f) { if (!f) { tell('Not recorded: this device could not reach the traffic database. A content blocker or private mode can cause this.'); return; } var d = {}; Object.keys(doc.fields).forEach(function (k) { d[k] = k === 't' ? Number(doc.fields.t.integerValue) : doc.fields[k].stringValue; }); f.db.collection('visits').add(d).then(function () { tell('Visit recorded (backup way).'); }).catch(function (x) { tell('Not recorded: the database refused this visit (' + ((x && x.code) || 'blocked') + ').'); }); }); };
+        fetch('https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(cfg.projectId) + '/databases/(default)/documents/visits?key=' + encodeURIComponent(cfg.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(doc), keepalive: true }).then(function (r) { if (!r.ok) viaSdk(); else tell('Visit recorded. It appears on the traffic page within a few seconds.'); }).catch(viaSdk);
       });
     } catch (e) {}
   }
