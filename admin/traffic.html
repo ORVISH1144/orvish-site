@@ -11,7 +11,7 @@ button,select{font:inherit;border:1px solid var(--maroon);background:#fff;color:
 button.p{background:var(--maroon);color:var(--gold)}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.bar .sp{flex:1}
 .seg button{border-radius:0;margin-left:-1px}.seg button:first-child{border-radius:8px 0 0 8px;margin:0}.seg button:last-child{border-radius:0 8px 8px 0}.seg button.on{background:var(--maroon);color:var(--gold)}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.kpi small{display:block;font-size:12px;opacity:.7}.kpi b{font-size:30px;line-height:1.2;font-weight:650;color:var(--maroon)}
 .kpi.live{background:var(--maroon)}.kpi.live small,.kpi.live b{color:var(--gold);opacity:1}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#35d07f;margin-right:6px;animation:pl 1.6s infinite}@keyframes pl{50%{opacity:.25}}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}.card.full{grid-column:1/-1}
@@ -67,6 +67,8 @@ function fetchData(u){
 function top(list,key,n){var m={};list.forEach(function(d){var k=key(d);if(!k)return;m[k]=m[k]||{};m[k][d.sid]=1});return Object.keys(m).map(function(k){return[k,Object.keys(m[k]).length]}).sort(function(a,b){return b[1]-a[1]}).slice(0,n||8)}
 function rows(t){if(!t.length)return'<p class="empty">No data yet.</p>';var mx=t[0][1];return t.map(function(x){return'<div class="row"><span title="'+esc(x[0])+'">'+esc(x[0])+'</span><i><b style="width:'+Math.max(3,Math.round(x[1]/mx*100))+'%"></b></i><em>'+x[1]+'</em></div>'}).join('')}
 function uniq(l){var m={};l.forEach(function(d){m[d.sid]=1});return Object.keys(m).length}
+function dev(d){var s=String(d.sid||'');return s.indexOf('.')>0?s.split('.')[0]:s}
+function devices(l){var m={};l.forEach(function(d){m[dev(d)]=(m[dev(d)]||{});m[dev(d)][d.sid]=1});var k=Object.keys(m);return{n:k.length,back:k.filter(function(x){return Object.keys(m[x]).length>1}).length}}
 function label(d){return d.pid?(titles[d.pid]||d.pid):({'/':'Home','/index.html':'Home','/shop':'Shop','/track':'Track order','/account':'Account','/page':'Info page','/product':'Product'}[d.p]||d.p)}
 var CC={IN:'India',AE:'United Arab Emirates',SA:'Saudi Arabia',QA:'Qatar',OM:'Oman',KW:'Kuwait',BH:'Bahrain',US:'United States',GB:'United Kingdom',SG:'Singapore',MY:'Malaysia',CA:'Canada',AU:'Australia'};
 function country(d){var c=String(d.c||'');return CC[c]||c}
@@ -76,15 +78,16 @@ function area(d){return d.city?[d.city,d.r].filter(Boolean).join(', '):''}
 function draw(){
   var el=$('#dash');if(!el)return;var now=Date.now(),views=docs.filter(function(d){return d.ev==='view'});
   var live=uniq(docs.filter(function(d){return d.t>now-300000}));
+  var dv=devices(docs);
   var k=function(l,v,c){return'<div class="kpi'+(c||'')+'"><small>'+l+'</small><b>'+v+'</b></div>'};
   var buckets=[],lab=[];
   if(range==='today'){for(var h=0;h<24;h++){buckets.push(0);lab.push(h%3===0?h+':00':'')}views.forEach(function(d){buckets[new Date(d.t).getHours()]++})}
   else{var n=Number(range),s0=since();for(var i=0;i<n;i++){buckets.push(0);var dd=new Date(s0+i*86400000);lab.push(n>10&&i%3?'':dd.getDate()+'/'+(dd.getMonth()+1))}views.forEach(function(d){var ix=Math.floor((d.t-s0)/86400000);if(ix>=0&&ix<n)buckets[ix]++})}
   var mx=Math.max.apply(null,buckets.concat([1]));
   var feed=docs.slice(0,25).map(function(d){var t=new Date(d.t),ev={view:'Viewed',cart:'Added to cart',checkout:'Started checkout',order:'Placed order'}[d.ev]||d.ev;return'<div><small>'+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+'</small><span>'+(d.ev!=='view'?'<span class="tag">'+esc(ev)+'</span>':'')+esc(d.ev==='view'?'Viewed '+label(d):label(d))+'<br><small>'+esc(place(d)||'Unknown location')+' · '+esc(d.dev||'')+(d.src||d.ref?' · from '+esc(d.src||d.ref):'')+'</small></span></div>'}).join('');
-  el.innerHTML='<div class="kpis">'+k('<span class="dot"></span>Visitors right now (last 5 min)',live,' live')+k('Visitors',uniq(docs))+k('Page views',views.length)+k('Added to cart',docs.filter(function(d){return d.ev==='cart'}).length)+k('Orders placed',docs.filter(function(d){return d.ev==='order'}).length)+'</div>'+
+  el.innerHTML='<div class="kpis">'+k('<span class="dot"></span>Visitors right now (last 5 min)',live,' live')+k('Visits',uniq(docs))+k('Different devices',dv.n)+k('Devices that came back',dv.back)+k('Page views',views.length)+k('Added to cart',docs.filter(function(d){return d.ev==='cart'}).length)+k('Orders placed',docs.filter(function(d){return d.ev==='order'}).length)+'</div><p class="empty" style="font-size:12px;padding:0 0 10px">A visit is one browsing session. Different devices counts each phone or computer once, however many times it came back. Devices are told apart only from 12 November; before that, every visit counts as its own device.</p>'+
    '<div class="grid"><div class="card full"><h2>Page views '+(range==='today'?'by hour (today)':'by day')+'</h2><div class="chart">'+buckets.map(function(v,i){return'<div title="'+v+' views"><u style="height:'+Math.round(v/mx*100)+'%"></u><s>'+lab[i]+'</s></div>'}).join('')+'</div></div>'+
-   '<div class="card"><h2>Top cities and areas (visitors)</h2>'+rows(top(docs,area,12))+'<p class="empty" style="font-size:12px">The number after a city is its postal area, when known. Location comes from the visitor\'s internet connection, so on mobile data it can show a nearby larger town.</p><h2 style="margin-top:18px">Top states</h2>'+rows(top(docs,state,8))+'<h2 style="margin-top:18px">Countries</h2>'+rows(top(docs,country,5))+'</div>'+
+   '<div class="card"><h2>Top cities and areas (visits)</h2>'+rows(top(docs,area,12))+'<p class="empty" style="font-size:12px">The number after a city is its postal area, when known. Location comes from the visitor\'s internet connection, so on mobile data it can show a nearby larger town.</p><h2 style="margin-top:18px">Top states</h2>'+rows(top(docs,state,8))+'<h2 style="margin-top:18px">Countries</h2>'+rows(top(docs,country,5))+'</div>'+
    '<div class="card"><h2>Live activity</h2><div class="feed">'+(feed||'<p class="empty">No visits yet in this period.</p>')+'</div></div>'+
    '<div class="card"><h2>Most viewed pages and products</h2>'+rows(top(views,label,10))+'</div>'+
    '<div class="card"><h2>Where visitors come from</h2>'+rows(top(docs,function(d){return d.src||d.ref||'Direct / typed address'},8))+'<h2 style="margin-top:18px">Device</h2>'+rows(top(docs,function(d){return d.dev},2))+'</div></div>';

@@ -246,7 +246,9 @@
   function logVisit(ev, pid) {
     try {
       if (!(S.firebase_config && S.firebase_config.apiKey) || navigator.webdriver || store.get('orvish_notrack', false)) return;
-      var sid = sessionStorage.getItem('orvish_sid'); if (!sid) { sid = Math.random().toString(36).slice(2, 12); sessionStorage.setItem('orvish_sid', sid); }
+      /* visit id = device part + '.' + session part (no names, no IP address): lets the dashboard count different devices as well as visits */
+      var did = store.get('orvish_did', ''); if (!/^[a-z0-9]{8}$/.test(did)) { did = (Math.random().toString(36) + '00000000').slice(2, 10); store.set('orvish_did', did); }
+      var sid = sessionStorage.getItem('orvish_sid'); if (!sid || sid.indexOf(did + '.') !== 0) { sid = did + '.' + (Math.random().toString(36) + '00000000').slice(2, 10); sessionStorage.setItem('orvish_sid', sid); }
       var ref = ''; try { ref = document.referrer && new URL(document.referrer).hostname.replace(/^www\./, ''); if (ref === location.hostname.replace(/^www\./, '')) ref = ''; } catch (e) {}
       var src = (qs.get('utm_source') || (qs.get('fbclid') ? 'facebook' : '') || (qs.get('gclid') ? 'google-ads' : '') || sessionStorage.getItem('orvish_src') || '').slice(0, 40); if (src) sessionStorage.setItem('orvish_src', src);
       var cfg = S.firebase_config, wait = new Promise(function (ok) { setTimeout(function () { ok(store.get('orvish_geo', null) || { c: '', r: '', city: '' }); }, 2500); });
