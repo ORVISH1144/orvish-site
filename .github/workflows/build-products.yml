@@ -2,7 +2,7 @@ name: Build product list
 on:
   push:
     branches: [main]
-    paths: ['data/products/**', 'data/commerce.json', 'product.html', 'tools/**']
+    paths: ['data/products/**', 'data/commerce.json', 'data/pages.json', 'product.html', 'page.html', 'tools/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -18,8 +18,8 @@ jobs:
         run: |
           git config user.name "orvish-bot"
           git config user.email "bot@orvish.com"
-          git add -A data/products.json sitemap.xml p index.html shop.html
-          git diff --cached --quiet || (git commit -m "Rebuild product list and product pages" && git push)
+          git add -A data/products.json sitemap.xml p info index.html shop.html
+          git diff --cached --quiet || (git commit -m "Rebuild product and info pages" && git push)
       - name: Ask Pages to rebuild
         run: gh api -X POST repos/${{ github.repository }}/pages/builds || true
         env:

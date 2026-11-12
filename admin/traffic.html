@@ -68,7 +68,7 @@ function rows(t){if(!t.length)return'<p class="empty">No data yet.</p>';var mx=t
 function uniq(l){var m={};l.forEach(function(d){m[d.sid]=1});return Object.keys(m).length}
 function dev(d){var s=String(d.sid||'');return s.indexOf('.')>0?s.split('.')[0]:s}
 function devices(l){var m={};l.forEach(function(d){m[dev(d)]=(m[dev(d)]||{});m[dev(d)][d.sid]=1});var k=Object.keys(m);return{n:k.length,back:k.filter(function(x){return Object.keys(m[x]).length>1}).length}}
-function label(d){return d.pid?(titles[d.pid]||d.pid):({'/':'Home','/index.html':'Home','/shop':'Shop','/track':'Track order','/account':'Account','/page':'Info page','/product':'Product'}[d.p]||d.p)}
+function label(d){if(/^\/info\//.test(d.p||''))return'Info: '+d.p.split('/')[2];return d.pid?(titles[d.pid]||d.pid):({'/':'Home','/index.html':'Home','/shop':'Shop','/track':'Track order','/account':'Account','/page':'Info page','/product':'Product'}[d.p]||d.p)}
 var CC={IN:'India',AE:'United Arab Emirates',SA:'Saudi Arabia',QA:'Qatar',OM:'Oman',KW:'Kuwait',BH:'Bahrain',US:'United States',GB:'United Kingdom',SG:'Singapore',MY:'Malaysia',CA:'Canada',AU:'Australia'};
 function country(d){var c=String(d.c||'');return CC[c]||c}
 function place(d){return[d.city,d.r,country(d)].filter(Boolean).join(', ')}

@@ -679,11 +679,12 @@
     if (rel.length) $('#related').innerHTML = rel.map(cardHTML).join(''); else $('#related-wrap').style.display = 'none';
   }
   function page() {
-    var pg = PAGES.filter(function (x) { return x.slug === qs.get('p'); })[0], el = $('#page-body');
+    var im = /^\/info\/([^\/]+)/.exec(location.pathname), slug = qs.get('p') || (im ? decodeURIComponent(im[1]) : '');
+    var pg = PAGES.filter(function (x) { return x.slug === slug; })[0], el = $('#page-body');
     if (!el) return;
     if (!pg) { el.innerHTML = '<h2>Page not found</h2>'; return; }
     var md0 = document.querySelector('meta[name=description]'), tx = String(pg.body || '').replace(/[#*_`>\[\]]+/g, '').replace(/\s+/g, ' ').trim(); if (md0 && tx) md0.content = tx.slice(0, 155);
-    var cn0 = document.createElement('link'); cn0.rel = 'canonical'; cn0.href = 'https://www.orvish.com/page?p=' + encodeURIComponent(pg.slug); document.head.appendChild(cn0);
+    if (!$('link[rel=canonical]')) { var cn0 = document.createElement('link'); cn0.rel = 'canonical'; cn0.href = 'https://www.orvish.com/info/' + encodeURIComponent(pg.slug) + '/'; document.head.appendChild(cn0); }
     document.title = pg.title + ' – ORVISH'; el.innerHTML = '<h1 style="font-size:40px">' + esc(pg.title) + '</h1>' + md(pg.body);
   }
   /* order helpers shared by the tracking page and the account page */
@@ -706,7 +707,7 @@
   function returnBox(box, id, ph, d, onDone) {
     if (!box) return;
     if (!d || !d.can_return) { box.innerHTML = ''; return; }
-    box.innerHTML = '<div class="retbar"><span>Not happy with it? You can ask for a return' + (d.return_until ? ' until <b>' + esc(d.return_until) + '</b>' : '') + '. <a class="link" href="/page?p=refund-policy">Return policy</a></span><button class="btn secondary" type="button">Request a return</button></div>';
+    box.innerHTML = '<div class="retbar"><span>Not happy with it? You can ask for a return' + (d.return_until ? ' until <b>' + esc(d.return_until) + '</b>' : '') + '. <a class="link" href="/info/refund-policy/">Return policy</a></span><button class="btn secondary" type="button">Request a return</button></div>';
     $('button', box).onclick = function () {
       box.innerHTML = '<form class="retform"><h6>Request a return</h6><div class="field"><label>Reason</label><select name="why" required><option value="">Choose a reason</option><option>Damaged or leaking</option><option>Wrong item received</option><option>Not as described</option><option>Changed my mind</option><option>Other</option></select></div><div class="field"><label>Tell us more (optional)</label><textarea name="more" rows="2" maxlength="200"></textarea></div><div class="msg err"></div><div class="retact"><button class="btn" type="submit">Send request</button><button class="btn secondary" type="button" data-x>Cancel</button></div></form>';
       $('[data-x]', box).onclick = function () { returnBox(box, id, ph, d, onDone); };
@@ -730,7 +731,7 @@
       var r = $('#tres'), ph = String(phone).replace(/\D/g, ''); if (!S.order_webhook_url) { r.innerHTML = '<p class="msg">Tracking is not available right now.</p>'; return; }
       r.innerHTML = '<p class="msg">Looking up your order…</p>';
       fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(id.trim()) + '&phone=' + encodeURIComponent(ph) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
-        if (!d || !d.found) { r.innerHTML = '<p class="msg err">We could not find an order with these details. Please check the order ID and phone number, or <a class="link" href="' + (waLink('Hi, I need help with order ' + id) || '/page?p=contact') + '">contact us</a>.</p>'; return; }
+        if (!d || !d.found) { r.innerHTML = '<p class="msg err">We could not find an order with these details. Please check the order ID and phone number, or <a class="link" href="' + (waLink('Hi, I need help with order ' + id) || '/info/contact/') + '">contact us</a>.</p>'; return; }
         var s = stInfo(d.order_status);
         r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
           (s.off ? '' : '<ol class="steps">' + stepsHTML(s.i) + '</ol>') + '<div class="ois">' + itemRows(d.items_json, d.items) + '</div>' +
@@ -864,6 +865,7 @@
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})(); railNav();
+    $$('a[href^="/page?p="]').forEach(function (a) { a.setAttribute('href', '/info/' + a.getAttribute('href').slice(8).split('&')[0] + '/'); });   /* menu and footer links go to the real info pages */
     document.body.classList.add('ready'); logVisit('view', document.body.dataset.page === 'product' ? pageId() : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }

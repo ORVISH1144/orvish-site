@@ -61,6 +61,37 @@ for f in ('index.html', 'shop.html'):
     t = open(f, encoding='utf8').read(); assert '<!--plinks-->' in t, f + ' lost its <!--plinks--> marker'
     open(f, 'w', encoding='utf8').write(re.sub(r'<!--plinks-->.*?<!--/plinks-->', lambda m: '<!--plinks-->' + links + '<!--/plinks-->', t, flags=re.S))
 pages = json.load(open('data/pages.json', encoding='utf8'))['pages']
-urls = [SITE + '/', SITE + '/shop'] + [f'{SITE}/p/{quote(p["id"])}/' for p in shown] + [SITE + '/page?p=' + x['slug'] for x in pages]
+# one real page per info page at /info/<slug>/ with the text in the page itself
+def md(src):
+    out, lst = [], False
+    def inline(l):
+        t = esc(l)
+        t = re.sub(r'\[([^\]]+)\]\(([^)\s]+)\)', lambda m: f'<a href="{m.group(2)}">{m.group(1)}</a>' if re.match(r'(https?:|mailto:|tel:|/|page|shop|index)', m.group(2)) else m.group(0), t)
+        t = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', t); return re.sub(r'\*([^*]+)\*', r'<em>\1</em>', t)
+    for l in str(src or '').split('\n'):
+        t = inline(l); h = re.match(r'^(#{1,4})\s+(.*)', t)
+        if re.match(r'^\s*[-*]\s+', l):
+            if not lst: out.append('<ul>'); lst = True
+            out.append('<li>' + re.sub(r'^\s*[-*]\s+', '', t) + '</li>'); continue
+        if lst: out.append('</ul>'); lst = False
+        if h: n = len(h.group(1)) + 1; out.append(f'<h{n}>{h.group(2)}</h{n}>')
+        elif t.strip(): out.append('<p>' + t + '</p>')
+    if lst: out.append('</ul>')
+    return '\n'.join(out)
+ptpl = open('page.html', encoding='utf8').read().replace('href="css/', 'href="/css/').replace('src="js/', 'src="/js/')
+keep_i = set()
+for x in pages:
+    slug = x['slug']; keep_i.add(slug); url = f'{SITE}/info/{quote(slug)}/'
+    d = clip(plain(x.get('body') or x['title']), 155) or x['title']
+    head = (f'<title>{esc(x["title"])} – ORVISH</title><meta name="description" content="{esc(d)}"><link rel="canonical" href="{url}">'
+            f'<meta property="og:type" content="article"><meta property="og:title" content="{esc(x["title"])} – ORVISH"><meta property="og:description" content="{esc(d)}"><meta property="og:url" content="{url}">')
+    pg = re.sub(r'<title>.*?</title><meta name="description" content="[^"]*">', lambda m: head, ptpl, count=1, flags=re.S)
+    body = f'<h1 style="font-size:40px">{esc(x["title"])}</h1>' + md(x.get('body'))
+    pg = pg.replace('<div class="page-body" id="page-body"></div>', '<div class="page-body" id="page-body">' + body + '</div>', 1)
+    assert 'rel="canonical"' in pg and body in pg, 'page.html template changed: update tools/build.py'
+    os.makedirs(f'info/{slug}', exist_ok=True); open(f'info/{slug}/index.html', 'w', encoding='utf8').write(pg)
+for d in glob.glob('info/*'):
+    if os.path.isdir(d) and os.path.basename(d) not in keep_i: shutil.rmtree(d)
+urls = [SITE + '/', SITE + '/shop'] + [f'{SITE}/p/{quote(p["id"])}/' for p in shown] + [f'{SITE}/info/{quote(x["slug"])}/' for x in pages]
 open('sitemap.xml', 'w', encoding='utf8').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join('  <url><loc>%s</loc></url>\n' % u.replace('&', '&amp;') for u in urls) + '</urlset>\n')
-print('built', len(shown), 'product pages,', len(urls), 'sitemap urls')
+print('built', len(shown), 'product pages,', len(pages), 'info pages,', len(urls), 'sitemap urls')
