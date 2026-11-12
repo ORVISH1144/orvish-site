@@ -4,6 +4,7 @@
   "logo_height": 38,
   "favicon": "/images/favicon-192.png",
   "whatsapp_number": "918156953937",
+  "contact_phone": "",
   "theme": {
     "bg": "#fff7e2",
     "ink": "#220713",
@@ -20,10 +21,9 @@
   "meta_pixel_id": "",
   "firebase_config": {
     "apiKey": "AIzaSyA-jGuP_Ql3zadmd41NGOQTmtSrzS0uwXA",
-    "authDomain": "orvish-93305.firebaseapp.com",
+    "authDomain": "auth.orvish.com",
     "projectId": "orvish-93305",
     "appId": "1:1013527301298:web:c8a5d05ff0d7f96d608dab"
   },
-  "order_webhook_url": "https://script.google.com/macros/s/AKfycbztmccRaxy6cHVvcMLm-ilBwFcYyARCvh61ughqiTrwB54pMqtJdWnRtNnBysFZKLnkXw/exec",
-  "contact_phone": ""
+  "order_webhook_url": "https://script.google.com/macros/s/AKfycbztmccRaxy6cHVvcMLm-ilBwFcYyARCvh61ughqiTrwB54pMqtJdWnRtNnBysFZKLnkXw/exec"
 }
