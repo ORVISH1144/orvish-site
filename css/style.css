@@ -828,3 +828,5 @@ body[data-page=home] .card .badge:not(.so){display:none}
 .header:empty{min-height:57px}.pdp:empty{min-height:620px}
 @media(min-width:821px){.header:empty{min-height:118px}.pdp:empty{min-height:640px}}
 .gallery .main img{aspect-ratio:auto}
+/* v58 speed: the footer is empty until the page script has filled the page; showing it earlier made it jump down and counted as a layout shift */
+body:not(.ready) .footer{display:none}
