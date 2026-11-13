@@ -282,6 +282,19 @@
     if (l) l.q += q || 1; else cart.push({ id: id, v: label, q: q || 1 });
     saveCart(); toast('Added to cart'); $$('.cart-count').forEach(function (e) { e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump'); }); logVisit('cart', id); fbq_('track', 'AddToCart', { content_ids: [id], content_name: p.title, content_type: 'product', value: unit({ id: id, v: label }).price * (q || 1), currency: 'INR' });
   }
+  /* delivery areas the owner restricts (Admin > Payments, shipping & discounts > Delivery area rules): blocked areas cannot check out, some areas carry an extra delivery charge */
+  function areaRule(pin, city, address) {
+    pin = String(pin || '').replace(/\D/g, ''); var hay = (' ' + [city, address].join(' ').toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ');
+    var rules = S.area_rules || [], hit = null;
+    rules.forEach(function (r) {
+      if (hit && hit.action === 'block') return;
+      var m = String(r.pins || '').split(/[\s,;]+/).filter(Boolean).some(function (p) { p = p.replace(/\D/g, ''); return p && pin.indexOf(p) === 0; }) ||
+        String(r.words || '').split(',').map(function (w) { return w.trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }).filter(Boolean).some(function (w) { return hay.indexOf(' ' + w + ' ') >= 0; });
+      if (m && (!hit || r.action === 'block')) hit = r;
+    });
+    return hit;
+  }
+  var areaFee = 0;
   function totals() {
     var items = 0, sub = 0, base = 0, plain = 0;   /* base = at single-bottle prices, plain = items not at a bundle price */
     cart.forEach(function (l) { if (findP(l.id)) { var u = unit(l); items += l.q; sub += u.price * l.q; base += u.base * l.q; if (!u.bp) plain += u.price * l.q; } });
@@ -291,7 +304,7 @@
       if (Number(discount.max_discount) > 0) off = Math.min(off, Number(discount.max_discount));
     }
     var after = sub - off, thr = S.free_shipping_above || 0;
-    var ship = items === 0 ? 0 : (thr && after >= thr ? 0 : (S.shipping_fee || 0));
+    var ship = items === 0 ? 0 : (thr && after >= thr ? 0 : (S.shipping_fee || 0)) + (items ? areaFee : 0);
     return { items: items, sub: sub, base: base, bsave: base - sub, off: off, ship: ship, total: after + ship };
   }
   var key = function (l) { return l.id + '|' + (l.v || ''); };
@@ -331,6 +344,7 @@
   /* checkout */
   function methods() { var m = []; if (S.razorpay_key_id) m.push(['online', 'Pay online (UPI / Cards / Netbanking)']); if (S.cod_enabled !== false) m.push(['cod', 'Cash on delivery']); if (!m.length) m.push(['cod', 'Pay on delivery / we will contact you']); return m; }
   function openCheckout() {
+    var ar0 = areaRule(saved('pin'), saved('city'), saved('address')); areaFee = ar0 && ar0.action === 'extra_fee' ? Number(ar0.extra_fee) || 0 : 0;
     var t = totals(); if (!t.items) return; logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
     var quick = !!(saved('name') && /^[0-9+ ]{10,15}$/.test(saved('phone')) && saved('address') && saved('city') && /^[0-9]{6}$/.test(saved('pin')) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((USER && USER.email) || saved('email')));
@@ -346,7 +360,7 @@
       '<h6 class="co-h">Payment</h6><div class="pay2">' + ms.map(function (x, i) { var on = x[0] === 'online'; return '<label class="pm"><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '><span class="pmi">' + ico(on ? 'card' : 'cash') + '</span><span class="pmt"><b>' + (on ? 'Pay online' : 'Cash on delivery') + '</b><small>' + (on ? 'UPI, cards, netbanking and wallets' : 'Pay when your order arrives') + '</small></span><span class="pmr"></span></label>'; }).join('') + '</div><div class="csum co">' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.base) + '</span></div>' + (t.bsave > 0 ? '<div class="row off"><span>Bundle saving</span><span>−' + money(t.bsave) + '</span></div>' : '') + (t.off && discount ? '<div class="row"><span>Discount <span class="cotag">' + ico('ticket') + esc(discount.code) + ' applied</span></span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total<small>Inclusive of all taxes</small></span><span>' + money(t.total) + '</span></div></div>' +
-      '<div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
+      '<div class="msg" id="co-area" hidden></div><div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
     $('#cart').classList.remove('open'); m.classList.add('open'); $('#ov').classList.add('on');
     var fm0 = $('#co-form'), flds = $('#co-fields'), sum0 = $('#co-saved');
     var expand = function () { if (flds) flds.hidden = false; if (sum0) sum0.remove(); };
@@ -354,7 +368,15 @@
     if ($('#co-clear')) $('#co-clear').onclick = function () { fm0.address.value = ''; fm0.city.value = ''; fm0.pin.value = ''; fm0.loc.value = ''; $('#co-clear').closest('.msg').remove(); fm0.address.focus(); };
     var setLoc = function (pl) { if (pl.address) fm0.address.value = pl.address; if (pl.city) fm0.city.value = pl.city; if (pl.pin) fm0.pin.value = pl.pin; fm0.loc.value = pl.loc || ''; fm0.address.focus(); toast('Location added. Add your house or flat number'); };
     $('#co-here').onclick = function () { pickLocation(setLoc, true); }; $('#co-map').onclick = function () { pickLocation(setLoc, false); };
+    var areaCheck = function (redo) {
+      var f = fm0.elements, r = areaRule(f.pin.value, f.city.value, f.address.value), box = $('#co-area'), sb0 = $('#co-form button[type=submit]'), fee = r && r.action === 'extra_fee' ? Number(r.extra_fee) || 0 : 0;
+      if (redo && fee !== areaFee) { saveProfile(Object.fromEntries(new FormData(fm0))); return openCheckout(); }
+      if (r && r.action === 'block') { box.hidden = false; box.className = 'msg err'; box.textContent = r.message || 'Sorry, we cannot deliver to this area right now.'; sb0.disabled = true; }
+      else { sb0.disabled = false; if (r && fee) { box.hidden = false; box.className = 'msg'; box.textContent = r.message || ('An extra delivery charge of ' + money(fee) + ' applies to your area.'); } else { box.hidden = true; } }
+    };
+    ['pin', 'city'].forEach(function (k) { fm0.elements[k].addEventListener('change', function () { areaCheck(true); }); }); fm0.elements.address.addEventListener('change', function () { areaCheck(true); }); areaCheck(false);
     $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); f.phone = fullPhone(f.phone);
+      var blk = areaRule(f.pin, f.city, f.address); if (blk && blk.action === 'block') { areaCheck(false); $('#co-msg').textContent = blk.message || 'Sorry, we cannot deliver to this area right now.'; return; }
       var lim = discount && t.off ? Number(discount.max_uses) || 0 : 0, sb = $('#co-form button[type=submit]'), go = function () { if (f.pm === 'online') {
         if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
         payRazorpay(f, t);
@@ -620,7 +642,7 @@
       var where = [saved('city'), saved('pin')].filter(Boolean).join(' '), tt = totals(), thr = S.free_shipping_above || 0, price = info().u.price * q;
       var free = thr && price >= thr, cs = S.discount_codes || [];
       $('#pdx').innerHTML = '<button class="dlv" id="dlv" type="button">' + ico('pin') + '<span>' + (where ? 'Deliver to <b>' + esc(where) + '</b>' : 'Add your delivery location') + '</span>' + ico('edit') + '</button>' +
-        '<div class="eta">' + ico('truck') + '<span>Standard delivery<b>Arrives ' + etaText() + '</b></span><em>' + (free || !S.shipping_fee ? 'Free' : money(S.shipping_fee)) + '</em></div>' +
+        (function () { var ar = areaRule(saved('pin'), saved('city'), saved('address')); return ar && ar.action === 'block' ? '<div class="msg err" style="margin:8px 0">' + esc(ar.message || 'Sorry, we cannot deliver to this area right now.') + '</div>' : ''; })() + '<div class="eta">' + ico('truck') + '<span>Standard delivery<b>Arrives ' + etaText() + '</b></span><em>' + (free || !S.shipping_fee ? 'Free' : money(S.shipping_fee)) + '</em></div>' +
         (cs.length ? '<div class="cpn"><h6>' + ico('ticket') + 'Save extra with coupons</h6>' + cs.map(function (d) { return '<div class="cp' + (pickedCoupon() === d.code ? ' on' : '') + '"><div><b>' + esc(couponText(d).replace(/^./, function (c) { return c.toUpperCase(); })) + '</b><small>' + esc(d.code) + '</small></div>' + (function () { if (usedUp(d)) return '<span class="cpb used">Already used</span>'; var on = pickedCoupon() === d.code, have = tt.items + q, need = on && have < (d.min_items || 1); return (on ? '<span class="cpb' + (need ? ' wait' : '') + '">' + (need ? 'Add ' + ((d.min_items || 1) - have) + ' more' : 'Applied') + '</span>' : '') + '<button type="button" data-coupon="' + esc(d.code) + '"' + (on ? ' class="on" aria-label="Remove coupon ' + esc(d.code) + '">' + ico('close') + 'Remove' : ' data-copy="1">' + ico('copy') + 'Copy') + '</button>'; })() + '</div>'; }).join('') + '</div>' : '');
       $('#dlv').onclick = function () { pickLocation(function (pl) { saveLocation(pl); pdx(); }, !where); };
     }

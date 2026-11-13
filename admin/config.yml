@@ -564,6 +564,46 @@ collections:
         min: 0
         required: false
         hint: Example – 10% off with a maximum of 200 means the customer never gets more than ₹200 off.
+    - label: Delivery area rules (areas we do not deliver to, or charge extra for)
+      name: area_rules
+      widget: list
+      required: false
+      summary: '{{fields.name}} – {{fields.action}}'
+      hint: Customers whose PIN code or address matches a "Block" rule cannot place an order. "Extra charge" areas pay the extra amount on top of the normal shipping fee.
+      fields:
+      - label: Area name (only for you)
+        name: name
+        widget: string
+      - label: What should happen
+        name: action
+        widget: select
+        options:
+        - label: Block checkout
+          value: block
+        - label: Extra delivery charge
+          value: extra_fee
+        default: block
+      - label: PIN codes or starts of PIN codes, separated by commas
+        name: pins
+        widget: string
+        required: false
+        hint: A full PIN such as 682555, or just the start to cover a whole region, such as 18 for Jammu and Kashmir or 744 for the Andaman Islands.
+      - label: Place names to match in the city or address, separated by commas
+        name: words
+        widget: string
+        required: false
+        hint: Example – Leh, Kargil, Port Blair. The customer's city or address only needs to contain the name.
+      - label: Extra delivery charge in ₹ (only for Extra delivery charge)
+        name: extra_fee
+        widget: number
+        value_type: int
+        min: 0
+        required: false
+      - label: Message shown to the customer
+        name: message
+        widget: text
+        required: false
+        hint: Leave empty to use a standard message.
     - label: Shipping fee (₹)
       name: shipping_fee
       widget: number
