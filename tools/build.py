@@ -46,7 +46,7 @@ for p in shown:
     first = (p.get('images') or [''])[0]; mo = re.match(r'^/images/uploads/([^/?#]+)\.(png|jpe?g)$', first, re.I); pre = ''
     if mo:   # start downloading the main photo (the biggest thing on the page) straight away
         sl = re.sub(r'[^a-z0-9]+', '-', unquote(mo.group(1)).lower()).strip('-')
-        pre = f'<link rel="preload" as="image" href="/images/opt/{sl}-800.webp" imagesrcset="/images/opt/{sl}-400.webp 400w, /images/opt/{sl}-800.webp 800w, /images/opt/{sl}-1200.webp 1200w" imagesizes="(max-width:820px) 100vw, 50vw" fetchpriority="high">'
+        pre = f'<link rel="preload" as="image" href="/images/opt/{sl}-800.webp" imagesrcset="/images/opt/{sl}-400.webp 400w, /images/opt/{sl}-600.webp 600w, /images/opt/{sl}-800.webp 800w, /images/opt/{sl}-1200.webp 1200w" imagesizes="(max-width:820px) 100vw, 50vw" fetchpriority="high">'
     head = (f'<title>{esc(title)}</title><meta name="description" content="{esc(desc)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:type" content="product"><meta property="og:title" content="{esc(p["title"])}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}">'
             f'<meta property="og:image" content="{esc(imgs[0])}">{pre}<meta property="product:price:amount" content="{price}"><meta property="product:price:currency" content="INR"><meta name="twitter:card" content="summary_large_image">'

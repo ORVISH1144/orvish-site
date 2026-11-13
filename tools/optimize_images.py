@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Makes small WebP copies (400, 800 and 1200 px wide) of every photo in images/uploads into images/opt.
+"""Makes small WebP copies (400, 600, 800 and 1200 px wide) of every photo in images/uploads into images/opt.
 The website uses these instead of the original files, which can be several MB each.
 Names: /images/opt/<lowercase-name-with-dashes>-<width>.webp. Run by the GitHub Action whenever a photo is added or changed."""
 import os, re, glob, json, hashlib
 from urllib.parse import unquote
 from PIL import Image
-SRC, OUT, WIDTHS = 'images/uploads', 'images/opt', (400, 800, 1200)
+SRC, OUT, WIDTHS = 'images/uploads', 'images/opt', (400, 600, 800, 1200)
 def slug(name): return re.sub(r'[^a-z0-9]+', '-', unquote(name).lower()).strip('-')
 os.makedirs(OUT, exist_ok=True)
 stamp_file = os.path.join(OUT, 'stamps.json')

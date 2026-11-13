@@ -96,7 +96,7 @@
   /* the attributes of a photo: src (+ srcset when sizes are given) and the fallback to the original file */
   function oa(src, w, sizes, ws) {
     var o = oi(src, w), a = 'src="' + esc(o) + '"'; if (o === src) return a;
-    if (sizes) a += ' srcset="' + esc(oset(src, ws || [400, 800, 1200])) + '" sizes="' + sizes + '"';
+    if (sizes) a += ' srcset="' + esc(oset(src, ws || [400, 600, 800, 1200])) + '" sizes="' + sizes + '"';
     return a + ' onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + esc(src).replace(/'/g, '%27') + '\'"';
   }
   function saved(k) { var l = store.get('orvish_details', null) || {}; return (PROFILE && PROFILE[k]) || l[k] || ''; }
@@ -553,7 +553,7 @@
   function home() {
     var sl = S.slides || []; if (!sl.length) $('#slider').style.display = 'none';
     $('#slider').innerHTML = sl.map(function (s, i) {
-      return '<div class="slide' + (i ? '' : ' active') + '"><img ' + oa(s.image, 1200, '100vw', [800, 1200]) + (i ? ' loading="lazy"' : ' fetchpriority="high"') + ' alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || '/shop') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
+      return '<div class="slide' + (i ? '' : ' active') + '"><img ' + oa(s.image, 1200, '100vw', [600, 800, 1200]) + (i ? ' loading="lazy"' : ' fetchpriority="high"') + ' alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || '/shop') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
     }).join('') + (sl.length > 1 ? '<button class="s-arrow s-prev" aria-label="Previous">' + ico('left') + '</button><button class="s-arrow s-next" aria-label="Next">' + ico('right') + '</button><div class="dots">' + sl.map(function (_, i) { return '<button class="' + (i ? '' : 'on') + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
     swipe($('#slider'), function (d) { d > 0 ? $('.s-next') && $('.s-next').click() : $('.s-prev') && $('.s-prev').click(); });
     var cur = 0, slides = $$('.slide', $('#slider')), dots = $$('.dots button'), timer;
@@ -641,7 +641,7 @@
     function info() { var u = unit({ id: p.id, v: cur, q: q }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
     function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax">' + (i.u.bp ? 'each when you buy ' + q + ' · you save ' + money((i.u.base - i.u.price) * q) + ' · ' : '') + 'Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
-    el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" ' + oa(p.images[0], 800, '(max-width:820px) 100vw, 50vw', [400, 800, 1200]) + ' width="800" height="800" fetchpriority="high" decoding="async" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" ' + oa(im, 400) + ' data-full="' + esc(im) + '" loading="' + (i ? 'lazy' : 'eager') + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
+    el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" ' + oa(p.images[0], 800, '(max-width:820px) 100vw, 50vw', [400, 600, 800, 1200]) + ' width="800" height="800" fetchpriority="high" decoding="async" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" ' + oa(im, 400) + ' data-full="' + esc(im) + '" loading="' + (i ? 'lazy' : 'eager') + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</a><div class="price" id="pp"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
       '<div id="buyarea"></div><div id="pdx"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
