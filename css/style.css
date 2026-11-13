@@ -830,3 +830,5 @@ body[data-page=home] .card .badge:not(.so){display:none}
 .gallery .main img{aspect-ratio:auto}
 /* v58 speed: the footer is empty until the page script has filled the page; showing it earlier made it jump down and counted as a layout shift */
 body:not(.ready) .footer{display:none}
+/* v59: account page keeps its height while the login form loads, so the footer does not jump */
+#acct-body{min-height:560px}#acct-body .msg:only-child{text-align:center;padding-top:120px}
