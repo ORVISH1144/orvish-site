@@ -44,8 +44,8 @@
     if (T.button_radius != null) r.setProperty('--r-btn', T.button_radius + 'px');
     var single = ['Acme', 'Bebas Neue', 'DM Serif Display'], load = [];
     [['--font-heading', T.heading_font], ['--font-sub', T.subheading_font], ['--font-body', T.body_font]].forEach(function (x) {
-      if (!x[1]) return; r.setProperty(x[0], "'" + x[1] + "'," + (x[1] === 'Georgia' ? 'serif' : 'Georgia,serif'));
-      if (['Georgia', 'Acme', 'Andada Pro', 'Inter'].indexOf(x[1]) < 0 && load.indexOf(x[1]) < 0) load.push(x[1]);
+      if (!x[1]) return; r.setProperty(x[0], "'" + x[1] + "'," + (x[1] === 'Georgia' ? 'serif' : /Sans|Inter|Poppins|Montserrat|Lato|Roboto|Jost|Outfit/.test(x[1]) ? 'system-ui,sans-serif' : 'Georgia,serif'));
+      if (['Georgia', 'Playfair Display', 'DM Sans'].indexOf(x[1]) < 0 && load.indexOf(x[1]) < 0) load.push(x[1]);
     });
     if (load.length) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?' + load.map(function (f) { return 'family=' + f.replace(/ /g, '+') + (single.indexOf(f) > -1 ? '' : ':wght@400;500;600;700'); }).join('&') + '&display=swap'; document.head.appendChild(l); }
     r.setProperty('--logo-h', (S.logo_height || 38) + 'px');
@@ -242,8 +242,8 @@
   var R = null;
   function starsHTML(v) { return '<span class="stars" aria-label="' + v.toFixed(1) + ' out of 5"><span style="width:' + Math.round(v / 5 * 100) + '%">★★★★★</span>★★★★★</span>'; }
   function rateOf(id) { var pp = P.filter(function (x) { return x.id === id; })[0], own = ((pp && pp.reviews) || []).filter(function (x) { return x && x.name && x.review && Number(x.rating); }); var l = own.concat((R || []).filter(function (x) { return x.product_id === id; })); if (!l.length) return null; return { n: l.length, avg: l.reduce(function (a, x) { return a + Number(x.rating || 0); }, 0) / l.length, list: l }; }
-  function ratingHTML(id) { var x = rateOf(id); return x ? starsHTML(x.avg) + '<small>' + x.avg.toFixed(1) + ' (' + x.n + ')</small>' : ''; }
-  function fillRatings() { $$('.rating[data-pid]').forEach(function (e) { e.innerHTML = ratingHTML(e.dataset.pid); }); }
+  function ratingHTML(id, always) { var x = rateOf(id); return x ? starsHTML(x.avg) + '<small>' + x.avg.toFixed(1) + ' (' + x.n + ')</small>' : always ? starsHTML(0) + '<small>(0)</small>' : ''; }
+  function fillRatings() { $$('.rating[data-pid]').forEach(function (e) { e.innerHTML = ratingHTML(e.dataset.pid, e.classList.contains('big')); }); }
   function loadReviews() {
     if (!S.order_webhook_url) return Promise.resolve([]);
     try { var c = JSON.parse(sessionStorage.getItem('orvish_reviews') || 'null'); if (c && Date.now() - c.t < 300000) { R = c.d; return Promise.resolve(R); } } catch (e) {}
@@ -481,7 +481,7 @@
     var ai = 0, sp = $$('#announce span'); if (sp.length > 1) setInterval(function () { sp[ai].classList.remove('on'); ai = (ai + 1) % sp.length; sp[ai].classList.add('on'); }, 4000);
     var ph = phoneNo();
     $('#header').classList.add('h2');
-    $('#header').innerHTML = '<div class="wrap"><div class="hleft"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><button class="hsearch" id="open-search" aria-label="Search">' + ico('search') + '<span>What are you looking for?</span></button></div>' +
+    $('#header').innerHTML = '<div class="wrap"><div class="hleft"><button class="icon-btn burger" id="burger" aria-label="Menu">' + ico('menu') + '</button><button class="hsearch" id="open-search" aria-label="Search">' + ico('search') + '<span>Search for perfumes, brands…</span></button></div>' +
       '<a class="logo" href="/">' + logoHTML() + '</a><div class="actions">' + '<a class="icon-btn acct" href="/account" aria-label="My account">' + ico('user') + '<i id="acct-dot"></i></a><button class="icon-btn" id="open-cart" aria-label="Cart">' + ico('bag') + '<span class="cart-count"></span></button></div></div>' +
       '<div class="navrow"><nav class="nav">' + navHTML() + '</nav></div>';
     var li = function (a) { return (a || []).map(function (l) { return '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>'; }).join(''); };
@@ -544,7 +544,7 @@
       '<img loading="lazy" ' + oa(p.images[0], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" ' + oa(p.images[1], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
-      (so ? '<button class="btn block" disabled>Sold out</button>' : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">Add to cart</button>') + '</div></div>';
+      (so ? '<button class="btn block" disabled>Sold out</button>' : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">' + ico('bag') + 'Add to cart</button>') + '</div></div>';
   }
   function row(title, list, link) {
     if (!list.length) return '';
@@ -628,6 +628,10 @@
     var n = p.note_pyramid; if (!n || !(n.top || n.heart || n.base)) return '';
     return '<div class="notes"><h4>Fragrance notes</h4><div>' + [['Top notes', n.top], ['Heart notes', n.heart], ['Base notes', n.base]].filter(function (x) { return x[1]; }).map(function (x) { return '<div><b>' + x[0] + '</b><span>' + esc(x[1]) + '</span></div>'; }).join('') + '</div></div>';
   }
+  function highlights(p) {
+    var n = p.note_pyramid || {}, rows = [['Brand', p.brand], ['Product type', p.type], ['For', ({ men: 'Men', women: 'Women', unisex: 'Unisex' })[p.gender]], ['Fragrance family', (p.notes || []).join(', ')], ['Top notes', n.top], ['Heart notes', n.heart], ['Base notes', n.base]].filter(function (x) { return x[1]; });
+    return rows.length ? '<div class="hl"><h4>Product highlights</h4>' + rows.map(function (x) { return '<div><b>' + x[0] + '</b><span>' + esc(x[1]) + '</span></div>'; }).join('') + '</div>' : '';
+  }
   function product() {
     var p = findP(pageId()), el = $('#pdp');
     if (!p) { el.innerHTML = '<p class="empty">Product not found. <a class="link" href="/shop">Back to shop</a></p>'; return; }
@@ -642,20 +646,20 @@
     function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax">' + (i.u.bp ? 'each when you buy ' + q + ' · you save ' + money((i.u.base - i.u.price) * q) + ' · ' : '') + 'Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" ' + oa(p.images[0], 800, '(max-width:820px) 100vw, 50vw', [400, 600, 800, 1200]) + ' width="800" height="800" fetchpriority="high" decoding="async" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" ' + oa(im, 400) + ' data-full="' + esc(im) + '" loading="' + (i ? 'lazy' : 'eager') + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
-      '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</a><div class="price" id="pp"></div>' +
+      '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id, true) + '</a><div class="price" id="pp"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
       '<div id="buyarea"></div><div id="pdx"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
-      '<div class="desc">' + md(p.description) + '</div>' + noteBlock(p) +
+      highlights(p) + '<h4 class="dh">About this item</h4><div class="desc">' + md(p.description) + '</div>' +
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
     function paint() {
       $('#pp').innerHTML = priceHTML(); var i = info();
-      $('#buyarea').innerHTML = i.so ? '<p><strong>Sold out</strong></p>' : (p.bundles && p.bundles.length ? '<div class="bundles"><b>Bundle &amp; save</b>' + p.bundles.filter(function (b) { return Number(b.qty) > 1 && Number(b.percent) > 0; }).sort(function (x, y) { return x.qty - y.qty; }).map(function (b) { var n = Number(b.qty), bu = unit({ id: p.id, v: cur, q: n }); return '<button class="bnd' + (bundlePct(p, q) === Number(b.percent) && q >= n ? ' on' : '') + '" data-q="' + n + '"><span>Buy ' + n + '</span><em>Save ' + Number(b.percent) + '%</em></button>'; }).join('') + '</div>' : '') + '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn secondary" id="add">Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
+      $('#buyarea').innerHTML = i.so ? '<p><strong>Sold out</strong></p>' : (p.bundles && p.bundles.length ? '<div class="bundles"><b>Bundle &amp; save</b>' + p.bundles.filter(function (b) { return Number(b.qty) > 1 && Number(b.percent) > 0; }).sort(function (x, y) { return x.qty - y.qty; }).map(function (b) { var n = Number(b.qty), bu = unit({ id: p.id, v: cur, q: n }); return '<button class="bnd' + (bundlePct(p, q) === Number(b.percent) && q >= n ? ' on' : '') + '" data-q="' + n + '"><span>Buy ' + n + '</span><em>Save ' + Number(b.percent) + '%</em></button>'; }).join('') + '</div>' : '') + '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn gold" id="add">' + ico('bag') + 'Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
       if (i.so) return;
       $$('#pq button').forEach(function (b) { b.onclick = function () { q = Math.max(1, q + Number(b.dataset.d)); paint(); }; });
       $$('.bnd').forEach(function (b) { b.onclick = function () { q = b.classList.contains('on') ? 1 : Number(b.dataset.q); paint(); }; });
       $('#add').onclick = function () { addToCart(p.id, q, cur); openCart(true); };
       $('#buy').onclick = function () { addToCart(p.id, q, cur); openCheckout(); };
-      var s = $('#s-add'); if (s) { $('#s-price').textContent = money(i.u.price); }
+      var sq = $('#s-q'); if (sq) sq.value = String(Math.min(q, 10));
       if ($('#pdx')) pdx();
     }
     function pdx() {
@@ -674,7 +678,8 @@
     $$('.thumbs img').forEach(function (t) { t.onclick = function () { $('#mi').removeAttribute('srcset'); $('#mi').src = oi(t.dataset.full || t.src, 1200); $$('.thumbs img').forEach(function (x) { x.classList.remove('on'); }); t.classList.add('on'); }; });
     var wl = waLink('Hi, I want to order: ' + p.title + ' ' + location.href);
     if (wl) $('#buyarea').insertAdjacentHTML('afterend', '<a class="btn secondary block" style="margin:6px 0 16px" target="_blank" rel="noopener" href="' + wl + '"><img class="wa-i" src="/images/whatsapp.png" alt="">Order on WhatsApp</a>');
-    if (inStock(p)) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><div><div class="price" id="s-price" style="padding:0;font-size:16px">' + money(info().u.price) + '</div><div style="font:12px var(--font-accent);opacity:.7">' + esc(p.title) + '</div></div><button class="btn secondary" id="s-add">Add</button><button class="btn" id="s-buy">Buy now</button></div>');
+    if (inStock(p)) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><select id="s-q" aria-label="Quantity">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option>' + n + '</option>'; }).join('') + '</select><button class="btn gold" id="s-add">' + ico('bag') + 'Add to cart</button><button class="btn" id="s-buy">Buy now</button></div>');
+      $('#s-q').onchange = function () { q = Number(this.value) || 1; paint(); }; document.body.classList.add('has-sbuy');
       $('#s-add').onclick = function () { addToCart(p.id, q, cur); openCart(true); }; $('#s-buy').onclick = function () { addToCart(p.id, q, cur); openCheckout(); }; }
     var elig; /* undefined = checking, null = not a buyer, {id, phone} = verified buyer of this product */
     function findBuyer() {
@@ -696,15 +701,15 @@
     }
     function drawReviews() {
       var box = $('#reviews'); if (!box) return; var x = rateOf(p.id), mine = store.get('orvish_reviewed', []).indexOf(p.id) > -1;
-      var bars = ''; if (x) { for (var st = 5; st >= 1; st--) { var c = x.list.filter(function (y) { return Math.round(Number(y.rating)) === st; }).length; bars += '<div class="rb"><span>' + st + ' ★</span><i><b style="width:' + Math.round(c / x.n * 100) + '%"></b></i><span>' + c + '</span></div>'; } }
+      var bars = ''; for (var st = 5; st >= 1; st--) { var c = x ? x.list.filter(function (y) { return Math.round(Number(y.rating)) === st; }).length : 0; bars += '<div class="rb">' + starsHTML(st) + '<i><b style="width:' + (x ? Math.round(c / x.n * 100) : 0) + '%"></b></i><span>' + c + '</span></div>'; }
       box.innerHTML = '<h3>Customer reviews</h3>' +
-        (x ? '<div class="rsum"><div class="ravg"><b>' + x.avg.toFixed(1) + '</b>' + starsHTML(x.avg) + '<small>' + x.n + (x.n === 1 ? ' review' : ' reviews') + '</small></div><div class="rbars">' + bars + '</div></div>' : '<p class="sub" style="margin:0 0 14px">No reviews yet.</p>') +
+        '<div class="rsum"><div class="ravg">' + starsHTML(x ? x.avg : 0) + '<b>' + (x ? x.avg.toFixed(2) + ' out of 5' : 'No ratings yet') + '</b><small>' + (x ? 'Based on ' + x.n + (x.n === 1 ? ' review' : ' reviews') : 'Be the first to review this perfume after you buy it') + '</small></div><div class="rbars">' + bars + '</div></div>' +
         (mine ? '<p class="msg">Thank you! Your review was sent and will appear here after we approve it.</p>' :
-          elig ? '<details class="rform"' + (qs.get('oid') ? ' open' : '') + '><summary class="btn secondary">Write a review</summary><form id="rf"><div class="pick" id="pick">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' stars">★</button>'; }).join('') + '<span id="pick-t">Tap to rate</span></div>' +
+          elig ? '<details class="rform"' + (qs.get('oid') ? ' open' : '') + '><summary class="btn gold block">Write a review</summary><form id="rf"><div class="pick" id="pick">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' stars">★</button>'; }).join('') + '<span id="pick-t">Tap to rate</span></div>' +
           '<div class="field"><label>Your name</label><input name="name" required maxlength="40"></div><div class="field"><label>Your review</label><textarea name="review" rows="3" required maxlength="800"></textarea></div><input name="website" class="hp" tabindex="-1" autocomplete="off">' +
           '<div class="msg err" id="rmsg"></div><button class="btn" type="submit">Submit review</button></form></details>' :
           '') +
-        (x ? '<div class="rlist">' + x.list.slice().reverse().map(function (y) { return '<div class="rev"><div class="rh">' + starsHTML(Number(y.rating)) + '<b>' + esc(y.name) + '</b>' + (y.verified ? '<em>Verified buyer</em>' : '') + '<small>' + esc(y.date || '') + '</small></div><p>' + esc(y.review) + '</p></div>'; }).join('') + '</div>' : '');
+        (x ? '<div class="rlist">' + x.list.slice().reverse().map(function (y) { return '<div class="rev"><div class="rh">' + starsHTML(Number(y.rating)) + '<small>' + esc(y.date || '') + '</small></div><div class="rn"><i>' + ico('user') + '</i><b>' + esc(y.name) + '</b>' + (y.verified ? '<em>Verified</em>' : '') + '</div><p>' + esc(y.review) + '</p></div>'; }).join('') + '</div>' : '');
       var rate = 0, f = $('#rf'); if (!f) return;
       $$('#pick button').forEach(function (b) { b.onclick = function () { rate = Number(b.dataset.n); $$('#pick button').forEach(function (z) { z.classList.toggle('on', Number(z.dataset.n) <= rate); }); $('#pick-t').textContent = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'][rate]; }; });
       f.onsubmit = function (e) {
@@ -717,7 +722,11 @@
     }
     findBuyer().then(function (b) { elig = b || null; drawReviews(); if (b && qs.get('oid')) { var rb = $('#reviews'); if (rb) rb.scrollIntoView(); } });
     drawReviews(); loadReviews().then(function () { fillRatings(); drawReviews(); });
-    var fq = S.faq || []; if (fq.length) $('#faq').innerHTML = '<h3>Frequently asked questions</h3>' + fq.map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('');
+    var sn = p.title.split(/ [–-] |,/)[0].trim(), np = p.note_pyramid || {}, auto = [];
+    auto.push({ title: 'Is ' + sn + ' 100% authentic?', body: 'Yes. ' + sn + (p.brand ? ' by ' + p.brand : '') + ' sold on ORVISH is 100% authentic and original.' });
+    if (np.top || np.heart || np.base) auto.push({ title: 'What does ' + sn + ' smell like?', body: [np.top ? 'It opens with ' + np.top + '.' : '', np.heart ? 'The heart is ' + np.heart + '.' : '', np.base ? 'It dries down to ' + np.base + '.' : ''].filter(Boolean).join(' ') });
+    if (p.gender || p.type) auto.push({ title: 'Who is ' + sn + ' for?', body: [p.type ? 'It is ' + (/^[aeiou]/i.test(p.type) ? 'an ' : 'a ') + p.type : 'It is a perfume', p.gender ? ({ men: 'made for men', women: 'made for women', unisex: 'that anyone can wear' })[p.gender] : ''].filter(Boolean).join(' ') + '.' + ((p.notes || []).length ? ' The style is ' + p.notes.join(', ').toLowerCase() + '.' : '') });
+    var fq = (p.faqs || []).filter(function (d) { return d && d.q && d.a; }).map(function (d) { return { title: d.q, body: d.a }; }).concat(p.auto_faq === false ? [] : auto, S.faq || []); if (fq.length) $('#faq').innerHTML = '<h3>Frequently asked questions</h3>' + fq.map(function (d, i) { return '<details class="fq"' + (i < 2 ? ' open' : '') + '><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('');
     var rel = P.filter(function (x) { return x.id !== p.id; }).slice(0, 4);
     if (rel.length) $('#related').innerHTML = rel.map(cardHTML).join(''); else $('#related-wrap').style.display = 'none';
   }

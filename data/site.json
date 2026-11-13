@@ -6,14 +6,14 @@
   "whatsapp_number": "918156953937",
   "contact_phone": "",
   "theme": {
-    "bg": "#fff7e2",
-    "ink": "#220713",
-    "primary": "#761941",
-    "accent": "#ffe9af",
-    "heading_font": "Cormorant Garamond",
-    "subheading_font": "Andada Pro",
-    "body_font": "Georgia",
-    "button_radius": 14
+    "bg": "#f1ece1",
+    "ink": "#14211f",
+    "primary": "#092d29",
+    "accent": "#b89519",
+    "heading_font": "Playfair Display",
+    "subheading_font": "DM Sans",
+    "body_font": "DM Sans",
+    "button_radius": 4
   },
   "tagline": "Authentic fragrances, delivered across India",
   "support_email": "support@orvish.com",

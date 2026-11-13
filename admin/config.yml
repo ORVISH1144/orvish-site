@@ -173,6 +173,23 @@ collections:
     - label: Text
       name: body
       widget: text
+  - label: Questions and answers for this product (shown under the reviews, before the general questions)
+    name: faqs
+    widget: list
+    required: false
+    summary: '{{fields.q}}'
+    fields:
+    - label: Question
+      name: q
+      widget: string
+    - label: Answer
+      name: a
+      widget: text
+  - label: Also show the automatic questions (authentic, smell, who it is for) made from the product details
+    name: auto_faq
+    widget: boolean
+    default: true
+    required: false
   - label: Customer reviews (add or edit reviews here – website reviews from customers arrive in the Google Sheet)
     name: reviews
     widget: list
