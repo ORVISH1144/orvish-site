@@ -823,3 +823,8 @@ body[data-page=home] .card .badge:not(.so){display:none}
 .cp.on::before{background:conic-gradient(from var(--cpa),transparent 0deg,transparent 250deg,#2e9f5b 305deg,#c9f2d8 335deg,#2e9f5b 350deg,transparent 360deg)}
 .cp:has(.cpb.used)::before{display:none}
 @media(prefers-reduced-motion:reduce){.cp::before{animation:none;background:linear-gradient(#f2c23088,#f2c23088)}}
+
+/* v57 speed: keep the space of the header and product area while the page script fills them, so nothing jumps */
+.header:empty{min-height:57px}.pdp:empty{min-height:620px}
+@media(min-width:821px){.header:empty{min-height:118px}.pdp:empty{min-height:640px}}
+.gallery .main img{aspect-ratio:auto}

@@ -35,7 +35,7 @@
     lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', chat: '<path d="M4 5h16v11H9l-5 4z"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.2-6 8-6s7 1.5 8 6"/>', filter: '<path d="M4 6h16M7 12h10M10 18h4"/>', down: '<path d="M6 9l6 6 6-6"/>', left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>'
   };
   var ico = function (n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[n] || ICONS.star) + '</svg>'; };
-  var fetchJSON = function (u) { return fetch(u + '?v=' + Date.now()).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); };
+  var fetchJSON = function (u) { var pre = window.__orvData && window.__orvData[u]; if (pre) { window.__orvData[u] = null; return pre.catch(function () { return fetch(u + '?v=' + Math.floor(Date.now() / 120000)).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); }); } return fetch(u + '?v=' + Math.floor(Date.now() / 120000)).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); };
 
   function applyTheme() {
     var T = S.theme || {}, r = document.documentElement.style;
@@ -87,6 +87,18 @@
   function phoneField(v, req) { return '<div class="ccph"><span>' + CC + '</span><input name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10-digit mobile number" pattern="[0-9]{10}" title="Enter your 10-digit mobile number"' + (req ? ' required' : '') + ' value="' + esc(last10(v)) + '"></div>'; }
   document.addEventListener('input', function (e) { var i = e.target; if (i && i.matches && i.matches('.ccph input')) { var d = i.value.replace(/\D/g, ''); d = d.length > 10 ? d.slice(-10) : d; if (d !== i.value) i.value = d; } });
   /* saved delivery details: kept on this device for everyone, and in the account (Firestore) when logged in */
+  /* small WebP copies of the photos (made by tools/optimize_images.py); falls back to the original file if a copy is missing */
+  function oi(src, w) {
+    var m = /^\/images\/uploads\/([^/?#]+)\.(png|jpe?g)$/i.exec(String(src || '')); if (!m) return src;
+    var n = decodeURIComponent(m[1]).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return '/images/opt/' + n + '-' + w + '.webp';
+  }
+  function oset(src, ws) { return oi(src, ws[0]) === src ? '' : ws.map(function (w) { return oi(src, w) + ' ' + w + 'w'; }).join(', '); }
+  /* the attributes of a photo: src (+ srcset when sizes are given) and the fallback to the original file */
+  function oa(src, w, sizes, ws) {
+    var o = oi(src, w), a = 'src="' + esc(o) + '"'; if (o === src) return a;
+    if (sizes) a += ' srcset="' + esc(oset(src, ws || [400, 800, 1200])) + '" sizes="' + sizes + '"';
+    return a + ' onerror="this.onerror=null;this.removeAttribute(\'srcset\');this.src=\'' + esc(src).replace(/'/g, '%27') + '\'"';
+  }
   function saved(k) { var l = store.get('orvish_details', null) || {}; return (PROFILE && PROFILE[k]) || l[k] || ''; }
   function fillCheckout() {
     var fm = $('#co-form'); if (!fm) return;
@@ -103,9 +115,14 @@
     PROFILE = Object.assign({}, PROFILE, d);
     try { return FB.db.collection('customers').doc(USER.uid).set(d, { merge: true }).then(function () { return true; }).catch(function () { return false; }); } catch (e) { return Promise.resolve(false); }
   }
+  var fbP = null;
   function fbReady() {
     var c = S.firebase_config; if (!c || !c.apiKey) return Promise.resolve(null);
     if (FB) return Promise.resolve(FB);
+    if (fbP) return fbP;
+    fbP = fbLoad_(c).then(function (r) { if (!r) fbP = null; return r; }); return fbP;
+  }
+  function fbLoad_(c) {
     var b = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
     return loadJS(b + 'app-compat.js').then(function () { return Promise.all([loadJS(b + 'auth-compat.js'), loadJS(b + 'firestore-compat.js')]); }).then(function () {
       firebase.initializeApp(c); FB = { auth: firebase.auth(), db: firebase.firestore() };
@@ -321,7 +338,7 @@
     var bar = thr ? '<div class="ship-bar"><p>' + (left > 0 ? 'Add ' + money(left) + ' more for <b>free shipping</b>' : '🎉 You have <b>free shipping</b>') + '</p><i><b style="width:' + Math.min(100, Math.round((t.sub - t.off) / thr * 100)) + '%"></b></i></div>' : '';
     body.innerHTML = bar + cart.map(function (l) {
       var u = unit(l), k = esc(key(l));
-      return '<div class="line"><img src="' + esc(u.p.images[0]) + '" alt=""><div><div class="t">' + esc(u.p.title) + '</div>' + (u.label ? '<div class="vl">' + esc(u.label) + '</div>' : '') + '<div class="price" style="padding:0">' + money(u.price) + '</div>' +
+      return '<div class="line"><img ' + oa(u.p.images[0], 400) + ' alt=""><div><div class="t">' + esc(u.p.title) + '</div>' + (u.label ? '<div class="vl">' + esc(u.label) + '</div>' : '') + '<div class="price" style="padding:0">' + money(u.price) + '</div>' +
         '<div class="qty sm" style="margin-top:6px"><button data-dec="' + k + '">−</button><span>' + l.q + '</span><button data-inc="' + k + '">+</button></div>' +
         '<br><button class="rm" data-rm="' + k + '">Remove</button></div><div class="price">' + money(u.price * l.q) + '</div></div>';
     }).join('');
@@ -348,7 +365,7 @@
     var t = totals(); if (!t.items) return; logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
     var quick = !!(saved('name') && /^[0-9+ ]{10,15}$/.test(saved('phone')) && saved('house') && saved('address') && saved('city') && /^[0-9]{6}$/.test(saved('pin')) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((USER && USER.email) || saved('email')));
-    var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
+    var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img ' + oa(u.p.images[0], 400) + ' alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
       (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('house'), saved('address'), saved('city'), saved('pin')].filter(Boolean).join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
@@ -482,7 +499,7 @@
     if (!/orvish/i.test(document.title)) document.title = (document.title ? document.title + ' – ' : '') + 'ORVISH';
     renderCart();
   }
-  function hitHTML(p) { return '<a class="hit" href="' + purl(p.id) + '"><img src="' + esc(p.images[0]) + '" alt="" loading="lazy"><div>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '<b>' + esc(p.title) + '</b><span>' + money(p.price) + (pct(p) ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</span></div></a>'; }
+  function hitHTML(p) { return '<a class="hit" href="' + purl(p.id) + '"><img ' + oa(p.images[0], 400) + ' alt="" loading="lazy"><div>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '<b>' + esc(p.title) + '</b><span>' + money(p.price) + (pct(p) ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</span></div></a>'; }
   function closeAll() { openCart(false); var sbx = $('#sb'); if (sbx) sbx.classList.remove('open'); $('#mnav').classList.remove('open'); $('#checkout-modal').classList.remove('open'); var f = $('#fpanel'); if (f) f.classList.remove('open'); $('#ov').classList.remove('on'); }
   function events() {
     document.addEventListener('click', function (e) {
@@ -524,7 +541,7 @@
   function cardHTML(p) {
     var sale = pct(p), so = !inStock(p), href = '' + purl(p.id), multi = vs(p);
     return '<div class="card"><a class="img" href="' + href + '">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (p.best_seller && !so ? '<span class="badge l">Best seller</span>' : '') +
-      '<img loading="lazy" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" src="' + esc(p.images[1]) + '" alt="">' : '') + '</a>' +
+      '<img loading="lazy" ' + oa(p.images[0], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" ' + oa(p.images[1], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
       (so ? '<button class="btn block" disabled>Sold out</button>' : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">Add to cart</button>') + '</div></div>';
@@ -536,7 +553,7 @@
   function home() {
     var sl = S.slides || []; if (!sl.length) $('#slider').style.display = 'none';
     $('#slider').innerHTML = sl.map(function (s, i) {
-      return '<div class="slide' + (i ? '' : ' active') + '"><img src="' + esc(s.image) + '" alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || '/shop') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
+      return '<div class="slide' + (i ? '' : ' active') + '"><img ' + oa(s.image, 1200, '100vw', [800, 1200]) + (i ? ' loading="lazy"' : ' fetchpriority="high"') + ' alt="' + esc(s.caption) + '"><div class="cap">' + (s.caption ? '<p>' + esc(s.caption) + '</p>' : '') + (s.button_label ? '<a class="btn" href="' + esc(s.button_link || '/shop') + '">' + esc(s.button_label) + '</a>' : '') + '</div></div>';
     }).join('') + (sl.length > 1 ? '<button class="s-arrow s-prev" aria-label="Previous">' + ico('left') + '</button><button class="s-arrow s-next" aria-label="Next">' + ico('right') + '</button><div class="dots">' + sl.map(function (_, i) { return '<button class="' + (i ? '' : 'on') + '" aria-label="Slide ' + (i + 1) + '"></button>'; }).join('') + '</div>' : '');
     swipe($('#slider'), function (d) { d > 0 ? $('.s-next') && $('.s-next').click() : $('.s-prev') && $('.s-prev').click(); });
     var cur = 0, slides = $$('.slide', $('#slider')), dots = $$('.dots button'), timer;
@@ -624,7 +641,7 @@
     function info() { var u = unit({ id: p.id, v: cur, q: q }), s = u.old && u.old > u.price; return { u: u, s: s, so: !inStock(p, cur) }; }
     function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax">' + (i.u.bp ? 'each when you buy ' + q + ' · you save ' + money((i.u.base - i.u.price) * q) + ' · ' : '') + 'Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
-    el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" src="' + esc(p.images[0]) + '" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" src="' + esc(im) + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
+    el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" ' + oa(p.images[0], 800, '(max-width:820px) 100vw, 50vw', [400, 800, 1200]) + ' width="800" height="800" fetchpriority="high" decoding="async" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" ' + oa(im, 400) + ' data-full="' + esc(im) + '" loading="' + (i ? 'lazy' : 'eager') + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
       '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</a><div class="price" id="pp"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
       '<div id="buyarea"></div><div id="pdx"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
@@ -653,8 +670,8 @@
     onCoupon = function () { if ($('#pdx')) pdx(); };
     $$('#vopts button').forEach(function (b) { b.onclick = function () { if (b.classList.contains('off')) return; cur = b.dataset.v; $$('#vopts button').forEach(function (x) { x.classList.toggle('on', x === b); }); paint(); }; });
     paint();
-    if (p.images.length > 1) { var gi = 0; swipe($('.gallery .main'), function (d) { gi = (gi + (d > 0 ? 1 : -1) + p.images.length) % p.images.length; $('#mi').src = p.images[gi]; $$('.thumbs img').forEach(function (x, i) { x.classList.toggle('on', i === gi); }); }); }
-    $$('.thumbs img').forEach(function (t) { t.onclick = function () { $('#mi').src = t.src; $$('.thumbs img').forEach(function (x) { x.classList.remove('on'); }); t.classList.add('on'); }; });
+    if (p.images.length > 1) { var gi = 0; swipe($('.gallery .main'), function (d) { gi = (gi + (d > 0 ? 1 : -1) + p.images.length) % p.images.length; $('#mi').removeAttribute('srcset'); $('#mi').src = oi(p.images[gi], 1200); $$('.thumbs img').forEach(function (x, i) { x.classList.toggle('on', i === gi); }); }); }
+    $$('.thumbs img').forEach(function (t) { t.onclick = function () { $('#mi').removeAttribute('srcset'); $('#mi').src = oi(t.dataset.full || t.src, 1200); $$('.thumbs img').forEach(function (x) { x.classList.remove('on'); }); t.classList.add('on'); }; });
     var wl = waLink('Hi, I want to order: ' + p.title + ' ' + location.href);
     if (wl) $('#buyarea').insertAdjacentHTML('afterend', '<a class="btn secondary block" style="margin:6px 0 16px" target="_blank" rel="noopener" href="' + wl + '"><img class="wa-i" src="/images/whatsapp.png" alt="">Order on WhatsApp</a>');
     if (inStock(p)) { document.body.insertAdjacentHTML('beforeend', '<div class="sticky-buy"><div><div class="price" id="s-price" style="padding:0;font-size:16px">' + money(info().u.price) + '</div><div style="font:12px var(--font-accent);opacity:.7">' + esc(p.title) + '</div></div><button class="btn secondary" id="s-add">Add</button><button class="btn" id="s-buy">Buy now</button></div>');
@@ -721,7 +738,7 @@
     if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } }
     list = (list || []).filter(function (x) { return x && x.title; });
     if (!list.length) return text ? '<p class="oi-text">' + esc(text) + '</p>' : '';
-    return list.map(function (it) { return '<div class="oi"><img src="' + esc(it.image || '/images/perfume-1.svg') + '" alt="" loading="lazy"><div><b>' + esc(it.title) + '</b><small>Qty ' + esc(it.qty || 1) + '</small></div><span>' + money(Number(it.price || 0) * Number(it.qty || 1)) + '</span></div>'; }).join('');
+    return list.map(function (it) { return '<div class="oi"><img ' + oa(it.image || '/images/perfume-1.svg', 400) + ' alt="" loading="lazy"><div><b>' + esc(it.title) + '</b><small>Qty ' + esc(it.qty || 1) + '</small></div><span>' + money(Number(it.price || 0) * Number(it.qty || 1)) + '</span></div>'; }).join('');
   }
   function reviewLinks(list, itemsText, oid, ph) {
     if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } }
@@ -896,6 +913,6 @@
     document.body.classList.add('ready'); logVisit('view', document.body.dataset.page === 'product' ? pageId() : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
-    if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') fbReady();
+    if (S.firebase_config && S.firebase_config.apiKey && document.body.dataset.page !== 'account') { var startFb = function () { fbReady(); }; if (document.readyState === 'complete') setTimeout(startFb, 1200); else window.addEventListener('load', function () { setTimeout(startFb, 1200); }); }
   }).catch(function (e) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Could not load store data. Please refresh. (' + esc(e.message) + ')</p>'; });
 })();

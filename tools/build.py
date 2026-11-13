@@ -4,7 +4,7 @@
    structured data are in the page itself, so Google and WhatsApp/Facebook previews see them), and sitemap.xml.
    Runs in the GitHub workflow on every product change; run it by hand after editing product.html."""
 import json, glob, os, re, shutil, html
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 SITE = 'https://www.orvish.com'
 items = [json.load(open(f, encoding='utf8')) for f in glob.glob('data/products/*.json')]
 items.sort(key=lambda p: (p.get('position', 100), p.get('title', '')))
@@ -43,9 +43,13 @@ for p in shown:
         'shippingDestination': {'@type': 'DefinedRegion', 'addressCountry': 'IN'},
         'deliveryTime': {'@type': 'ShippingDeliveryTime', 'handlingTime': {'@type': 'QuantitativeValue', 'minValue': 0, 'maxValue': 1, 'unitCode': 'DAY'},
                          'transitTime': {'@type': 'QuantitativeValue', 'minValue': int(commerce.get('delivery_days_min') or 3), 'maxValue': int(commerce.get('delivery_days_max') or 6), 'unitCode': 'DAY'}}}
+    first = (p.get('images') or [''])[0]; mo = re.match(r'^/images/uploads/([^/?#]+)\.(png|jpe?g)$', first, re.I); pre = ''
+    if mo:   # start downloading the main photo (the biggest thing on the page) straight away
+        sl = re.sub(r'[^a-z0-9]+', '-', unquote(mo.group(1)).lower()).strip('-')
+        pre = f'<link rel="preload" as="image" href="/images/opt/{sl}-800.webp" imagesrcset="/images/opt/{sl}-400.webp 400w, /images/opt/{sl}-800.webp 800w, /images/opt/{sl}-1200.webp 1200w" imagesizes="(max-width:820px) 100vw, 50vw" fetchpriority="high">'
     head = (f'<title>{esc(title)}</title><meta name="description" content="{esc(desc)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:type" content="product"><meta property="og:title" content="{esc(p["title"])}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}">'
-            f'<meta property="og:image" content="{esc(imgs[0])}"><meta property="product:price:amount" content="{price}"><meta property="product:price:currency" content="INR"><meta name="twitter:card" content="summary_large_image">'
+            f'<meta property="og:image" content="{esc(imgs[0])}">{pre}<meta property="product:price:amount" content="{price}"><meta property="product:price:currency" content="INR"><meta name="twitter:card" content="summary_large_image">'
             + ''.join(f'<script type="application/ld+json" data-static-ld>{json.dumps(x, ensure_ascii=False).replace("</", "<\\/")}</script>' for x in ld))
     page = re.sub(r'<title>.*?</title><meta name="description" content="[^"]*">', lambda m: head, tpl, count=1, flags=re.S)
     page = re.sub(r'<meta property="og:image" content="https://www\.orvish\.com/images/share\.jpg">', '', page, count=1)

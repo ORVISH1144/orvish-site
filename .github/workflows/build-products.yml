@@ -2,7 +2,7 @@ name: Build product list
 on:
   push:
     branches: [main]
-    paths: ['data/products/**', 'data/commerce.json', 'data/pages.json', 'product.html', 'page.html', 'tools/**']
+    paths: ['images/uploads/**', 'data/products/**', 'data/commerce.json', 'data/pages.json', 'product.html', 'page.html', 'tools/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,13 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Make small copies of the photos
+        run: pip install pillow && python3 tools/optimize_images.py
       - name: Rebuild product list, product pages and sitemap
         run: python3 tools/build.py
       - name: Commit if changed
         run: |
           git config user.name "orvish-bot"
           git config user.email "bot@orvish.com"
-          git add -A data/products.json sitemap.xml p info index.html shop.html
+          git add -A data/products.json sitemap.xml p info index.html shop.html images/opt
           git diff --cached --quiet || (git commit -m "Rebuild product and info pages" && git push)
       - name: Ask Pages to rebuild
         run: gh api -X POST repos/${{ github.repository }}/pages/builds || true
