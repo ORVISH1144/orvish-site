@@ -90,14 +90,14 @@
   function saved(k) { var l = store.get('orvish_details', null) || {}; return (PROFILE && PROFILE[k]) || l[k] || ''; }
   function fillCheckout() {
     var fm = $('#co-form'); if (!fm) return;
-    ['name', 'phone', 'email', 'address', 'city', 'pin'].forEach(function (k) { var i = fm.elements[k]; if (i && !i.value && saved(k)) i.value = k === 'phone' ? last10(saved(k)) : saved(k); });
+    ['name', 'phone', 'email', 'house', 'address', 'city', 'pin'].forEach(function (k) { var i = fm.elements[k]; if (i && !i.value && saved(k)) i.value = k === 'phone' ? last10(saved(k)) : saved(k); });
   }
   function loadProfile() {
     if (!FB || !USER) { PROFILE = null; return Promise.resolve(null); }
     return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; fillCheckout(); return PROFILE; }).catch(function () { PROFILE = null; return null; });
   }
   function saveProfile(f) {
-    var d = { name: f.name || '', phone: f.phone || '', email: f.email || '', address: f.address || '', city: f.city || '', pin: f.pin || '', loc: f.loc || '', updated: Date.now() };
+    var d = { name: f.name || '', phone: f.phone || '', email: f.email || '', house: f.house || '', address: f.street != null ? f.street : (f.address || ''), city: f.city || '', pin: f.pin || '', loc: f.loc || '', updated: Date.now() };
     store.set('orvish_details', d);
     if (!FB || !USER) return Promise.resolve(false);
     PROFILE = Object.assign({}, PROFILE, d);
@@ -201,7 +201,7 @@
     }).catch(function () { msg.textContent = 'The map could not load. Please type your address at checkout.'; });
   }
   function saveLocation(p) {
-    var d = {}; ['name', 'phone', 'email', 'address', 'city', 'pin'].forEach(function (k) { d[k] = saved(k); });
+    var d = {}; ['name', 'phone', 'email', 'house', 'address', 'city', 'pin'].forEach(function (k) { d[k] = saved(k); });
     if (p.address) d.address = p.address; if (p.city) d.city = p.city; if (p.pin) d.pin = p.pin; d.loc = p.loc || '';
     saveProfile(d);
   }
@@ -347,14 +347,15 @@
     var ar0 = areaRule(saved('pin'), saved('city'), saved('address')); areaFee = ar0 && ar0.action === 'extra_fee' ? Number(ar0.extra_fee) || 0 : 0;
     var t = totals(); if (!t.items) return; logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
-    var quick = !!(saved('name') && /^[0-9+ ]{10,15}$/.test(saved('phone')) && saved('address') && saved('city') && /^[0-9]{6}$/.test(saved('pin')) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((USER && USER.email) || saved('email')));
+    var quick = !!(saved('name') && /^[0-9+ ]{10,15}$/.test(saved('phone')) && saved('house') && saved('address') && saved('city') && /^[0-9]{6}$/.test(saved('pin')) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((USER && USER.email) || saved('email')));
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img src="' + esc(u.p.images[0]) + '" alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('address'), saved('city'), saved('pin')].join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
+      (S.firebase_config && S.firebase_config.apiKey && !USER ? '<p class="msg" style="margin:0 0 8px">Have an account? <a class="link" href="/account?next=1">Log in</a> to save your orders.</p>' : '') + '<form id="co-form"><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('house'), saved('address'), saved('city'), saved('pin')].filter(Boolean).join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><div class="two"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
       '<div class="field"><label>Email (for your order confirmation)</label><input name="email" type="email" required autocomplete="email" placeholder="name@example.com" value="' + esc((USER && USER.email) || saved('email')) + '"></div>' +
       '<div class="locbtns"><button type="button" class="btn secondary" id="co-here">' + ico('locate') + 'Use my current location</button><button type="button" class="btn secondary" id="co-map">' + ico('pin') + 'Choose on map</button></div><input type="hidden" name="loc" value="' + esc(saved('loc')) + '">' +
-      '<div class="field"><label>Address (house or flat no., building, street)</label><textarea name="address" rows="2" required autocomplete="street-address">' + esc(saved('address')) + '</textarea></div>' +
+      '<div class="field"><label>Flat / house no. and building <i class="req">*</i></label><input name="house" required maxlength="80" autocomplete="address-line1" placeholder="e.g. Flat 4B, Sunrise Apartments" value="' + esc(saved('house')) + '"></div>' +
+      '<div class="field"><label>Street, area and landmark <i class="req">*</i></label><textarea name="address" rows="2" required minlength="5" autocomplete="address-line2" placeholder="Street, locality, nearby landmark">' + esc(saved('address')) + '</textarea></div>' +
       '<div class="two"><div class="field"><label>City</label><input name="city" required value="' + esc(saved('city')) + '"></div><div class="field"><label>PIN code</label><input name="pin" required pattern="[0-9]{6}" inputmode="numeric" value="' + esc(saved('pin')) + '"></div></div>' +
       (saved('address') ? '<p class="msg" style="margin:0 0 8px">Using your saved address. <button type="button" class="link lnk" id="co-clear">Not this address?</button></p>' : '') + '</div>' +
       '<h6 class="co-h">Payment</h6><div class="pay2">' + ms.map(function (x, i) { var on = x[0] === 'online'; return '<label class="pm"><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '><span class="pmi">' + ico(on ? 'card' : 'cash') + '</span><span class="pmt"><b>' + (on ? 'Pay online' : 'Cash on delivery') + '</b><small>' + (on ? 'UPI, cards, netbanking and wallets' : 'Pay when your order arrives') + '</small></span><span class="pmr"></span></label>'; }).join('') + '</div><div class="csum co">' +
@@ -365,7 +366,7 @@
     var fm0 = $('#co-form'), flds = $('#co-fields'), sum0 = $('#co-saved');
     var expand = function () { if (flds) flds.hidden = false; if (sum0) sum0.remove(); };
     if ($('#co-change')) $('#co-change').onclick = function () { expand(); fm0.address.focus(); };
-    if ($('#co-clear')) $('#co-clear').onclick = function () { fm0.address.value = ''; fm0.city.value = ''; fm0.pin.value = ''; fm0.loc.value = ''; $('#co-clear').closest('.msg').remove(); fm0.address.focus(); };
+    if ($('#co-clear')) $('#co-clear').onclick = function () { fm0.house.value = ''; fm0.address.value = ''; fm0.city.value = ''; fm0.pin.value = ''; fm0.loc.value = ''; $('#co-clear').closest('.msg').remove(); fm0.address.focus(); };
     var setLoc = function (pl) { if (pl.address) fm0.address.value = pl.address; if (pl.city) fm0.city.value = pl.city; if (pl.pin) fm0.pin.value = pl.pin; fm0.loc.value = pl.loc || ''; fm0.address.focus(); toast('Location added. Add your house or flat number'); };
     $('#co-here').onclick = function () { pickLocation(setLoc, true); }; $('#co-map').onclick = function () { pickLocation(setLoc, false); };
     var areaCheck = function (redo) {
@@ -376,6 +377,9 @@
     };
     ['pin', 'city'].forEach(function (k) { fm0.elements[k].addEventListener('change', function () { areaCheck(true); }); }); fm0.elements.address.addEventListener('change', function () { areaCheck(true); }); areaCheck(false);
     $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); f.phone = fullPhone(f.phone);
+      f.house = String(f.house || '').trim(); f.street = String(f.address || '').trim();
+      if (!f.house || f.street.length < 5 || !/^[0-9]{6}$/.test(f.pin || '') || !/^[0-9]{10}$/.test(String(f.phone || '').replace(/\D/g, '').slice(-10)) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email || '')) { expand(); $('#co-msg').textContent = 'Please fill in your flat or house number, street, PIN code, phone and email so we can deliver your order.'; return; }
+      f.address = f.house + ', ' + f.street;
       var blk = areaRule(f.pin, f.city, f.address); if (blk && blk.action === 'block') { areaCheck(false); $('#co-msg').textContent = blk.message || 'Sorry, we cannot deliver to this area right now.'; return; }
       var lim = discount && t.off ? Number(discount.max_uses) || 0 : 0, sb = $('#co-form button[type=submit]'), go = function () { if (f.pm === 'online') {
         if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
@@ -828,7 +832,8 @@
           '<div class="two"><div class="field"><label>Full name</label><input name="name" autocomplete="name" value="' + (g('name') || esc(u.displayName || '')) + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || u.phoneNumber || '', false) + '</div></div>' +
           '<div class="field"><label>Email</label><input name="email" type="email" autocomplete="email" value="' + esc(u.email || saved('email')) + '"' + (u.email ? ' readonly' : '') + '></div>' +
           '<div class="locbtns"><button type="button" class="btn secondary" id="df-here">' + ico('locate') + 'Use my current location</button><button type="button" class="btn secondary" id="df-map">' + ico('pin') + 'Choose on map</button></div><input type="hidden" name="loc" value="' + g('loc') + '">' +
-          '<div class="field"><label>Address (house or flat no., building, street)</label><textarea name="address" rows="2" autocomplete="street-address">' + g('address') + '</textarea></div>' +
+          '<div class="field"><label>Flat / house no. and building</label><input name="house" maxlength="80" autocomplete="address-line1" placeholder="e.g. Flat 4B, Sunrise Apartments" value="' + g('house') + '"></div>' +
+          '<div class="field"><label>Street, area and landmark</label><textarea name="address" rows="2" autocomplete="address-line2" placeholder="Street, locality, nearby landmark">' + g('address') + '</textarea></div>' +
           '<div class="two"><div class="field"><label>City</label><input name="city" value="' + g('city') + '"></div><div class="field"><label>PIN code</label><input name="pin" pattern="[0-9]{6}" inputmode="numeric" value="' + g('pin') + '"></div></div>' +
           '<div class="msg" id="dmsg"></div><button class="btn" type="submit">Save details</button></form>';
         var dfm = $('#df'), dset = function (pl) { if (pl.address) dfm.address.value = pl.address; if (pl.city) dfm.city.value = pl.city; if (pl.pin) dfm.pin.value = pl.pin; dfm.loc.value = pl.loc || ''; };

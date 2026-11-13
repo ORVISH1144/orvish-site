@@ -804,3 +804,5 @@ body[data-page=home] .card .badge:not(.so){display:none}
 .card .badge:not(.so){display:none}
 .cpb.used{background:#22071326;color:var(--ink)}.cp:has(.cpb.used){opacity:.6}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* v55 required marks */
+.field label .req{color:#b3261e;font-style:normal;margin-left:2px}
