@@ -791,11 +791,15 @@
   function account() {
     var el = $('#acct-body');
     if (!(S.firebase_config && S.firebase_config.apiKey)) { el.innerHTML = '<h1>My account</h1><p class="sub">Customer accounts are not switched on yet. You can still <a class="link" href="/track">track an order</a> with your order ID and phone number.</p>'; return; }
-    el.innerHTML = '<p class="msg">Loading…</p>';
+    /* show something at once: the login form for a visitor who was not logged in last time, otherwise a light skeleton; the real state replaces it when the login system is ready */
+    var shown = '', known = store.get('orvish_acct', 0);
+    if (known) { var sn = (saved('name') || '').trim().split(' ')[0]; el.classList.add('wide'); el.innerHTML = '<div class="acct-head"><div class="av">' + esc((sn || 'O').charAt(0).toUpperCase()) + '</div><div class="who"><h1>' + (sn ? 'Hello, ' + esc(sn) : 'My account') + '</h1><p>&nbsp;</p></div></div><p class="msg">Loading your orders…</p>'; shown = 'wait'; }
+    else { loginForm(); shown = 'login'; }
     fbReady().then(function (f) {
       if (!f) { el.innerHTML = '<p class="msg err">Could not load accounts. Please refresh.</p>'; return; }
-      f.auth.onAuthStateChanged(function (u) { u ? dash(u) : loginForm(); });
+      f.auth.onAuthStateChanged(function (u) { store.set('orvish_acct', u ? 1 : 0); if (u) { shown = 'dash'; dash(u); } else if (shown !== 'login') { shown = 'login'; loginForm(); } else { shown = 'login'; } });
     });
+    function W(fn) { return fbReady().then(function (f) { if (f) return fn(f); }); }
     function err(e) { var m = (e && e.code) || ''; return /wrong-password|invalid-credential|user-not-found/.test(m) ? 'Wrong email or password.' : /email-already/.test(m) ? 'An account with this email already exists. Please log in.' : /weak-password/.test(m) ? 'Password must be at least 6 characters.' : /popup/.test(m) ? 'Sign-in window was closed.' : /invalid-phone/.test(m) ? 'Please enter a valid mobile number with country code, e.g. +91 98765 43210.' : /invalid-verification-code|code-expired/.test(m) ? 'That code is wrong or expired. Please try again.' : /too-many-requests|quota/.test(m) ? 'Too many SMS codes requested. Please try again later or log in with email or Google.' : /operation-not-allowed|billing/.test(m) ? 'Phone login is not available right now. Please use email or Google.' : /unauthorized-domain/.test(m) ? 'This website address is not allowed yet in Firebase settings.' : (e && e.message) || 'Something went wrong.'; }
     function loginForm() {
       var mode = 'in';
@@ -811,11 +815,11 @@
         $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
         $('#af').onsubmit = function (e) {
           e.preventDefault(); var d = Object.fromEntries(new FormData(e.target)), m = $('#amsg'); m.textContent = '';
-          (mode === 'in' ? FB.auth.signInWithEmailAndPassword(d.email, d.pw) : FB.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); })).catch(function (x) { m.textContent = err(x); });
+          W(function (f) { return mode === 'in' ? f.auth.signInWithEmailAndPassword(d.email, d.pw) : f.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); }); }).catch(function (x) { m.textContent = err(x); });
         };
-        $('#gbtn').onclick = function () { FB.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (x) { $('#amsg').textContent = err(x); }); };
+        $('#gbtn').onclick = function () { W(function (f) { return f.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }).catch(function (x) { $('#amsg').textContent = err(x); }); };
         $('#pbtn').onclick = phoneForm;
-        var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } FB.auth.sendPasswordResetEmail(em).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
+        var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } W(function (f) { return f.auth.sendPasswordResetEmail(em); }).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
       }
       function phoneForm() {
         el.innerHTML = '<div class="authcard"><h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 "></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p></div>';
@@ -825,8 +829,8 @@
           e.preventDefault(); var m = $('#amsg'); m.textContent = ''; var raw = e.target.elements.phone.value.trim(), dg = raw.replace(/\D/g, '');
           var num = raw.charAt(0) === '+' ? '+' + dg : (dg.length === 10 ? '+91' + dg : '+' + dg);
           var btn = $('#psend'); btn.disabled = true; btn.textContent = 'Sending…';
-          try { if (!rv) rv = new firebase.auth.RecaptchaVerifier('recap', { size: 'invisible' }); } catch (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; return; }
-          FB.auth.signInWithPhoneNumber(num, rv).then(function (conf) {
+          try { if (!rv) rv = new (window.firebase.auth.RecaptchaVerifier)('recap', { size: 'invisible' }); } catch (x) { m.textContent = err(x); btn.disabled = false; btn.textContent = 'Send code'; return; }
+          W(function (f) { return f.auth.signInWithPhoneNumber(num, rv); }).then(function (conf) {
             el.innerHTML = '<div class="authcard"><h1>Enter the code</h1><p class="sub">Sent to ' + esc(num) + '</p><form id="cf"><div class="field"><label>6-digit code</label><input name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" style="letter-spacing:.4em;font-size:20px;text-align:center"></div><button class="btn block" type="submit">Verify and log in</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Use a different number</button></p></div>';
             $('#back').onclick = phoneForm;
             $('#cf').onsubmit = function (ev) { ev.preventDefault(); $('#amsg').textContent = ''; conf.confirm(ev.target.elements.code.value.trim()).catch(function (x) { $('#amsg').textContent = err(x); }); };
