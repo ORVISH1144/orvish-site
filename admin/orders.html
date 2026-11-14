@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>ORVISH – Orders</title><link rel="icon" href="/images/favicon-192.png">
 <style>
-:root{--bg:#fff7e2;--ink:#220713;--maroon:#761941;--gold:#ffe9af;--line:#2207131f;--card:#ffffffb8}
+:root{--bg:#f1ece1;--ink:#14211f;--maroon:#092d29;--gold:#f3e7b8;--line:#14211f1f;--card:#ffffff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 header{background:var(--maroon);color:var(--gold);padding:14px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;position:sticky;top:0;z-index:5}
 header h1{font-size:18px;margin:0;font-weight:600;letter-spacing:.04em}header a{color:var(--gold);font-size:13px}header.embed span{display:none}header.embed{padding-right:230px}
@@ -16,6 +16,11 @@ td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;font
 .pill{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:600;background:var(--gold);color:var(--maroon);white-space:nowrap}.pill.warn{background:#fde2e2;color:#a11}.pill.ok{background:#dff5e7;color:#0c6b3a}
 td select{padding:5px 8px;font-size:13px;max-width:170px}td select.pay{margin-top:6px;display:block}.lk{background:none;border:0;padding:0;color:var(--maroon);font-size:11px;text-decoration:underline;cursor:pointer}.ret{display:block;margin-top:6px;padding:6px 8px;border-radius:8px;background:#fdf0d5;color:#7a4a00;font-size:12px;max-width:220px}.thumbs{display:flex;flex-wrap:wrap;margin-bottom:6px}.thumbs img{width:38px;height:38px;object-fit:cover;border-radius:7px;border:1px solid var(--line);margin:0 4px 4px 0;background:#fff}.kpi.alert b{color:#9a5b00}td small.pmth{opacity:1;margin-top:5px;font-weight:600;white-space:normal;max-width:170px}td small.cpn{opacity:1;color:#0c6b3a;font-weight:600;white-space:normal;max-width:130px;margin-left:auto}.help{font-size:12px;opacity:.75;margin:-6px 0 14px}.note{font-size:11px;opacity:.7;display:block;margin-top:3px}
 .empty{opacity:.6;padding:20px}.login{max-width:420px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:center}.login input{width:100%;margin:6px 0}.err{color:#a11;min-height:20px;font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.tabs button{border-color:var(--line);color:var(--ink)}.tabs button.on{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.rep{display:inline-block;margin-top:4px;background:#fff2cc;color:#7a5a00;border:1px solid #e6cf7a;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:700;cursor:pointer}
+.wa{display:inline-block;background:#25d366;color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.sr{display:block;margin-top:6px}.sr button{padding:4px 9px;font-size:12px}.sr a{font-size:12px}.src{color:#555}
+tr.rp td:first-child{box-shadow:inset 4px 0 0 #e0a100}
 </style></head><body>
 <header><h1>ORVISH · Orders</h1><span><a href="/admin/">Store admin</a> &nbsp;·&nbsp; <a href="/admin/traffic.html">Live traffic</a></span></header>
 <div class="wrap" id="app"><p class="empty">Loading…</p></div>
@@ -24,7 +29,7 @@ td select{padding:5px 8px;font-size:13px;max-width:170px}td select.pay{margin-to
 if(/embed=1/.test(location.search))document.querySelector('header').classList.add('embed');
 var $=function(s){return document.querySelector(s)},app=$('#app'),esc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var load=function(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
-var auth,api='',orders=[],user=null,STATUS=['New','Confirmed','Packed','Shipped','Out for delivery','Delivered','Cancelled','Return requested','Return approved','Returned','Refunded'],PAY=['COD','Pending','Paid','Refund pending','Refunded'],retDays=0;
+var auth,api='',orders=[],user=null,view='orders',stock={},srOn=false,titles={},STATUS=['New','Confirmed','Packed','Shipped','Out for delivery','Delivered','Cancelled','Return requested','Return approved','Returned','Refunded'],PAY=['COD','Pending','Paid','Refund pending','Refunded'],retDays=0;
 try{if(localStorage.getItem('orvish_notrack')===null)localStorage.setItem('orvish_notrack','true')}catch(e){}
 fetch('/data/site.json?v='+Date.now()).then(function(r){return r.json()}).then(function(S){
   var c=S.firebase_config;api=S.order_webhook_url||'';
@@ -38,20 +43,50 @@ function login(){
 }
 function call(params){return user.getIdToken().then(function(t){var q=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k])}).join('&');return fetch(api+'?'+q+'&token='+encodeURIComponent(t)+'&_='+Date.now())}).then(function(r){return r.json()})}
 function start(){
-  app.innerHTML='<div class="bar"><input id="q" placeholder="Search name, phone, order ID, city or item"><select id="fs"><option value="">All statuses</option>'+STATUS.map(function(s){return'<option>'+s+'</option>'}).join('')+'</select><button id="rf">Refresh</button><small>'+esc(user.email||'')+'</small><button id="out">Log out</button></div><div id="kp"></div><div id="list"><p class="empty">Loading orders…</p></div>';
+  app.innerHTML='<div class="tabs"><button data-v="orders" class="on">Orders</button><button data-v="customers">Customers</button><button data-v="abandoned">Unfinished checkouts</button><button data-v="stock">Stock</button></div><div class="bar"><input id="q" placeholder="Search name, phone, order ID, city or item"><select id="fs"><option value="">All statuses</option>'+STATUS.map(function(s){return'<option>'+s+'</option>'}).join('')+'</select><button id="rf">Refresh</button><small>'+esc(user.email||'')+'</small><button id="out">Log out</button></div><div id="kp"></div><div id="list"><p class="empty">Loading orders…</p></div>';
   $('#out').onclick=function(){auth.signOut()};$('#rf').onclick=fetchOrders;$('#q').oninput=draw;$('#fs').onchange=draw;fetchOrders();
+  [].forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){view=b.dataset.v;[].forEach.call(document.querySelectorAll('.tabs button'),function(x){x.classList.toggle('on',x===b)});$('#fs').style.display=view==='orders'?'':'none';draw()}});
+  fetch('/data/products.json?v='+Date.now()).then(function(r){return r.json()}).then(function(d){(d.products||[]).forEach(function(p){titles[p.id]=p.title})}).catch(function(){});
 }
 function fetchOrders(){
   $('#list').innerHTML='<p class="empty">Loading orders…</p>';
   call({action:'orders'}).then(function(d){
     if(!d||!d.ok){$('#list').innerHTML=d&&d.error==='not_authorised'?'<div class="tw"><p class="empty">You are signed in as <b>'+esc(user.email||'')+'</b>, which is not an owner email in the order script. Sign in with the owner Google account, or add this email to ADMIN_EMAILS in the script and deploy a new version.</p></div>':'<p class="err">Could not load orders. Make sure the newest script is deployed in your Google Sheet.</p>';return}
-    orders=d.orders||[];retDays=Number(d.return_days)||0;draw();
+    orders=d.orders||[];retDays=Number(d.return_days)||0;stock=d.stock||{};srOn=!!d.shiprocket;draw();
   }).catch(function(){$('#list').innerHTML='<p class="err">Could not load orders. Make sure the newest script is deployed in your Google Sheet, then refresh.</p>'});
 }
 function num(v){return Number(String(v||'').replace(/[^0-9.]/g,''))||0}
+function ph10(x){return String(x||'').replace(/\D/g,'').slice(-10)}
+function refCode(phone){var t='orv'+ph10(phone),h=5381;for(var i=0;i<t.length;i++)h=((h*33)^t.charCodeAt(i))>>>0;return'ORV'+('00000'+h.toString(36).toUpperCase()).slice(-5)}
+function liveO(o){return!/cancel|return|refund/i.test(o.order_status)}
+function custs(){var by={},l=[];orders.slice().reverse().forEach(function(o){if(!liveO(o))return;var p=ph10(o.phone);if(!p)return;var c=by[p];if(!c){c=by[p]={phone:p,n:0,total:0,first:o.date,source:o.source||''};l.push(c)}c.n++;c.total+=num(o.total);c.name=o.name;c.email=o.email;c.city=o.city;c.last=o.date;c.items=o.items});return{by:by,list:l}}
+function waLink(phone,text){return'https://wa.me/91'+ph10(phone)+'?text='+encodeURIComponent(text)}
+function showOrdersOf(phone){view='orders';[].forEach.call(document.querySelectorAll('.tabs button'),function(x){x.classList.toggle('on',x.dataset.v==='orders')});$('#fs').style.display='';$('#fs').value='';$('#q').value=ph10(phone);draw();scrollTo(0,0)}
+function drawCustomers(){
+  var q=($('#q').value||'').toLowerCase(),c=custs().list.filter(function(x){return!q||[x.name,x.phone,x.email,x.city,x.items].join(' ').toLowerCase().indexOf(q)>-1}).sort(function(a,b){return b.n-a.n||b.total-a.total});
+  var rp=c.filter(function(x){return x.n>1}).length;
+  $('#kp').innerHTML='<div class="kpis"><div class="kpi"><small>Customers</small><b>'+c.length+'</b></div><div class="kpi"><small>Repeat customers (2 or more orders)</small><b>'+rp+'</b></div></div><p class="help">One row for each phone number, counting orders that were not cancelled or returned. Repeat customers are at the top with a gold mark. The same list is in the <b>Customers</b> tab of your Google Sheet.</p>';
+  $('#list').innerHTML=c.length?'<div class="tw"><table><thead><tr><th>Customer</th><th>Orders</th><th>Total spent</th><th>First order</th><th>Last order</th><th>Last items</th><th>First came from</th><th>Referral code</th><th></th></tr></thead><tbody>'+c.map(function(x){return'<tr'+(x.n>1?' class="rp"':'')+'><td>'+esc(x.name)+(x.n>1?' <span class="rep">Repeat</span>':'')+'<small>'+esc(x.phone)+'</small><small>'+esc(x.email)+'</small><small>'+esc(x.city)+'</small></td><td class="n"><b>'+x.n+'</b></td><td class="n">₹'+x.total.toLocaleString('en-IN')+'</td><td>'+esc(x.first)+'</td><td>'+esc(x.last)+'</td><td>'+esc(x.items)+'</td><td class="src">'+esc(x.source||'—')+'</td><td><code>'+refCode(x.phone)+'</code></td><td><button class="lk ord" data-ph="'+esc(x.phone)+'">See orders</button><br><a class="wa" style="margin-top:6px" target="_blank" rel="noopener" href="'+waLink(x.phone,'Hi '+(x.name||'')+', this is ORVISH. ')+'">WhatsApp</a></td></tr>'}).join('')+'</tbody></table></div>':'<div class="tw"><p class="empty">No customers yet.</p></div>';
+  [].forEach.call(document.querySelectorAll('button.ord'),function(b){b.onclick=function(){showOrdersOf(b.dataset.ph)}});
+}
+function drawAbandoned(){
+  $('#kp').innerHTML='<p class="help">People who typed their phone or email at checkout (or were logged in with a filled cart) but did not order. Those with an email get the reminder email automatically. Use the WhatsApp button to send the same offer yourself.</p>';
+  $('#list').innerHTML='<p class="empty">Loading…</p>';
+  call({action:'abandoned'}).then(function(d){
+    if(!d||!d.ok){$('#list').innerHTML='<p class="err">Could not load. Make sure script version 23 is deployed.</p>';return}
+    var q=($('#q').value||'').toLowerCase(),r=(d.rows||[]).filter(function(x){return!q||[x.name,x.phone,x.email,x.items,x.status].join(' ').toLowerCase().indexOf(q)>-1});
+    $('#list').innerHTML=r.length?'<div class="tw"><table><thead><tr><th>Date</th><th>Customer</th><th>Cart</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>'+r.map(function(x){var st=x.status,cl=st==='Recovered'?' ok':st==='Open'?' warn':'';return'<tr><td>'+esc(x.date)+'<small>'+esc(x.time)+'</small></td><td>'+esc(x.name||'—')+'<small>'+esc(x.phone)+'</small><small>'+esc(x.email)+'</small></td><td>'+esc(x.items)+'</td><td class="n">₹'+esc(x.total)+'</td><td><span class="pill'+cl+'">'+esc(st)+'</span>'+(x.reminded?'<small>Email sent '+esc(x.reminded)+'</small>':'')+'</td><td>'+(x.phone&&st!=='Recovered'?'<a class="wa" target="_blank" rel="noopener" href="'+waLink(x.phone,'Hi '+(x.name||'')+', this is ORVISH. You left '+x.items+' in your cart.'+(d.code?' Use code '+d.code+' for an extra discount today: ':' Complete your order here: ')+'https://www.orvish.com/shop')+'">Send WhatsApp</a>':'')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="tw"><p class="empty">No unfinished checkouts yet.</p></div>';
+  }).catch(function(){$('#list').innerHTML='<p class="err">Could not load. Check your connection.</p>'});
+}
+function drawStock(){
+  var ids=Object.keys(stock);
+  $('#kp').innerHTML='<p class="help">Type the number of bottles in the store admin: <b>Products &gt; open a product &gt; Stock count</b>. Every order lowers it. Cancelled and returned orders give the bottles back. Products without a count are not limited.</p>';
+  $('#list').innerHTML=ids.length?'<div class="tw"><table style="min-width:0"><thead><tr><th>Product</th><th>Left</th></tr></thead><tbody>'+ids.sort(function(a,b){return stock[a]-stock[b]}).map(function(id){var n=Number(stock[id]);return'<tr><td>'+esc(titles[id]||id)+'</td><td class="n"><span class="pill'+(n<=0?' warn':n>5?' ok':'')+'">'+(n<0?'Oversold by '+(-n):n===0?'Sold out':n+' left')+'</span></td></tr>'}).join('')+'</tbody></table></div>':'<div class="tw"><p class="empty">No product has a stock count yet.</p></div>';
+}
 function draw(){
-  var q=($('#q').value||'').toLowerCase(),fs=$('#fs').value;
-  var l=orders.filter(function(o){return(!fs||String(o.order_status).trim().toLowerCase()===fs.toLowerCase())&&(!q||[o.name,o.phone,o.order_id,o.city,o.items,o.email,o.tracking,o.coupon,o.payment_method].join(' ').toLowerCase().indexOf(q)>-1)});
+  if(view==='customers')return drawCustomers();if(view==='abandoned')return drawAbandoned();if(view==='stock')return drawStock();
+  var q=($('#q').value||'').toLowerCase(),fs=$('#fs').value,cb=custs().by;
+  var l=orders.filter(function(o){return(!fs||String(o.order_status).trim().toLowerCase()===fs.toLowerCase())&&(!q||[o.name,o.phone,o.order_id,o.city,o.items,o.email,o.tracking,o.coupon,o.payment_method,o.source].join(' ').toLowerCase().indexOf(q)>-1)});
   var live=orders.filter(function(o){return!/cancel|return|refund/i.test(o.order_status)}),today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
   var rets=orders.filter(function(o){return/^return requested$/i.test(String(o.order_status).trim())}).length;
   var k=function(a,b,c){return'<div class="kpi'+(c?' alert':'')+'"><small>'+a+'</small><b>'+b+'</b></div>'};
@@ -62,8 +97,22 @@ function draw(){
     var items;try{items=JSON.parse(o.items_json||'[]')}catch(e){items=[]}
     var thumbs=items.length?'<div class="thumbs">'+items.map(function(it){return'<img src="'+esc(it.image||'/images/perfume-1.svg')+'" alt="" title="'+esc((it.qty||1)+' x '+(it.title||''))+'">'}).join('')+'</div>':'';
     var opt=function(list,cur){return(list.map(function(x){return x.toLowerCase()}).indexOf(cur.toLowerCase())<0&&cur?'<option selected>'+esc(cur)+'</option>':'')+list.map(function(x){return'<option'+(x.toLowerCase()===cur.toLowerCase()?' selected':'')+'>'+x+'</option>'}).join('')};
-    return'<tr><td>'+esc(o.date)+'<small>'+esc(o.time)+'</small></td><td><b>'+esc(o.order_id)+'</b><small>'+(o.tracking?'Tracking: '+esc(o.tracking)+' · ':'')+'<button class="lk trk" data-row="'+esc(o.row)+'">'+(o.tracking?'Edit':'Add courier tracking')+'</button></small></td><td>'+esc(o.name)+'<small>'+esc(o.phone)+'</small><small>'+esc(o.email)+'</small></td><td>'+esc(o.address).replace(/\s*\(Map pin: (https:\/\/maps\.google\.com\/\?q=[-0-9.,]+)\)/,' <a href="$1" target="_blank" rel="noopener">Open map pin</a>')+(/^https:\/\/maps\.google\.com\/\?q=[-0-9.,]+$/.test(o.map||'')?' <a href="'+esc(o.map)+'" target="_blank" rel="noopener">Open map pin</a>':'')+'<small>'+esc([o.city,o.pin].filter(Boolean).join(' – '))+'</small></td><td>'+thumbs+esc(o.items)+'</td><td class="n">₹'+esc(o.total)+(o.coupon?'<small class="cpn">Coupon '+esc(o.coupon)+'</small>':'')+'</td><td><span class="pill'+pc+'">'+esc(pay||'—')+'</span>'+(o.payment_method?'<small class="pmth">'+esc(o.payment_method)+'</small>':'')+'<select class="pay" data-row="'+esc(o.row)+'" aria-label="Payment status">'+opt(PAY,pay)+'</select><span class="note" id="p'+esc(o.row)+'"></span></td><td><select class="os" data-row="'+esc(o.row)+'" aria-label="Order status">'+opt(STATUS,st)+'</select><span class="note" id="n'+esc(o.row)+'">'+(o.notified?'Last email: '+esc(o.notified):'')+'</span>'+(o.return_reason?'<span class="ret"><b>Return reason</b><br>'+esc(o.return_reason)+'</span>':'')+(o.delivered_on?'<span class="note">Delivered on '+esc(o.delivered_on)+'</span>':'')+'</td></tr>'}).join('')+'</tbody></table></div>';
+    return'<tr'+((cb[ph10(o.phone)]||{}).n>1?' class="rp"':'')+'><td>'+esc(o.date)+'<small>'+esc(o.time)+'</small></td><td><b>'+esc(o.order_id)+'</b><small>'+(o.tracking?'Tracking: '+esc(o.tracking)+' · ':'')+'<button class="lk trk" data-row="'+esc(o.row)+'">'+(o.tracking?'Edit':'Add courier tracking')+'</button></small>'+(o.source?'<small class="src">From: '+esc(o.source)+'</small>':'')+'<span class="sr">'+(srOn?(o.shiprocket_id?'<button class="srt" data-row="'+esc(o.row)+'">Shiprocket status</button> ':'')+(o.label?'<a href="'+esc(o.label)+'" target="_blank" rel="noopener">Print label</a>':(/^(new|confirmed|packed)$/i.test(st)?'<button class="src1" data-row="'+esc(o.row)+'">'+(o.shiprocket_id?'Get courier and label':'Ship with Shiprocket')+'</button>':'')):'')+'<span class="note" id="s'+esc(o.row)+'"></span></span></td><td>'+esc(o.name)+((cb[ph10(o.phone)]||{}).n>1?'<br><span class="rep" data-ph="'+esc(o.phone)+'" title="See all orders of this customer">Repeat · '+cb[ph10(o.phone)].n+' orders</span>':'')+'<small>'+esc(o.phone)+'</small><small>'+esc(o.email)+'</small></td><td>'+esc(o.address).replace(/\s*\(Map pin: (https:\/\/maps\.google\.com\/\?q=[-0-9.,]+)\)/,' <a href="$1" target="_blank" rel="noopener">Open map pin</a>')+(/^https:\/\/maps\.google\.com\/\?q=[-0-9.,]+$/.test(o.map||'')?' <a href="'+esc(o.map)+'" target="_blank" rel="noopener">Open map pin</a>':'')+'<small>'+esc([o.city,o.pin].filter(Boolean).join(' – '))+'</small></td><td>'+thumbs+esc(o.items)+'</td><td class="n">₹'+esc(o.total)+(o.coupon?'<small class="cpn">Coupon '+esc(o.coupon)+'</small>':'')+'</td><td><span class="pill'+pc+'">'+esc(pay||'—')+'</span>'+(o.payment_method?'<small class="pmth">'+esc(o.payment_method)+'</small>':'')+'<select class="pay" data-row="'+esc(o.row)+'" aria-label="Payment status">'+opt(PAY,pay)+'</select><span class="note" id="p'+esc(o.row)+'"></span></td><td><select class="os" data-row="'+esc(o.row)+'" aria-label="Order status">'+opt(STATUS,st)+'</select><span class="note" id="n'+esc(o.row)+'">'+(o.notified?'Last email: '+esc(o.notified):'')+'</span>'+(o.return_reason?'<span class="ret"><b>Return reason</b><br>'+esc(o.return_reason)+'</span>':'')+(o.delivered_on?'<span class="note">Delivered on '+esc(o.delivered_on)+'</span>':'')+'</td></tr>'}).join('')+'</tbody></table></div>';
   var byRow=function(row){return orders.filter(function(x){return String(x.row)===String(row)})[0]};
+  [].forEach.call(document.querySelectorAll('span.rep[data-ph]'),function(b){b.onclick=function(){showOrdersOf(b.dataset.ph)}});
+  [].forEach.call(document.querySelectorAll('button.src1'),function(b){b.onclick=function(){
+    var o=byRow(b.dataset.row),note=$('#s'+b.dataset.row);
+    if(!confirm('Send order '+o.order_id+' to Shiprocket?\n\nIt creates the shipment, asks for a courier and a pickup, and gets the label.'))return;
+    b.disabled=true;note.textContent='Working… this can take 20 seconds';
+    call({action:'ship_create',row:o.row,order_id:o.order_id}).then(function(d){b.disabled=false;
+      if(d&&d.shipment_id)o.shiprocket_id=d.shipment_id;if(d&&d.tracking)o.tracking=d.tracking;if(d&&d.label)o.label=d.label;
+      var msg=((d&&d.steps)||[]).join(' · ')+(d&&d.error?' · '+d.error:'');if(d&&d.ok&&!d.error){draw();var n2=$('#s'+o.row);if(n2)n2.textContent=msg+' · Now set the status to Shipped when the courier collects it.'}else{note.textContent=msg||'Could not reach Shiprocket.'}
+    }).catch(function(){b.disabled=false;note.textContent='Could not reach the order script. Check your connection.'});
+  }});
+  [].forEach.call(document.querySelectorAll('button.srt'),function(b){b.onclick=function(){
+    var o=byRow(b.dataset.row),note=$('#s'+b.dataset.row);note.textContent='Checking…';
+    call({action:'ship_track',row:o.row,order_id:o.order_id}).then(function(d){note.innerHTML=d&&d.ok?'Shiprocket: <b>'+esc(d.status||'no scan yet')+'</b>'+(d.where?' · '+esc(d.where):'')+(d.eta?' · expected '+esc(d.eta):'')+(d.url?' · <a href="'+esc(d.url)+'" target="_blank" rel="noopener">Open tracking</a>':''):esc((d&&d.error)||'No tracking yet.')}).catch(function(){note.textContent='Could not check.'});
+  }});
   [].forEach.call(document.querySelectorAll('select.os'),function(s){s.onchange=function(){
     var o=byRow(s.dataset.row),val=s.value,note=$('#n'+s.dataset.row),old=o.order_status;
     if(!confirm('Change order '+o.order_id+' to "'+val+'"?\n\nThe customer gets an email about this status if that email is switched on and they gave an email address.')){s.value=old;return}

@@ -23,6 +23,26 @@
       "max_uses": 1,
       "stack_with_bundles": true,
       "max_discount": 1200
+    },
+    {
+      "code": "COMEBACK100",
+      "amount": 100,
+      "percent": 0,
+      "min_items": 1,
+      "max_uses": 1,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "hidden": true
+    },
+    {
+      "code": "REFILL100",
+      "amount": 100,
+      "percent": 0,
+      "min_items": 1,
+      "max_uses": 1,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "hidden": true
     }
   ],
   "shipping_fee": 49,
@@ -55,5 +75,18 @@
       "image": "/images/uploads/pay-applepay.png"
     }
   ],
-  "area_rules": []
+  "area_rules": [],
+  "referral": {
+    "enabled": true,
+    "amount": 100
+  },
+  "low_stock": 5,
+  "shiprocket": {
+    "pickup_location": "Primary",
+    "weight_kg": 0.4,
+    "length_cm": 15,
+    "breadth_cm": 10,
+    "height_cm": 8,
+    "auto_status": false
+  }
 }

@@ -59,6 +59,13 @@ collections:
     name: in_stock
     widget: boolean
     default: true
+  - label: Stock count – how many bottles you have now (leave empty for no limit). Each order lowers it automatically and the product shows Sold out at 0.
+    name: stock
+    widget: number
+    value_type: int
+    min: 0
+    required: false
+    hint: When new stock arrives, type the new total here. The count of sold bottles then starts again from zero.
   - label: Show on home page
     name: featured
     widget: boolean
@@ -199,6 +206,10 @@ collections:
     - label: Customer name
       name: name
       widget: string
+    - label: Photo from the customer (optional)
+      name: photo
+      widget: image
+      required: false
     - label: Stars
       name: rating
       widget: select
@@ -581,6 +592,39 @@ collections:
         min: 0
         required: false
         hint: Example – 10% off with a maximum of 200 means the customer never gets more than ₹200 off.
+      - label: Fixed amount off in ₹ (optional – when filled, this is used instead of the percentage)
+        name: amount
+        widget: number
+        required: false
+      - label: Hide this code from the coupon lists on the website (it still works when typed – used for reminder emails)
+        name: hidden
+        widget: boolean
+        default: false
+        required: false
+    - label: Referral codes (a customer shares a code – the friend gets money off the first order, the customer gets the same after it is delivered)
+      name: referral
+      widget: object
+      collapsed: true
+      fields:
+      - {label: Switch referral codes on, name: enabled, widget: boolean, default: true, required: false}
+      - {label: Amount off for each of them (₹), name: amount, widget: number, value_type: int, default: 100}
+    - label: Show "Only N left" on the product page when stock is at or below this number
+      name: low_stock
+      widget: number
+      value_type: int
+      default: 5
+      required: false
+    - label: Shiprocket parcel details (used when you press Ship with Shiprocket on the orders page)
+      name: shiprocket
+      widget: object
+      collapsed: true
+      fields:
+      - {label: 'Pickup location name, exactly as in Shiprocket (Settings > Pickup Addresses)', name: pickup_location, widget: string, default: Primary}
+      - {label: Parcel weight in kg, name: weight_kg, widget: number, value_type: float, default: 0.4}
+      - {label: Parcel length in cm, name: length_cm, widget: number, default: 15}
+      - {label: Parcel breadth in cm, name: breadth_cm, widget: number, default: 10}
+      - {label: Parcel height in cm, name: height_cm, widget: number, default: 8}
+      - {label: Update the order status automatically from Shiprocket tracking, name: auto_status, widget: boolean, default: false, required: false}
     - label: Delivery area rules (areas we do not deliver to, or charge extra for)
       name: area_rules
       widget: list
@@ -1036,6 +1080,53 @@ collections:
         name: message
         widget: text
         hint: 'Plain text. The order summary, product photos and Track button are added automatically. You can use {id}, {name}, {total} and {tracking}.'
+    - label: 'Reminder – customer started checkout or filled the cart but did not order'
+      name: abandoned
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - {label: Send this email, name: send, widget: boolean, default: true, required: false}
+      - {label: Send after this many hours, name: hours, widget: number, default: 2}
+      - {label: Coupon code offered (must exist in Discount codes), name: code, widget: string, default: COMEBACK100}
+      - label: Subject
+        name: subject
+        widget: string
+      - label: Message
+        name: message
+        widget: text
+        hint: 'You can use {name} and {code}. A button back to the cart is added automatically.'
+    - label: 'Refill reminder – sent some days after delivery'
+      name: refill
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - {label: Send this email, name: send, widget: boolean, default: true, required: false}
+      - {label: Send this many days after delivery, name: days, widget: number, default: 60}
+      - {label: Coupon code offered (must exist in Discount codes), name: code, widget: string, default: REFILL100}
+      - label: Subject
+        name: subject
+        widget: string
+      - label: Message
+        name: message
+        widget: text
+        hint: 'You can use {name} and {code}.'
+    - label: 'Review request – asks the customer for a review with a photo'
+      name: review_request
+      widget: object
+      collapsed: true
+      summary: '{{fields.subject}}'
+      fields:
+      - {label: Send this email, name: send, widget: boolean, default: true, required: false}
+      - {label: Send this many days after delivery, name: days, widget: number, default: 3}
+      - label: Subject
+        name: subject
+        widget: string
+      - label: Message
+        name: message
+        widget: text
+        hint: 'You can use {name}. A button to write the review is added automatically.'
   icon: mail
 - name: pages
   label: Pages & policies

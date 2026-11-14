@@ -949,3 +949,9 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .bigbanner{background:var(--paint)}
 .services{background:var(--paint);color:#fff}.services b{color:#e8d48a}.services span{color:#ffffffc7}
 .bigbanner::before{background:linear-gradient(90deg,#011a18d9 0%,#011a1866 60%,transparent)}
+/* v61: referral box, stock line, review photos */
+.refbox{background:#fff;border:1px dashed var(--gold);border-radius:4px;padding:16px 18px;margin:18px 0;text-align:left}
+.refbox b{font:600 15px var(--font-accent)}.refbox p{margin:4px 0 10px;font-size:13px;opacity:.8}
+.refbox>div{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.refbox code{font:700 16px ui-monospace,monospace;letter-spacing:.12em;background:var(--bg);padding:8px 14px;border-radius:4px}.refbox .btn{padding:9px 14px;font-size:12.5px}
+.stockline{font:600 13px var(--font-accent);color:#b3261e;margin:-2px 0 8px}.stockline:empty{display:none}
+.rph{display:inline-block;margin-top:10px}.rph img{width:110px;height:110px;object-fit:cover;border-radius:2px;border:1px solid var(--line)}

@@ -56,5 +56,25 @@
     "subject": "Your refund for order {id} has been processed",
     "message": "Your refund has been processed. Depending on your bank, it can take 5 to 7 working days to show in your account."
   },
-  "owner_email": "sales@orvish.com"
+  "owner_email": "sales@orvish.com",
+  "abandoned": {
+    "send": true,
+    "hours": 2,
+    "code": "COMEBACK100",
+    "subject": "You left something in your cart, {name}",
+    "message": "You were so close. Your perfume is still waiting in your cart.\nUse code {code} at checkout for ₹100 off. It works once, so do not wait too long."
+  },
+  "refill": {
+    "send": true,
+    "days": 60,
+    "code": "REFILL100",
+    "subject": "Time for a refill, {name}?",
+    "message": "It has been about two months since your ORVISH order, so your bottle may be running low.\nUse code {code} for ₹100 off your next order."
+  },
+  "review_request": {
+    "send": true,
+    "days": 3,
+    "subject": "How is your new perfume, {name}?",
+    "message": "We hope you are enjoying your order. Would you share a short review? A photo of the perfume you received helps other customers a lot.\nTap the button below. It takes one minute."
+  }
 }
