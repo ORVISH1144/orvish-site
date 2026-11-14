@@ -143,7 +143,7 @@
   function refHTML(phone) {
     var r = S.referral || {}; if (!r.enabled || last10(phone).length !== 10) return '';
     var c = refCode(phone), a = money(Number(r.amount) || 0), msg = 'Use my code ' + c + ' at ' + location.origin + ' and get ' + a + ' off your first ORVISH perfume.';
-    return '<div class="refbox"><b>Give ' + a + ', get ' + a + '</b><p>Share your code with a friend. They type it in the coupon box in their cart and get ' + a + ' off their first order, and you get ' + a + ' off your next one when their order is delivered.</p><div><code>' + c + '</code><a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a></div></div>';
+    return '<div class="refbox"><details class="refnote"><summary aria-label="How referral works">i</summary><ol><li>Send your code to a friend.</li><li>Your friend adds it in the coupon box in their cart. It works on their first order only.</li><li>Your friend gets ' + a + ' off straight away.</li><li>When their order is delivered, we email you a code worth ' + a + ' off your next order.</li><li>You cannot use your own code. One code can be used by many friends.</li></ol></details><b>Give ' + a + ', get ' + a + '</b><p>Share your code with a friend. They type it in the coupon box in their cart and get ' + a + ' off their first order, and you get ' + a + ' off your next one when their order is delivered.</p><div><code>' + c + '</code><a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a></div></div>';
   }
   /* where the visitor came from (advert or link labels), remembered for 30 days so the order shows it too */
   function utm() {
