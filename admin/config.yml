@@ -59,13 +59,13 @@ collections:
     name: in_stock
     widget: boolean
     default: true
-  - label: Stock count – how many bottles you have now (leave empty for no limit). Each order lowers it automatically and the product shows Sold out at 0.
+  - label: Stock count (bottles available)
     name: stock
     widget: number
     value_type: int
     min: 0
     required: false
-    hint: When new stock arrives, type the new total here. The count of sold bottles then starts again from zero.
+    hint: Type how many bottles you have now. Leave empty for no limit. Each order lowers it automatically and the product shows Sold out at 0. When new stock arrives, type the new total here.
   - label: Show on home page
     name: featured
     widget: boolean
