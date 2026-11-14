@@ -20,7 +20,7 @@ button.p{background:var(--maroon);color:var(--gold)}
 .row i{display:block;height:9px;border-radius:9px;background:#22071314;overflow:hidden}.row i b{display:block;height:100%;background:var(--maroon);border-radius:9px}.row em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 .chart{display:flex;align-items:flex-end;gap:3px;height:150px;padding-top:8px}.chart div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0;height:100%}
 .chart u{display:block;width:100%;background:var(--maroon);border-radius:4px 4px 0 0;min-height:2px;text-decoration:none}.chart s{font-size:10px;opacity:.65;text-decoration:none;white-space:nowrap}.chart div:hover u{background:#a8325f}
-.feed{max-height:330px;overflow:auto}.feed div{display:grid;grid-template-columns:76px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13px}.feed div:first-child{border:0}.feed small{opacity:.65}
+.feed{max-height:560px;overflow:auto}.feed div{display:grid;grid-template-columns:76px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13px}.feed div:first-child{border:0}.feed small{opacity:.65}
 .tag{display:inline-block;border-radius:99px;padding:0 8px;font-size:11px;background:var(--gold);color:var(--maroon);margin-right:6px;font-weight:600}
 .empty{opacity:.6;padding:10px 0}.own{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer}.own input{width:auto;padding:0;margin:0}.login{max-width:420px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:center}
 .login input{width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:8px;font:inherit}.err{color:#a11;min-height:20px;font-size:13px}
@@ -34,7 +34,7 @@ header.embed span{display:none}header.embed{padding-right:230px}
 if(/embed=1/.test(location.search))document.querySelector('header').classList.add('embed');
 var $=function(s){return document.querySelector(s)},app=$('#app'),esc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var load=function(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
-var auth,db,docs=[],range='today',unsub=null,titles={},timer;
+var auth,db,docs=[],feedDocs=null,unsubF=null,range='today',unsub=null,titles={},timer;
 try{if(localStorage.getItem('orvish_notrack')===null)localStorage.setItem('orvish_notrack','true')}catch(e){}
 Promise.all([fetch('/data/site.json?v='+Date.now()).then(function(r){return r.json()}),fetch('/data/products.json?v='+Date.now()).then(function(r){return r.json()}).catch(function(){return{products:[]}})]).then(function(a){
   var c=a[0].firebase_config;(a[1].products||[]).forEach(function(p){titles[p.id]=p.title});
@@ -63,7 +63,9 @@ function fetchData(u){
   if(unsub){unsub();unsub=null}
   var q=db.collection('visits').where('t','>=',since()).orderBy('t','desc').limit(10000);
   var bad=function(x){$('#dash').innerHTML=/permission/i.test(x.message||x.code||'')?'<div class="card"><h2>Not authorised</h2><p>You are signed in as <b>'+esc(u.email||u.phoneNumber||'')+'</b>, which is not listed as an owner in the Firestore rules. Add this email to the rules (the line with the owner emails), publish, and refresh.</p></div>':'<p class="err">Could not load traffic: '+esc(x.message||'')+'</p>'};
-  unsub=q.onSnapshot(function(s){docs=s.docs.map(function(d){return d.data()});draw()},bad);   /* every range updates by itself as visits arrive */
+  unsub=q.onSnapshot(function(s){docs=s.docs.map(function(d){return d.data()});draw()},bad);
+  /* the live activity list always holds the newest 100 visits, whatever period is picked above */
+  if(!unsubF)unsubF=db.collection('visits').orderBy('t','desc').limit(100).onSnapshot(function(s){feedDocs=s.docs.map(function(d){return d.data()});draw()},function(){feedDocs=null});   /* every range updates by itself as visits arrive */
 }
 function top(list,key,n){var m={};list.forEach(function(d){var k=key(d);if(!k)return;m[k]=m[k]||{};m[k][d.sid]=1});return Object.keys(m).map(function(k){return[k,Object.keys(m[k]).length]}).sort(function(a,b){return b[1]-a[1]}).slice(0,n||8)}
 function rows(t){if(!t.length)return'<p class="empty">No data yet.</p>';var mx=t[0][1];return t.map(function(x){return'<div class="row"><span title="'+esc(x[0])+'">'+esc(x[0])+'</span><i><b style="width:'+Math.max(3,Math.round(x[1]/mx*100))+'%"></b></i><em>'+x[1]+'</em></div>'}).join('')}
@@ -85,11 +87,11 @@ function draw(){
   if(range==='today'){for(var h=0;h<24;h++){buckets.push(0);lab.push(h%3===0?h12(h):'')}views.forEach(function(d){buckets[ist(d.t).getHours()]++})}
   else{var n=Number(range),s0=since();for(var i=0;i<n;i++){buckets.push(0);var dd=ist(s0+i*86400000);lab.push(n>10&&i%3?'':dd.getDate()+'/'+(dd.getMonth()+1))}views.forEach(function(d){var ix=Math.floor((d.t-s0)/86400000);if(ix>=0&&ix<n)buckets[ix]++})}
   var mx=Math.max.apply(null,buckets.concat([1]));
-  var feed=docs.slice(0,25).map(function(d){var t=ist(d.t),ev={view:'Viewed',cart:'Added to cart',checkout:'Started checkout',order:'Placed order'}[d.ev]||d.ev;return'<div><small>'+('0'+(t.getHours()%12||12)).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+(t.getHours()<12?' AM':' PM')+'</small><span>'+(d.ev!=='view'?'<span class="tag">'+esc(ev)+'</span>':'')+esc(d.ev==='view'?'Viewed '+label(d):label(d))+'<br><small>'+esc(place(d)||'Unknown location')+' · '+esc(d.dev||'')+(d.src||d.ref?' · from '+esc(d.src||d.ref):'')+'</small></span></div>'}).join('');
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],td=ist(Date.now()),feed=(feedDocs||docs).slice(0,100).map(function(d){var t=ist(d.t),day=t.getDate()===td.getDate()&&t.getMonth()===td.getMonth()?'':'<br>'+t.getDate()+' '+MON[t.getMonth()],ev={view:'Viewed',cart:'Added to cart',checkout:'Started checkout',order:'Placed order'}[d.ev]||d.ev;return'<div><small>'+('0'+(t.getHours()%12||12)).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+(t.getHours()<12?' AM':' PM')+day+'</small><span>'+(d.ev!=='view'?'<span class="tag">'+esc(ev)+'</span>':'')+esc(d.ev==='view'?'Viewed '+label(d):label(d))+'<br><small>'+esc(place(d)||'Unknown location')+' · '+esc(d.dev||'')+(d.src||d.ref?' · from '+esc(d.src||d.ref):'')+'</small></span></div>'}).join('');
   el.innerHTML='<div class="kpis">'+k('<span class="dot"></span>Visitors right now (last 5 min)',live,' live')+k('Visits',uniq(docs))+k('Different devices',dv.n)+k('Devices that came back',dv.back)+k('Page views',views.length)+k('Added to cart',docs.filter(function(d){return d.ev==='cart'}).length)+k('Orders placed',docs.filter(function(d){return d.ev==='order'}).length)+'</div><p class="empty" style="font-size:12px;padding:0 0 10px">A visit is one browsing session. Different devices counts each phone or computer once, however many times it came back. Devices are told apart only from 12 November; before that, every visit counts as its own device.</p>'+
    '<div class="grid"><div class="card full"><h2>Page views '+(range==='today'?'by hour (today, IST)':'by day')+'</h2><div class="chart">'+buckets.map(function(v,i){return'<div title="'+v+' views"><u style="height:'+Math.round(v/mx*100)+'%"></u><s>'+lab[i]+'</s></div>'}).join('')+'</div></div>'+
    '<div class="card"><h2>Top cities and areas (visits)</h2>'+rows(top(docs,area,12))+'<p class="empty" style="font-size:12px">The number after a city is its postal area, when known. Location comes from the visitor\'s internet connection, so on mobile data it can show a nearby larger town.</p><h2 style="margin-top:18px">Top states</h2>'+rows(top(docs,state,8))+'<h2 style="margin-top:18px">Countries</h2>'+rows(top(docs,country,5))+'</div>'+
-   '<div class="card"><h2>Live activity (IST)</h2><div class="feed">'+(feed||'<p class="empty">No visits yet in this period.</p>')+'</div></div>'+
+   '<div class="card"><h2>Live activity (IST) · newest 100</h2><div class="feed">'+(feed||'<p class="empty">No visits yet in this period.</p>')+'</div></div>'+
    '<div class="card"><h2>Most viewed pages and products</h2>'+rows(top(views,label,10))+'</div>'+
    '<div class="card"><h2>Where visitors come from</h2>'+rows(top(docs,function(d){return d.src||d.ref||'Direct / typed address'},8))+'<h2 style="margin-top:18px">Device</h2>'+rows(top(docs,function(d){return d.dev},2))+'</div></div>';
 }
