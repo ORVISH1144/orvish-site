@@ -7,6 +7,9 @@ on:
 permissions:
   contents: write
   pages: write
+concurrency:
+  group: build-products
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +24,15 @@ jobs:
           git config user.name "orvish-bot"
           git config user.email "bot@orvish.com"
           git add -A data/products.json sitemap.xml p info index.html shop.html images/opt
-          git diff --cached --quiet || (git commit -m "Rebuild product and info pages" && git push)
+          git diff --cached --quiet && exit 0
+          git commit -m "Rebuild product and info pages"
+          # the admin can save a second change a few seconds later: take it in and try again
+          for i in 1 2 3 4; do
+            git push && exit 0
+            git pull --rebase -X theirs origin main || { git rebase --abort; git reset --hard origin/main; python3 tools/optimize_images.py; python3 tools/build.py; git add -A data/products.json sitemap.xml p info index.html shop.html images/opt; git diff --cached --quiet || git commit -m "Rebuild product and info pages"; }
+            sleep 3
+          done
+          exit 1
       - name: Ask Pages to rebuild
         run: gh api -X POST repos/${{ github.repository }}/pages/builds || true
         env:
