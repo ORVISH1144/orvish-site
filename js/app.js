@@ -143,7 +143,7 @@
   function refHTML(phone) {
     var r = S.referral || {}; if (!r.enabled || last10(phone).length !== 10) return '';
     var c = refCode(phone), a = money(Number(r.amount) || 0), msg = 'Use my code ' + c + ' at ' + location.origin + ' and get ' + a + ' off your first ORVISH perfume.';
-    return '<div class="refbox"><b>Give ' + a + ', get ' + a + '</b><p>Share your code with a friend. They get ' + a + ' off their first order, and you get ' + a + ' off your next one when their order is delivered.</p><div><code>' + c + '</code><a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a></div></div>';
+    return '<div class="refbox"><b>Give ' + a + ', get ' + a + '</b><p>Share your code with a friend. They type it in the coupon box in their cart and get ' + a + ' off their first order, and you get ' + a + ' off your next one when their order is delivered.</p><div><code>' + c + '</code><a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a></div></div>';
   }
   /* where the visitor came from (advert or link labels), remembered for 30 days so the order shows it too */
   function utm() {
@@ -913,9 +913,9 @@
       el.classList.add('wide');
       var nm = u.displayName || saved('name') || '', first = nm.trim().split(' ')[0];
       el.innerHTML = '<div class="acct-head"><div class="av">' + esc((nm || u.email || 'O').trim().charAt(0).toUpperCase()) + '</div><div class="who"><h1>' + (first ? 'Hello, ' + esc(first) : 'My account') + '</h1><p>' + esc([u.email, u.phoneNumber].filter(Boolean).join(' · ')) + '</p></div><button class="btn secondary" id="lo">Log out</button></div>' +
-        '<div class="acct-tabs"><button class="on" data-tab="orders">My orders</button><button data-tab="details">Address &amp; details</button></div><div id="tab-orders"><p class="msg">Loading your orders…</p></div><div id="tab-details" hidden></div>' + refHTML(saved('phone') || u.phoneNumber || '');
+        '<div class="acct-tabs"><button class="on" data-tab="orders">My orders</button><button data-tab="details">Address &amp; details</button>' + (S.referral && S.referral.enabled ? '<button data-tab="refer">Refer &amp; earn</button>' : '') + '</div><div id="tab-orders"><p class="msg">Loading your orders…</p></div><div id="tab-details" hidden></div><div id="tab-refer" hidden>' + (refHTML(saved('phone') || u.phoneNumber || '') || '<div class="refbox"><b>Your referral code</b><p>Save your phone number in Address &amp; details and your personal code appears here.</p></div>') + '</div>';
       $('#lo').onclick = function () { el.classList.remove('wide'); FB.auth.signOut(); };
-      $$('.acct-tabs button', el).forEach(function (b) { b.onclick = function () { $$('.acct-tabs button', el).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#tab-orders').hidden = b.dataset.tab !== 'orders'; $('#tab-details').hidden = b.dataset.tab !== 'details'; }; });
+      $$('.acct-tabs button', el).forEach(function (b) { b.onclick = function () { $$('.acct-tabs button', el).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#tab-orders').hidden = b.dataset.tab !== 'orders'; $('#tab-details').hidden = b.dataset.tab !== 'details'; if ($('#tab-refer')) $('#tab-refer').hidden = b.dataset.tab !== 'refer'; }; });
       /* saved address and contact details */
       function drawDetails() {
         var g = function (k) { return esc(saved(k)); };
