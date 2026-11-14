@@ -958,3 +958,21 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 
 /* v62 referral how-it-works note */
 .refbox{position:relative}.refnote{position:absolute;top:12px;right:12px}.refnote summary{list-style:none;cursor:pointer;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold);font:italic 700 14px Georgia,serif;display:grid;place-items:center;user-select:none}.refnote summary::-webkit-details-marker{display:none}.refnote[open] summary{background:var(--gold);color:#fff}.refnote ol{position:absolute;right:0;top:32px;z-index:5;width:min(300px,78vw);margin:0;padding:14px 16px 14px 32px;background:#fff;border:1px solid var(--gold);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.15);font-size:13px;line-height:1.5;text-align:left}.refnote li{margin:0 0 6px}
+
+/* v63 address form: clearer sections, roomy fields, full-width phone */
+.fsec{margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line,#e2dccb);font:600 13.5px var(--font-accent);letter-spacing:.02em;color:var(--green,#092d29);display:flex;align-items:center;gap:8px}
+.fsec::before{content:"";width:3px;height:14px;background:var(--gold,#b89519);border-radius:2px}
+#co-fields>.fsec:first-child,#tab-details .fsec:first-of-type{margin-top:4px}
+.two.ph2{grid-template-columns:1fr}
+.field input,.field textarea,.field select{font-size:16px;min-height:48px;border-radius:6px;border:1px solid #c9c2ad;background:#fff;padding:12px 14px}
+.field textarea{min-height:76px}
+.field label{font:600 12.5px var(--font-accent);color:#092d29;margin-bottom:6px;letter-spacing:.01em}
+.field input::placeholder,.field textarea::placeholder{color:#8a8672;font-size:14.5px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold,#b89519);box-shadow:0 0 0 3px #b8951926}
+.ccph{border:1px solid #c9c2ad;border-radius:6px;min-height:48px;background:#fff}
+.ccph:focus-within{border-color:var(--gold,#b89519);box-shadow:0 0 0 3px #b8951926}
+.ccph span{background:#f1ece1;color:#092d29;padding:0 14px;font:600 16px var(--font-accent)}
+.field .ccph input{font-size:17px;letter-spacing:.06em;font-variant-numeric:tabular-nums;min-height:46px;padding:0 14px}
+.field .ccph input::placeholder{letter-spacing:0;font-size:14.5px}
+.locbtns .btn{border-radius:6px;min-height:46px}
+.co-saved{border-radius:6px}
