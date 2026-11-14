@@ -13,6 +13,7 @@
       ],
       "hidden": false,
       "in_stock": true,
+      "stock": 30,
       "featured": true,
       "brand": "Rasasi",
       "gender": "men",
@@ -52,9 +53,12 @@
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
         }
       ],
+      "faqs": [],
+      "auto_faq": true,
       "reviews": [
         {
           "name": "Shamil",
+          "photo": "",
           "rating": 5,
           "review": "Good lasting fragrance and genuine",
           "date": "2026-5-10",
@@ -62,6 +66,7 @@
         },
         {
           "name": "Akg bangalore",
+          "photo": "",
           "rating": 5,
           "review": "Received Earlier. nice product",
           "date": "",
