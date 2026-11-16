@@ -6,7 +6,9 @@
       "min_items": 1,
       "max_uses": 5,
       "stack_with_bundles": true,
-      "max_discount": null
+      "max_discount": null,
+      "amount": null,
+      "hidden": false
     },
     {
       "code": "BUY3",
@@ -14,7 +16,9 @@
       "min_items": 3,
       "max_uses": null,
       "stack_with_bundles": true,
-      "max_discount": 900
+      "max_discount": 900,
+      "amount": null,
+      "hidden": false
     },
     {
       "code": "WELCOME40",
@@ -22,29 +26,63 @@
       "min_items": 2,
       "max_uses": 1,
       "stack_with_bundles": true,
-      "max_discount": 1200
+      "max_discount": 1200,
+      "amount": null,
+      "hidden": false
     },
     {
       "code": "COMEBACK100",
-      "amount": 100,
       "percent": 0,
       "min_items": 1,
       "max_uses": 1,
       "stack_with_bundles": true,
       "max_discount": null,
+      "amount": 100,
       "hidden": true
     },
     {
       "code": "REFILL100",
-      "amount": 100,
       "percent": 0,
       "min_items": 1,
       "max_uses": 1,
       "stack_with_bundles": true,
       "max_discount": null,
+      "amount": 100,
       "hidden": true
     }
   ],
+  "referral": {
+    "enabled": true,
+    "amount": 100
+  },
+  "gst": {
+    "sheet_url": "https://docs.google.com/spreadsheets/d/1tPJbUtnvcMVeq5hqw8Mk55uKox3IKI43Cq94ba_BNT8/edit?usp=sharing",
+    "gstin": "32HKZPK6976F1ZA",
+    "legal_name": "ORVISH",
+    "address": "Thrissur",
+    "state": "Kerala",
+    "phone": "+918156953937",
+    "email": "info@orvish.com",
+    "invoice_prefix": "ORV",
+    "default_hsn": "3303",
+    "default_rate": 18,
+    "shipping_hsn": "996812",
+    "invoice_note": ""
+  },
+  "supplier": {
+    "name": "",
+    "whatsapp": ""
+  },
+  "low_stock": 5,
+  "shiprocket": {
+    "pickup_location": "Primary",
+    "weight_kg": 0.4,
+    "length_cm": 15,
+    "breadth_cm": 10,
+    "height_cm": 8,
+    "auto_status": true
+  },
+  "area_rules": [],
   "shipping_fee": 49,
   "free_shipping_above": 999,
   "razorpay_key_id": "rzp_test_TyY2VwmXyCpL2r",
@@ -74,35 +112,5 @@
       "name": "Apple Pay",
       "image": "/images/uploads/pay-applepay.png"
     }
-  ],
-  "area_rules": [],
-  "referral": {
-    "enabled": true,
-    "amount": 100
-  },
-  "low_stock": 5,
-  "shiprocket": {
-    "pickup_location": "Primary",
-    "weight_kg": 0.4,
-    "length_cm": 15,
-    "breadth_cm": 10,
-    "height_cm": 8,
-    "auto_status": false
-  },
-  "gst": {
-    "gstin": "",
-    "legal_name": "ORVISH",
-    "address": "",
-    "state": "Kerala",
-    "phone": "",
-    "email": "",
-    "invoice_prefix": "ORV",
-    "default_hsn": "",
-    "shipping_hsn": "996812",
-    "invoice_note": ""
-  },
-  "supplier": {
-    "name": "",
-    "whatsapp": ""
-  }
+  ]
 }
