@@ -626,6 +626,7 @@ collections:
       widget: object
       collapsed: true
       fields:
+      - {label: Link of your GST Google Sheet, name: sheet_url, widget: string, required: false, hint: "Upload ORVISH-GST-Register.xlsx to Google Drive, choose File > Save as Google Sheets, then paste that sheet's link here. Sales and returns are written into it."}
       - {label: GSTIN (your GST number), name: gstin, widget: string, required: false}
       - {label: Legal business name (as on the GST certificate), name: legal_name, widget: string, required: false}
       - {label: Registered address, name: address, widget: text, required: false}
