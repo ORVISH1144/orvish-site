@@ -1,7 +1,7 @@
 {
   "id": "hawas-kobra-edp-100ml",
   "title": "Hawas Kobra – Eau de Parfum for Men, 100 ml",
-  "price": 1299,
+  "price": 20,
   "compare_at_price": 1799,
   "collection": "signature",
   "images": [
@@ -12,6 +12,8 @@
   "hidden": false,
   "in_stock": true,
   "stock": 30,
+  "hsn": "",
+  "gst_rate": null,
   "featured": true,
   "brand": "Rasasi",
   "gender": "men",
