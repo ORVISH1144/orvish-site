@@ -84,7 +84,7 @@
   },
   "area_rules": [],
   "shipping_fee": 49,
-  "free_shipping_above": 999,
+  "free_shipping_above": 100,
   "razorpay_key_id": "rzp_live_U0m4ClbAmc5gZy",
   "cod_enabled": false,
   "delivery_days_min": 3,
