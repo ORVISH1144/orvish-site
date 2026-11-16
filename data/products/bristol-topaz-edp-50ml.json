@@ -1,0 +1,63 @@
+{
+  "collection": "signature",
+  "images": [],
+  "hidden": false,
+  "in_stock": true,
+  "hsn": "3303",
+  "gst_rate": 18,
+  "featured": true,
+  "brand": "Bristol",
+  "type": "Eau de Parfum",
+  "best_seller": true,
+  "badge": "New",
+  "variants": [],
+  "bundles": [
+    {
+      "qty": 2,
+      "percent": 10
+    },
+    {
+      "qty": 3,
+      "percent": 15
+    }
+  ],
+  "details": [
+    {
+      "title": "How to use",
+      "body": "Hold the bottle upright and spray on the body or clothing from 15–20 cm away. For best results, apply to pulse points – wrists, neck and behind the ears. Do not rub."
+    },
+    {
+      "title": "Caution and storage",
+      "body": "Highly flammable. For external use only. Avoid contact with eyes. Keep away from heat, sparks and open flames. Store in a cool, dry place away from direct sunlight. Keep out of reach of children."
+    },
+    {
+      "title": "Ingredients",
+      "body": "Alcohol Denat, Fragrance (Parfum), Limonene, Linalool, Citronellol, Geraniol, Coumarin, Eugenol, Alpha-Isomethyl Ionone."
+    },
+    {
+      "title": "Shipping and returns",
+      "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+    }
+  ],
+  "faqs": [],
+  "auto_faq": true,
+  "id": "bristol-topaz-edp-50ml",
+  "title": "Bristol Topaz – Eau de Parfum, 50 ml",
+  "price": 1199,
+  "compare_at_price": 1799,
+  "gender": "unisex",
+  "notes": [
+    "Citrus",
+    "Spicy",
+    "Amber",
+    "Woody"
+  ],
+  "note_pyramid": {
+    "top": "Bergamot, Lemon",
+    "heart": "Jasmine, Lavender, Spicy accord",
+    "base": "Amber, Musk, Woody notes"
+  },
+  "short_description": "A warm amber and woody fragrance that opens with bright citrus, jasmine and lavender.",
+  "description": "Bristol Topaz is a rich, warm Eau de Parfum that opens with sparkling bergamot and lemon, moves into jasmine, lavender and a gentle spicy accord, and dries down to a long-lasting base of amber, musk and woody notes. Fragrance made in France.\n\n**Size:** 50 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** evenings, special occasions and gifting. Suits both men and women.",
+  "position": 4
+}
