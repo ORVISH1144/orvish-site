@@ -88,5 +88,21 @@
     "breadth_cm": 10,
     "height_cm": 8,
     "auto_status": false
+  },
+  "gst": {
+    "gstin": "",
+    "legal_name": "ORVISH",
+    "address": "",
+    "state": "Kerala",
+    "phone": "",
+    "email": "",
+    "invoice_prefix": "ORV",
+    "default_hsn": "",
+    "shipping_hsn": "996812",
+    "invoice_note": ""
+  },
+  "supplier": {
+    "name": "",
+    "whatsapp": ""
   }
 }

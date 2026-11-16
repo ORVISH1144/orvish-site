@@ -66,6 +66,19 @@ collections:
     min: 0
     required: false
     hint: Type how many bottles you have now. Leave empty for no limit. Each order lowers it automatically and the product shows Sold out at 0. When new stock arrives, type the new total here.
+  - label: HSN code (for the GST invoice)
+    name: hsn
+    widget: string
+    required: false
+    hint: The product's HSN code, for example 3303 for perfumes. It is printed on the invoice and used in the GST register.
+  - label: GST rate % (the website price already includes this GST)
+    name: gst_rate
+    widget: number
+    value_type: float
+    min: 0
+    max: 40
+    required: false
+    hint: For example 18. The invoice splits the price into taxable value and GST using this rate.
   - label: Show on home page
     name: featured
     widget: boolean
@@ -608,6 +621,29 @@ collections:
       fields:
       - {label: Switch referral codes on, name: enabled, widget: boolean, default: true, required: false}
       - {label: Amount off for each of them (₹), name: amount, widget: number, value_type: int, default: 100}
+    - label: GST and invoice details (printed on every invoice and used in the GST register)
+      name: gst
+      widget: object
+      collapsed: true
+      fields:
+      - {label: GSTIN (your GST number), name: gstin, widget: string, required: false}
+      - {label: Legal business name (as on the GST certificate), name: legal_name, widget: string, required: false}
+      - {label: Registered address, name: address, widget: text, required: false}
+      - {label: State of registration, name: state, widget: string, default: Kerala, required: false, hint: "Orders delivered inside this state get CGST + SGST. Other states get IGST."}
+      - {label: Phone shown on the invoice, name: phone, widget: string, required: false}
+      - {label: Email shown on the invoice, name: email, widget: string, required: false}
+      - {label: Invoice number prefix, name: invoice_prefix, widget: string, default: ORV, required: false, hint: "Invoice numbers look like ORV/26-27/0001 and count up by themselves."}
+      - {label: HSN code used when a product has none, name: default_hsn, widget: string, required: false}
+      - {label: GST rate % used when a product has none, name: default_rate, widget: number, value_type: float, required: false}
+      - {label: HSN / SAC code for a delivery charge, name: shipping_hsn, widget: string, default: '996812', required: false}
+      - {label: Note printed at the bottom of the invoice, name: invoice_note, widget: text, required: false}
+    - label: Supplier (the orders page gets a button that sends an order to this WhatsApp number to pack and ship)
+      name: supplier
+      widget: object
+      collapsed: true
+      fields:
+      - {label: Supplier name, name: name, widget: string, required: false}
+      - {label: Supplier WhatsApp number with country code (digits only), name: whatsapp, widget: string, required: false, hint: "For example 919876543210"}
     - label: Show "Only N left" on the product page when stock is at or below this number
       name: low_stock
       widget: number

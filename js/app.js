@@ -511,7 +511,7 @@
     $('#checkout-modal').innerHTML = '<div class="box thanks"><div class="tick">' + ico('check') + '</div><h4>Thank you for your order</h4><p>' + esc(S.order_thanks_message || 'Your order has been placed successfully.') + '</p>' +
       '<div class="tsum">' + row('Order ID', o.id ? '<b>' + esc(o.id) + '</b>' : '') + row('Total', '<b>' + money(o.total) + '</b>') + row('Payment', esc(o.pay)) + row('Payment reference', esc(o.pid || '')) + row('Delivering to', esc([f.address, f.city, f.pin].filter(Boolean).join(', '))) + '</div>' +
       (f.email ? '<p class="msg">A confirmation email is on its way to ' + esc(f.email) + '.</p>' : '') + refHTML(f.phone) +
-      '<div class="tact">' + (o.id ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(o.id) + '&ph=' + encodeURIComponent(ph) + '">Track my order</a>' : '') + '<a class="btn" href="/shop">Continue shopping</a></div></div>';
+      '<div class="tact">' + (o.id ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(o.id) + '&ph=' + encodeURIComponent(ph) + '">Track my order</a><a class="btn secondary" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(o.id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Invoice</a>' : '') + '<a class="btn" href="/shop">Continue shopping</a></div></div>';
   }
 
   /* shell */
@@ -848,7 +848,7 @@
         var s = stInfo(d.order_status);
         r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
           (s.off ? '' : '<ol class="steps">' + stepsHTML(s.i) + '</ol>') + '<div class="ois">' + itemRows(d.items_json, d.items) + '</div>' +
-          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
+          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div><div class="row"><span>Invoice</span><span><a class="link" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Download invoice</a></span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
           '<div class="ret"></div>' + (/delivered/i.test(s.st) ? reviewLinks(d.items_json, d.items, d.order_id, ph) : '') + '</div>';
         returnBox($('.ret', r), d.order_id, ph, d, function () { $('.pill', r).className = 'pill warn'; $('.pill', r).textContent = 'Return requested'; var o = $('.steps', r); if (o) o.remove(); });
       }).catch(function () { r.innerHTML = '<p class="msg err">Could not load the status right now. Please try again in a moment.</p>'; });
@@ -953,7 +953,7 @@
         box.innerHTML = o.map(function (x) {
           return '<article class="ocard" data-id="' + esc(x.order_id) + '"><header><div><small>Placed on ' + new Date(x.created).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st wait">Updating…</span></header>' +
             '<ol class="steps"></ol><div class="ois">' + itemRows(x.items_detail, x.items) + '</div>' +
-            '<footer><div><small>Total</small><b>' + money(x.total) + '</b></div><div><small>Payment</small><b class="ps">–</b></div><div class="trk" hidden><small>Courier tracking</small><b></b></div><a class="btn secondary" href="/track?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(x.phone) + '">Track order</a></footer><div class="ret"></div><div class="rvl"></div></article>';
+            '<footer><div><small>Total</small><b>' + money(x.total) + '</b></div><div><small>Payment</small><b class="ps">–</b></div><div class="trk" hidden><small>Courier tracking</small><b></b></div><a class="btn secondary" href="/track?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(x.phone) + '">Track order</a><a class="btn secondary inv" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(last10(x.phone)) + '">Invoice</a></footer><div class="ret"></div><div class="rvl"></div></article>';
         }).join('');
         $$('.ocard', box).forEach(function (c, n) { paint(c, o[n], mem.status[o[n].order_id] || null); });
       }

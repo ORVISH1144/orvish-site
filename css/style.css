@@ -976,3 +976,6 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .field .ccph input::placeholder{letter-spacing:0;font-size:14.5px}
 .locbtns .btn{border-radius:6px;min-height:46px}
 .co-saved{border-radius:6px}
+
+/* v64 invoice button on the order card */
+.ocard footer .btn.inv{margin-left:0}
