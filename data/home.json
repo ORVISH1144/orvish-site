@@ -156,8 +156,12 @@
     }
   ],
   "best_pick": [],
-  "him_pick": [],
-  "her_pick": [],
+  "him_pick": [
+    "hawas-kobra-edp-100ml"
+  ],
+  "her_pick": [
+    "rose-01-extrait-50ml"
+  ],
   "custom_rows": [],
   "bottom_banner": {
     "image": "",
