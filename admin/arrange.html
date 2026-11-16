@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Arrange products – ORVISH</title>
+<style>
+:root{--green:#092d29;--gold:#b89519;--cream:#f1ece1;--line:#d9d2bd;--ink:#14211f}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:400 15px/1.5 "DM Sans",system-ui,Arial,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:22px 16px 90px}
+h1{margin:0 0 4px;font:600 24px Georgia,serif;color:var(--green)}p.sub{margin:0 0 18px;color:#5d6a66}
+#list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+#list li{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 12px;cursor:grab;touch-action:none;user-select:none}
+#list li img{width:54px;height:54px;object-fit:cover;border-radius:4px;background:var(--cream);flex:none}
+#list li b{display:block;font-weight:600}#list li small{color:#5d6a66}
+#list li .n{width:30px;height:30px;border-radius:50%;background:var(--green);color:var(--cream);display:grid;place-items:center;font:700 13px Arial,sans-serif;flex:none}
+#list li .grip{margin-left:auto;color:var(--gold);font-size:22px;line-height:1;flex:none}
+.sortable-ghost{opacity:.35}.sortable-chosen{box-shadow:0 8px 22px #0003;border-color:var(--gold)!important}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:center}
+button{font:600 14px system-ui,Arial,sans-serif;padding:12px 26px;border-radius:4px;border:1px solid var(--green);background:var(--green);color:var(--cream);cursor:pointer}button:disabled{opacity:.45;cursor:default}
+#msg{font-size:13.5px;color:#5d6a66}#msg.err{color:#b3261e}#msg.ok{color:#137333}
+</style></head>
+<body><div class="wrap"><h1>Arrange products</h1><p class="sub">Drag a product up or down. The one at the top shows first on the website. Press Save when you are happy.</p>
+<ul id="list"><li><span id="load">Loading products…</span></li></ul></div>
+<div class="bar"><span id="msg"></span><button id="save" disabled>Save order</button></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script>
+(function(){
+var REPO='ORVISH1144/orvish-site',BR='main',API='https://api.github.com/repos/'+REPO,items=[],dirty=false,$=function(s){return document.querySelector(s)};
+function say(t,c){var m=$('#msg');m.textContent=t||'';m.className=c||''}
+function token(){try{var u=JSON.parse(localStorage.getItem('sveltia-cms.user')||'null');return u&&u.token||''}catch(e){return ''}}
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function gh(path,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+token(),Accept:'application/vnd.github+json'},opt.headers||{});
+  return fetch(API+path,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||('Error '+r.status));return j})})}
+function b64d(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))))}
+function img(p){var i=(p.images&&p.images[0])||'';i=typeof i==='object'?(i.image||''):i;return i}
+function paint(){
+  $('#list').innerHTML=items.map(function(p,i){var im=img(p);return'<li data-i="'+i+'"><span class="n">'+(i+1)+'</span>'+(im?'<img src="'+esc(encodeURI(im))+'" alt="">':'')+'<div><b>'+esc(p.title)+'</b><small>'+(p.hidden?'Hidden · ':'')+'Now showing as number '+(i+1)+'</small></div><span class="grip">⋮⋮</span></li>'}).join('');
+}
+function init(){
+  if(!token()){$('#list').innerHTML='<li>Please open the store admin and log in with GitHub first, then open this page again.</li>';return}
+  gh('/contents/data/products?ref='+BR).then(function(files){
+    return Promise.all(files.filter(function(f){return /\.json$/.test(f.name)}).map(function(f){return gh('/contents/'+f.path+'?ref='+BR).then(function(j){var d={};try{d=JSON.parse(b64d(j.content))}catch(e){}return{path:f.path,sha:j.sha,data:d,title:d.title||f.name,images:d.images,hidden:d.hidden,pos:Number(d.position)||100}})}))
+  }).then(function(list){
+    items=list.sort(function(a,b){return a.pos-b.pos||String(a.title).localeCompare(b.title)});paint();
+    Sortable.create($('#list'),{animation:160,ghostClass:'sortable-ghost',chosenClass:'sortable-chosen',delay:80,delayOnTouchOnly:true,
+      onEnd:function(){var order=[].map.call($('#list').children,function(li){return Number(li.dataset.i)});items=order.map(function(i){return items[i]});dirty=true;paint();$('#save').disabled=false;say('Order changed. Press Save.')}});
+  }).catch(function(e){$('#list').innerHTML='<li>Could not load the products: '+esc(e.message)+'. Log in again in the store admin and retry.</li>'});
+}
+$('#save').onclick=function(){
+  var b=$('#save');b.disabled=true;say('Saving…');
+  var changed=items.map(function(p,i){return{p:p,pos:i+1}}).filter(function(x){return Number(x.p.data.position)!==x.pos});
+  if(!changed.length){say('Nothing to change.','ok');return}
+  gh('/git/ref/heads/'+BR).then(function(ref){var head=ref.object.sha;
+    return gh('/git/commits/'+head).then(function(c){
+      return Promise.all(changed.map(function(x){x.p.data.position=x.pos;return gh('/git/blobs',{method:'POST',body:JSON.stringify({content:JSON.stringify(x.p.data,null,2)+'\n',encoding:'utf-8'})}).then(function(bl){return{path:x.p.path,mode:'100644',type:'blob',sha:bl.sha}})}))
+        .then(function(tree){return gh('/git/trees',{method:'POST',body:JSON.stringify({base_tree:c.tree.sha,tree:tree})})})
+        .then(function(t){return gh('/git/commits',{method:'POST',body:JSON.stringify({message:'Product display order changed in the admin',tree:t.sha,parents:[head]})})})
+        .then(function(nc){return gh('/git/refs/heads/'+BR,{method:'PATCH',body:JSON.stringify({sha:nc.sha})})})})
+  }).then(function(){dirty=false;items.forEach(function(p,i){p.pos=i+1});say('Saved. The website updates in about a minute.','ok')})
+    .catch(function(e){b.disabled=false;say('Could not save: '+e.message,'err')});
+};
+window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue=''}});
+init();
+})();
+</script></body></html>
