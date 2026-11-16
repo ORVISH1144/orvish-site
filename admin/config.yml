@@ -17,7 +17,10 @@ collections:
   delete: true
   slug: '{{id}}'
   identifier_field: title
-  summary: '{{title}} – ₹{{price}}'
+  summary: 'Shows #{{position}} – {{title}} – ₹{{price}}'
+  sortable_fields:
+    fields: [position, title, price]
+    default: {field: position, direction: Ascending}
   fields:
   - label: ID (short, lowercase, no spaces – used in the web address)
     name: id
@@ -250,12 +253,14 @@ collections:
       widget: boolean
       default: false
       required: false
-  - label: Display order (smaller number shows first)
+  - label: Display order on the website (1 = shown first, 2 = second, and so on)
     name: position
     widget: number
     value_type: int
+    min: 1
     default: 100
     required: false
+    hint: To swap two products, open both and swap their numbers. The product list here is sorted by this number too.
 - name: home
   label: Home page
   files:
