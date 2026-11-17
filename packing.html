@@ -37,12 +37,19 @@ table{width:100%;border-collapse:collapse;font-size:9pt}td{padding:1mm 0;border-
   function qr(u){try{var c=qrcode(0,'M');c.addData(u);c.make();return c.createSvgTag({cellSize:2,margin:0,scalable:true})}catch(e){return''}}
   function fail(t){out.innerHTML='<p class="msg">'+t+'</p>'}
   if(!id||ph.length!==10){fail('This label link is not complete. Open it from the order email or the admin orders page.');return}
+  /* ask for the short "label" answer first: it reads only the order row, so it is quick */
   fetch('/data/site.json').then(function(r){return r.json()}).then(function(S){
-    return fetch(S.order_webhook_url+'?action=invoice&order_id='+encodeURIComponent(id)+'&phone='+ph+'&_='+Date.now()).then(function(r){return r.json()}).then(function(d){
-      if(!d||!d.found||!d.invoice){fail('Order not found. Check the link.');return}draw(d.invoice)})
+    var base=S.order_webhook_url+'?order_id='+encodeURIComponent(id)+'&phone='+ph+'&_='+Date.now();
+    return fetch(base+'&action=label').then(function(r){return r.json()}).then(function(d){
+      if(d&&d.found&&d.label)return draw(d.label);
+      /* an older script without the label answer: use the invoice */
+      return fetch(base+'&action=invoice').then(function(r){return r.json()}).then(function(x){
+        if(!x||!x.found||!x.invoice){fail('Order not found. Check the link.');return}
+        var v=x.invoice,b=v.buyer;draw({order_id:v.order_id,date:v.date,name:b.name,phone:b.phone,address:b.address,city:b.city,state:b.state,pin:b.pin,map:b.map||'',cod:/cod|cash/i.test((v.payment||'')+' '+(v.payment_status||'')),items:v.lines.filter(function(l){return!l.delivery}).map(function(l){return{title:l.title,qty:l.qty}})})})
+    })
   }).catch(function(){fail('The order could not be loaded right now. Please try again in a minute.')});
   function draw(v){
-    var b=v.buyer,s=v.seller,cod=/cod|cash/i.test((v.payment||'')+' '+(v.payment_status||'')),items=v.lines.filter(function(l){return!l.delivery}),n=items.reduce(function(a,l){return a+Number(l.qty||0)},0);
+    var b=v,cod=!!v.cod,items=v.items,n=items.reduce(function(a,l){return a+Number(l.qty||0)},0);
     document.title='Label '+v.order_id;
     out.innerHTML='<div class="label">'+
       '<div class="hd"><div class="oid">Order<b>'+esc(v.order_id)+'</b>'+esc(v.date)+'</div><div class="pm">'+(cod?'COD':'Prepaid')+'</div></div>'+
@@ -50,7 +57,7 @@ table{width:100%;border-collapse:collapse;font-size:9pt}td{padding:1mm 0;border-
       '<div class="box"><h4>Pack these items ('+n+' '+(n===1?'item':'items')+')</h4><table>'+items.map(function(l){return'<tr><td class="q">'+l.qty+' ×</td><td>'+esc(l.title)+'</td></tr>'}).join('')+'</table></div>'+
       '</div>';
     var pr=document.getElementById('pr');pr.hidden=false;pr.onclick=function(){window.print()};
-    if(q.get('print')==='1')setTimeout(function(){window.print()},600);
+    if(q.get('print')==='1')setTimeout(function(){window.print()},150);
   }
 })();
 </script></body></html>
