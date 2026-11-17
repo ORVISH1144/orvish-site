@@ -31,13 +31,13 @@
       "hidden": false
     },
     {
-      "code": "COMEBACK100",
+      "code": "COMEBACK50",
       "percent": 0,
       "min_items": 1,
       "max_uses": 1,
       "stack_with_bundles": true,
       "max_discount": null,
-      "amount": 100,
+      "amount": 50,
       "hidden": true
     },
     {
