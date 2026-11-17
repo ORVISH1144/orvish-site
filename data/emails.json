@@ -60,9 +60,9 @@
   "abandoned": {
     "send": true,
     "hours": 2,
-    "code": "COMEBACK100",
+    "code": "COMEBACK20",
     "subject": "You left something in your cart, {name}",
-    "message": "You were so close. Your perfume is still waiting in your cart.\nUse code {code} at checkout for ₹100 off. It works once, so do not wait too long."
+    "message": "You were so close. Your perfume is still waiting in your cart.\nUse code {code} at checkout for ₹20 off. It works once, so do not wait too long."
   },
   "refill": {
     "send": true,

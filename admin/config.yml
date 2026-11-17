@@ -1130,7 +1130,7 @@ collections:
       fields:
       - {label: Send this email, name: send, widget: boolean, default: true, required: false}
       - {label: Send after this many hours, name: hours, widget: number, default: 2}
-      - {label: Coupon code offered (must exist in Discount codes), name: code, widget: string, default: COMEBACK100}
+      - {label: Coupon code offered (must exist in Discount codes), name: code, widget: string, default: COMEBACK20}
       - label: Subject
         name: subject
         widget: string
