@@ -12,11 +12,11 @@
     },
     {
       "code": "BUY3",
-      "percent": 30,
+      "percent": 15,
       "min_items": 3,
       "max_uses": null,
       "stack_with_bundles": true,
-      "max_discount": 900,
+      "max_discount": 350,
       "amount": null,
       "hidden": false
     },
