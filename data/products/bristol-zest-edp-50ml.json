@@ -1,13 +1,26 @@
 {
+  "id": "bristol-zest-edp-50ml",
+  "title": "Bristol Zest – Eau de Parfum, 50 ml",
+  "price": 999,
+  "compare_at_price": 1499,
   "collection": "signature",
-  "images": [],
+  "images": [
+    "/images/uploads/Bristol Zest Citrus Perfume Still Life.png"
+  ],
   "hidden": false,
   "in_stock": true,
+  "stock": null,
   "hsn": "3303",
   "gst_rate": 18,
   "featured": true,
   "brand": "Bristol",
+  "gender": "unisex",
   "type": "Eau de Parfum",
+  "notes": [
+    "Citrus",
+    "Fresh",
+    "Floral"
+  ],
   "best_seller": true,
   "badge": "New",
   "variants": [],
@@ -21,6 +34,13 @@
       "percent": 15
     }
   ],
+  "note_pyramid": {
+    "top": "Lemon, Bergamot, Mandarin",
+    "heart": "Neroli, White flowers",
+    "base": "White musk, Light woods"
+  },
+  "short_description": "A bright, sparkling citrus fragrance with white flowers and a clean musky finish.",
+  "description": "Bristol Zest is a fresh, uplifting Eau de Parfum built around zesty lemon and bergamot. The citrus opening settles into soft white flowers and finishes with a clean, light musk that stays close to the skin. Fragrance made in France.\n\n**Size:** 50 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** daytime, office, summer and everyday wear. A light, easy fragrance for both men and women.",
   "details": [
     {
       "title": "How to use",
@@ -41,22 +61,6 @@
   ],
   "faqs": [],
   "auto_faq": true,
-  "id": "bristol-zest-edp-50ml",
-  "title": "Bristol Zest – Eau de Parfum, 50 ml",
-  "price": 999,
-  "compare_at_price": 1499,
-  "gender": "unisex",
-  "notes": [
-    "Citrus",
-    "Fresh",
-    "Floral"
-  ],
-  "note_pyramid": {
-    "top": "Lemon, Bergamot, Mandarin",
-    "heart": "Neroli, White flowers",
-    "base": "White musk, Light woods"
-  },
-  "short_description": "A bright, sparkling citrus fragrance with white flowers and a clean musky finish.",
-  "description": "Bristol Zest is a fresh, uplifting Eau de Parfum built around zesty lemon and bergamot. The citrus opening settles into soft white flowers and finishes with a clean, light musk that stays close to the skin. Fragrance made in France.\n\n**Size:** 50 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** daytime, office, summer and everyday wear. A light, easy fragrance for both men and women.",
+  "reviews": [],
   "position": 1
 }
