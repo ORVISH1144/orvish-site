@@ -1,13 +1,27 @@
 {
+  "id": "bristol-topaz-edp-50ml",
+  "title": "Bristol Topaz – Eau de Parfum, 50 ml",
+  "price": 1199,
+  "compare_at_price": 1799,
   "collection": "signature",
-  "images": [],
+  "images": [
+    "/images/uploads/Bristol Topaz Perfume Bottle.png"
+  ],
   "hidden": false,
   "in_stock": true,
+  "stock": null,
   "hsn": "3303",
   "gst_rate": 18,
   "featured": true,
   "brand": "Bristol",
+  "gender": "unisex",
   "type": "Eau de Parfum",
+  "notes": [
+    "Citrus",
+    "Spicy",
+    "Amber",
+    "Woody"
+  ],
   "best_seller": true,
   "badge": "New",
   "variants": [],
@@ -21,6 +35,13 @@
       "percent": 15
     }
   ],
+  "note_pyramid": {
+    "top": "Bergamot, Lemon",
+    "heart": "Jasmine, Lavender, Spicy accord",
+    "base": "Amber, Musk, Woody notes"
+  },
+  "short_description": "A warm amber and woody fragrance that opens with bright citrus, jasmine and lavender.",
+  "description": "Bristol Topaz is a rich, warm Eau de Parfum that opens with sparkling bergamot and lemon, moves into jasmine, lavender and a gentle spicy accord, and dries down to a long-lasting base of amber, musk and woody notes. Fragrance made in France.\n\n**Size:** 50 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** evenings, special occasions and gifting. Suits both men and women.",
   "details": [
     {
       "title": "How to use",
@@ -41,23 +62,6 @@
   ],
   "faqs": [],
   "auto_faq": true,
-  "id": "bristol-topaz-edp-50ml",
-  "title": "Bristol Topaz – Eau de Parfum, 50 ml",
-  "price": 1199,
-  "compare_at_price": 1799,
-  "gender": "unisex",
-  "notes": [
-    "Citrus",
-    "Spicy",
-    "Amber",
-    "Woody"
-  ],
-  "note_pyramid": {
-    "top": "Bergamot, Lemon",
-    "heart": "Jasmine, Lavender, Spicy accord",
-    "base": "Amber, Musk, Woody notes"
-  },
-  "short_description": "A warm amber and woody fragrance that opens with bright citrus, jasmine and lavender.",
-  "description": "Bristol Topaz is a rich, warm Eau de Parfum that opens with sparkling bergamot and lemon, moves into jasmine, lavender and a gentle spicy accord, and dries down to a long-lasting base of amber, musk and woody notes. Fragrance made in France.\n\n**Size:** 50 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** evenings, special occasions and gifting. Suits both men and women.",
+  "reviews": [],
   "position": 2
 }
