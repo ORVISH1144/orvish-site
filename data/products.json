@@ -65,7 +65,16 @@
       ],
       "faqs": [],
       "auto_faq": true,
-      "reviews": []
+      "reviews": [
+        {
+          "name": "Nazim ck",
+          "photo": "/images/uploads/WhatsApp Image 2026-11-11 at 6.28.05 PM.jpeg",
+          "rating": 5,
+          "review": "Elegant, warm, and surprisingly long-lasting",
+          "date": "",
+          "verified": false
+        }
+      ]
     },
     {
       "id": "bristol-topaz-edp-50ml",
