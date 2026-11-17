@@ -1,12 +1,44 @@
 #!/usr/bin/env python3
 """Makes small WebP copies (400, 600, 800 and 1200 px wide) of every photo in images/uploads into images/opt.
 The website uses these instead of the original files, which can be several MB each.
+The FIRST photo of every product (the one on the shop cards) is also evened out: when it is a cut-out bottle on a transparent
+or plain light background, the empty space around the bottle is trimmed and the bottle is placed on a 4:5 canvas at one fixed size,
+so every product looks the same size on the site, on computers and phones. The original file is never changed.
 Names: /images/opt/<lowercase-name-with-dashes>-<width>.webp. Run by the GitHub Action whenever a photo is added or changed."""
 import os, re, glob, json, hashlib
 from urllib.parse import unquote
-from PIL import Image
+from PIL import Image, ImageChops
 SRC, OUT, WIDTHS = 'images/uploads', 'images/opt', (400, 600, 800, 1200)
 def slug(name): return re.sub(r'[^a-z0-9]+', '-', unquote(name).lower()).strip('-')
+NORM = 'even-v1'          # change this text to redo every evened-out photo
+CANVAS = (1200, 1500)     # 4:5, the shape of a product card
+FIT_H, FIT_W = 0.76, 0.74 # the bottle fills at most this share of the canvas height and width
+def main_photos():
+    out = set()
+    for f in glob.glob('data/products/*.json'):
+        try:
+            im = (json.load(open(f, encoding='utf8')).get('images') or [None])[0]
+            im = im.get('image') if isinstance(im, dict) else im
+            if im: out.add(os.path.basename(unquote(str(im))))
+        except Exception: pass
+    return out
+def even_out(im):
+    """Returns the bottle centred on the canvas at the fixed size, or None when the photo is not a cut-out on a plain background."""
+    rgba = im.convert('RGBA'); a = rgba.split()[3]
+    if a.getextrema()[0] < 128:                                   # transparent background
+        box = a.point(lambda v: 255 if v > 40 else 0).getbbox(); bg = (0, 0, 0, 0)
+    else:                                                          # plain light background: all four corners nearly the same light colour
+        w, h = rgba.size; cs = [rgba.getpixel(p)[:3] for p in ((2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3))]
+        if min(min(c) for c in cs) < 225 or max(max(abs(c[i] - cs[0][i]) for i in range(3)) for c in cs) > 10: return None
+        diff = ImageChops.difference(rgba.convert('RGB'), Image.new('RGB', rgba.size, cs[0])).convert('L')
+        box = diff.point(lambda v: 255 if v > 16 else 0).getbbox(); bg = cs[0] + (255,)
+    if not box: return None
+    sub = rgba.crop(box); k = min(CANVAS[1] * FIT_H / sub.height, CANVAS[0] * FIT_W / sub.width)
+    sub = sub.resize((max(1, round(sub.width * k)), max(1, round(sub.height * k))), Image.LANCZOS)
+    out = Image.new('RGBA', CANVAS, bg); out.paste(sub, ((CANVAS[0] - sub.width) // 2, (CANVAS[1] - sub.height) // 2), sub if bg[3] == 0 else None)
+    if bg[3] == 0: out.paste(sub, ((CANVAS[0] - sub.width) // 2, (CANVAS[1] - sub.height) // 2))   # keep the soft transparent edges exactly
+    return out if bg[3] == 0 else out.convert('RGB')
+MAIN = main_photos()
 os.makedirs(OUT, exist_ok=True)
 stamp_file = os.path.join(OUT, 'stamps.json')
 stamps = json.load(open(stamp_file)) if os.path.exists(stamp_file) else {}
@@ -15,10 +47,13 @@ for f in sorted(glob.glob(SRC + '/*')):
     stem, ext = os.path.splitext(os.path.basename(f))
     if ext.lower() not in ('.png', '.jpg', '.jpeg'): continue
     s = slug(stem); assert s not in slugs, f'two photos give the same short name {s}: {f} and {slugs[s]}'; slugs[s] = f
-    h = hashlib.sha1(open(f, 'rb').read()).hexdigest(); seen.add(s)
+    h = hashlib.sha1(open(f, 'rb').read()).hexdigest() + ('|' + NORM if os.path.basename(f) in MAIN else ''); seen.add(s)
     if stamps.get(s) == h and all(os.path.exists(f'{OUT}/{s}-{w}.webp') for w in WIDTHS): continue
     im = Image.open(f); im.load()
     im = im.convert('RGBA' if ('A' in im.getbands() or im.mode == 'P' and 'transparency' in im.info) else 'RGB')
+    if os.path.basename(f) in MAIN:
+        ev = even_out(im)
+        if ev is not None: im = ev
     for w in WIDTHS:
         o = im if im.width <= w else im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
         o.save(f'{OUT}/{s}-{w}.webp', 'WEBP', quality=80, method=6)
