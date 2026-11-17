@@ -86,7 +86,7 @@
   "shipping_fee": 49,
   "free_shipping_above": 100,
   "razorpay_key_id": "rzp_live_U0m4ClbAmc5gZy",
-  "cod_enabled": true,
+  "cod_enabled": false,
   "delivery_days_min": 3,
   "delivery_days_max": 6,
   "order_thanks_message": "Your order has been placed successfully.",
