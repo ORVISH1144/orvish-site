@@ -639,7 +639,9 @@
       (tabs.length ? '<div class="tabs" id="tabs"><button class="on" data-c="">All</button>' + tabs.map(function (t) { return '<button data-c="' + esc(t.collection) + '">' + esc(t.label) + '</button>'; }).join('') + '</div>' : '') + '<div class="rail" id="best-rail">' + bl.map(cardHTML).join('') + '</div></div></section>';
     var ct = (S.collection_tiles || []);
     if (ct.length) h += '<section class="section" style="padding-top:8px"><div class="wrap"><div class="tiles">' + ct.map(function (c) { return '<a class="tile" href="' + esc(c.url) + '"><img loading="lazy" src="' + esc(c.image) + '" alt=""><div><h4>' + esc(c.title) + '</h4><p>' + esc(c.text || '') + '</p><span class="btn">' + esc(c.button || 'View products') + '</span></div></a>'; }).join('') + '</div></div></section>';
-    h += row(S.men_title || 'For Him', (S.him_pick || []).length ? pick(S.him_pick) : P.filter(function (p) { return p.gender === 'men'; }), '/shop?gender=men') + row(S.women_title || 'For Her', (S.her_pick || []).length ? pick(S.her_pick) : P.filter(function (p) { return p.gender === 'women'; }), '/shop?gender=women');
+    /* products picked in the admin come first, then every other product marked for that gender (and unisex ones) */
+    var forG = function (ids, g) { var a = pick(ids); P.forEach(function (p) { if ((p.gender === g || p.gender === 'unisex') && a.indexOf(p) < 0) a.push(p); }); return a; };
+    h += row(S.men_title || 'For Him', forG(S.him_pick, 'men'), '/shop?gender=men') + row(S.women_title || 'For Her', forG(S.her_pick, 'women'), '/shop?gender=women');
     (S.custom_rows || []).forEach(function (cr) { h += row(cr.title, pick(cr.products)); });
     var rest = P.filter(function (p) { return p.featured !== false; }).slice(0, S.products_on_home || 8);
     if (!P.some(function (p) { return p.gender === 'men' || p.gender === 'women'; })) h += '<section class="section"><div class="wrap"><div class="sec-head"><h3>' + esc(S.home_heading || 'Our products') + '</h3><a class="link" href="/shop">View all</a></div><div class="grid">' + rest.map(cardHTML).join('') + '</div></div></section>';

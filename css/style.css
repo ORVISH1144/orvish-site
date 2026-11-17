@@ -983,3 +983,18 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 /* v65 second photo on hover: a clean swap (first photo hides wherever the card is hovered), and no swap on touch screens */
 .card:hover .img:has(img.alt) img:not(.alt){opacity:0}
 @media(hover:none){.card:hover .img img.alt,.card .img:hover img.alt{opacity:0}.card:hover .img:has(img.alt) img:not(.alt),.card .img:has(img.alt):hover img:not(.alt){opacity:1}}
+
+/* v66 product lists: no white box around each product; on phones the rows wrap two by two (no sideways scrolling),
+   at most three rows on the home page, and a lone product in the last row sits in the middle */
+.card{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.card .img{background:transparent!important}
+.grid{display:flex;flex-wrap:wrap;justify-content:center}
+.grid>*{width:calc((100% - 3 * 8px) / 4)}
+@media(max-width:900px){.grid>*{width:calc((100% - 2 * 8px) / 3)}}
+@media(max-width:640px){
+  .grid>*{width:calc((100% - 12px) / 2)}
+  .rail,.rail:not(:has(>:nth-child(4))){display:flex!important;flex-wrap:wrap;justify-content:center!important;overflow:visible;gap:22px 12px;scroll-snap-type:none}
+  .rail>*{width:calc((100% - 12px) / 2);flex:none}
+  .rail>:nth-child(n+7){display:none!important}
+  .railwrap .rnav{display:none!important}
+}
