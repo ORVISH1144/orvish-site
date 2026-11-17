@@ -186,6 +186,16 @@
   var pendingQty = 0;    /* quantity chosen on the product page that is not in the cart yet */
   /* coupons with a per-customer limit: uses are remembered on this device as well as checked against the order sheet */
   function usedUp(d) { var n = Number(d && d.max_uses) || 0; return n > 0 && (store.get('orvish_coupon_used', {})[d.code] || 0) >= n; }
+  /* The order sheet has the last word on how often a customer used a coupon. When this device thinks a coupon is used up,
+     ask the sheet; if the owner gave the customer another turn (or an order was cancelled), the coupon works again. */
+  function recheckUsed(d, done) {
+    var ph = last10(saved('phone')), em = (USER && USER.email) || saved('email') || '';
+    if (!S.order_webhook_url || (ph.length !== 10 && !em)) { if (done) done(false); return; }
+    fetch(S.order_webhook_url + '?action=coupon_uses&code=' + encodeURIComponent(d.code) + '&phone=' + encodeURIComponent(ph) + '&email=' + encodeURIComponent(em) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (j) {
+      var n = Number(j && j.uses), cu = store.get('orvish_coupon_used', {}); if (isNaN(n) || n >= (cu[d.code] || 0)) { if (done) done(false); return; }
+      cu[d.code] = n; store.set('orvish_coupon_used', cu); if (done) done(!usedUp(d));
+    }).catch(function () { if (done) done(false); });
+  }
   function timesText(n) { return n === 1 ? 'once' : n === 2 ? 'twice' : n + ' times'; }
   function pickedCoupon() { return discount ? discount.code : store.get('orvish_coupon', ''); }
   function applyCode(c, pending) {
@@ -201,6 +211,7 @@
       }).catch(function () { say('Could not check this code. Please try again.'); });
     }
     else if (!f) say('This code is not valid');
+    else if (usedUp(f) && !applyCode.re) { say('Checking ' + f.code + '…'); recheckUsed(f, function (free) { applyCode.re = true; try { applyCode(c, pending); } finally { applyCode.re = false; } }); }
     else if (usedUp(f)) { discount = null; store.set('orvish_coupon', ''); saveCart(); say(f.code + ' can be used ' + timesText(Number(f.max_uses)) + ' per customer and you have already used it'); }
     else {
       store.set('orvish_coupon', f.code);   /* remembered, so it applies as soon as the cart qualifies */
@@ -981,6 +992,7 @@
   Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json')]).then(function (r) {
     S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
+    setTimeout(function () { (S.discount_codes || []).filter(usedUp).slice(0, 4).forEach(function (d) { recheckUsed(d, function (free) { if (free) { try { renderCart(); } catch (e) {} } }); }); }, 2500);   /* a coupon the owner has opened again */
     S.discount_codes = (S.discount_codes || []).concat(store.get('orvish_dyn', []));
     P.forEach(function (p) { p._manual_off = p.in_stock === false; });
     (function () { var c = store.get('orvish_stock', null); if (c && Date.now() - c.t < 86400000) { STOCK = c.d; P.forEach(function (p) { var l = stockLeft(p.id); if (l != null && l <= 0 && p.stock != null && p.stock !== '') p.in_stock = false; }); } })();
