@@ -992,7 +992,7 @@
   Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json')]).then(function (r) {
     S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
-    setTimeout(function () { (S.discount_codes || []).filter(usedUp).slice(0, 4).forEach(function (d) { recheckUsed(d, function (free) { if (free) { try { renderCart(); } catch (e) {} } }); }); }, 2500);   /* a coupon the owner has opened again */
+    [2500, 8000].forEach(function (ms) { setTimeout(function () { (S.discount_codes || []).filter(usedUp).slice(0, 4).forEach(function (d) { recheckUsed(d, function (free) { if (free) { try { renderCart(); } catch (e) {} try { onCoupon(); } catch (e2) {} } }); }); }, ms); });   /* a coupon the owner has opened again */
     S.discount_codes = (S.discount_codes || []).concat(store.get('orvish_dyn', []));
     P.forEach(function (p) { p._manual_off = p.in_stock === false; });
     (function () { var c = store.get('orvish_stock', null); if (c && Date.now() - c.t < 86400000) { STOCK = c.d; P.forEach(function (p) { var l = stockLeft(p.id); if (l != null && l <= 0 && p.stock != null && p.stock !== '') p.in_stock = false; }); } })();
