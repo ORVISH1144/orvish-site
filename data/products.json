@@ -223,7 +223,10 @@
         "/images/uploads/Rose 01 Perfume and Fresh Rose.png"
       ],
       "hidden": false,
-      "in_stock": true,
+      "in_stock": false,
+      "stock": null,
+      "hsn": "",
+      "gst_rate": null,
       "featured": true,
       "brand": "Swiss Arabian",
       "gender": "women",
@@ -262,7 +265,10 @@
           "title": "Shipping and returns",
           "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
         }
-      ]
+      ],
+      "faqs": [],
+      "auto_faq": true,
+      "reviews": []
     }
   ]
 }
