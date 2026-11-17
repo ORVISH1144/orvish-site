@@ -463,7 +463,7 @@
       f.address = f.house + ', ' + f.street;
       var blk = areaRule(f.pin, f.city, f.address); if (blk && blk.action === 'block') { areaCheck(false); $('#co-msg').textContent = blk.message || 'Sorry, we cannot deliver to this area right now.'; return; }
       var lim = discount && t.off ? Number(discount.max_uses) || 0 : 0, sb = $('#co-form button[type=submit]'), go = function () { if (f.pm === 'online') {
-        if (S.firebase_config && S.firebase_config.apiKey && !USER) { $('#co-msg').innerHTML = 'Please <a class="link" href="/account?next=1">log in or create an account</a> to pay online. Your cart is saved.'; return; }
+        if (S.firebase_config && S.firebase_config.apiKey && !USER) { saveProfile(f); store.set('orvish_after_login', Date.now()); $('#co-msg').className = 'msg'; $('#co-msg').textContent = 'Please log in to pay online. Taking you to the login page…'; setTimeout(function () { location.href = '/account?next=1'; }, 700); return; }
         payRazorpay(f, t);
       } else emailOrder(f, t); };
       if (!lim || !S.order_webhook_url) return go();
@@ -880,7 +880,7 @@
     else { loginForm(); shown = 'login'; }
     fbReady().then(function (f) {
       if (!f) { el.innerHTML = '<p class="msg err">Could not load accounts. Please refresh.</p>'; return; }
-      f.auth.onAuthStateChanged(function (u) { store.set('orvish_acct', u ? 1 : 0); if (u) { shown = 'dash'; dash(u); } else if (shown !== 'login') { shown = 'login'; loginForm(); } else { shown = 'login'; } });
+      f.auth.onAuthStateChanged(function (u) { store.set('orvish_acct', u ? 1 : 0); var back = store.get('orvish_after_login', 0); if (u && back && Date.now() - back < 3600000 && cart.length) { store.set('orvish_after_login', 0); location.href = '/shop?checkout=1'; return; } if (u && back) store.set('orvish_after_login', 0); if (u) { shown = 'dash'; dash(u); } else if (shown !== 'login') { shown = 'login'; loginForm(); } else { shown = 'login'; } });
     });
     function W(fn) { return fbReady().then(function (f) { if (f) return fn(f); }); }
     function err(e) { var m = (e && e.code) || ''; return /wrong-password|invalid-credential|user-not-found/.test(m) ? 'Wrong email or password.' : /email-already/.test(m) ? 'An account with this email already exists. Please log in.' : /weak-password/.test(m) ? 'Password must be at least 6 characters.' : /popup/.test(m) ? 'Sign-in window was closed.' : /invalid-phone/.test(m) ? 'Please enter a valid mobile number with country code, e.g. +91 98765 43210.' : /invalid-verification-code|code-expired/.test(m) ? 'That code is wrong or expired. Please try again.' : /too-many-requests|quota/.test(m) ? 'Too many SMS codes requested. Please try again later or log in with email or Google.' : /operation-not-allowed|billing/.test(m) ? 'Phone login is not available right now. Please use email or Google.' : /unauthorized-domain/.test(m) ? 'This website address is not allowed yet in Firebase settings.' : (e && e.message) || 'Something went wrong.'; }
@@ -888,8 +888,8 @@
       var mode = 'in';
       function paint() {
         el.classList.remove('wide');
-        el.innerHTML = '<div class="authcard"><h1>' + (mode === 'in' ? 'Welcome back' : 'Create your account') + '</h1><p class="sub">' + (mode === 'in' ? 'Log in to see your orders, track deliveries and check out faster.' : 'Save your address, track every order and check out faster.') + '</p><form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name"></div>' : '') +
-          '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
+        el.innerHTML = '<div class="authcard"><h1>' + (mode === 'in' ? 'Welcome back' : 'Create your account') + '</h1><p class="sub">' + (mode === 'in' ? 'Log in to see your orders, track deliveries and check out faster.' : 'Save your address, track every order and check out faster.') + '</p>' + (store.get('orvish_after_login', 0) ? '<p class="msg" style="margin:-6px 0 14px">Your cart is saved. Log in or create an account and we will take you back to checkout. ' + (mode === 'in' ? 'New here? Choose <b>Create an account</b> below.' : '') + '</p>' : '') + '<form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name')) + '"></div>' : '') +
+          '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email" value="' + esc(saved('email')) + '"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
           '<button class="btn block" type="submit">' + (mode === 'in' ? 'Log in' : 'Create account') + '</button></form><div id="amsg" class="msg err"></div>' +
           (mode === 'in' ? '<p style="text-align:right;margin:6px 0"><button class="link lnk" id="forgot">Forgot password?</button></p>' : '') +
           '<div class="or"><span>or</span></div><button class="btn secondary block" id="gbtn">Continue with Google</button><button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
@@ -905,7 +905,7 @@
         var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } W(function (f) { return f.auth.sendPasswordResetEmail(em); }).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
       }
       function phoneForm() {
-        el.innerHTML = '<div class="authcard"><h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 "></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p></div>';
+        el.innerHTML = '<div class="authcard"><h1>Log in with phone</h1><p class="sub">We will send a 6-digit code by SMS.</p><form id="pf"><div class="field"><label>Mobile number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210" value="+91 ' + esc(last10(saved('phone'))) + '"></div><div id="recap"></div><button class="btn block" type="submit" id="psend">Send code</button></form><div id="amsg" class="msg err"></div><p style="text-align:center;margin-top:18px"><button class="link lnk" id="back">Back to other login options</button></p></div>';
         $('#back').onclick = paint;
         var rv = null;
         $('#pf').onsubmit = function (e) {
@@ -1001,6 +1001,7 @@
     applyTheme(); metaInit(); shell(); events();
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})(); railNav();
     $$('a[href^="/page?p="]').forEach(function (a) { a.setAttribute('href', '/info/' + a.getAttribute('href').slice(8).split('&')[0] + '/'); });   /* menu and footer links go to the real info pages */
+    if (qs.get('checkout') === '1' && cart.length) { try { history.replaceState(null, '', location.pathname); } catch (e) {} fbReady().then(function () { setTimeout(openCheckout, 300); }); }
     document.body.classList.add('ready'); stockNote(); setTimeout(loadStock, 600); logVisit('view', document.body.dataset.page === 'product' ? pageId() : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .08 }); $$('main .section, .services, .tile, .faq, .bigmq').forEach(function (e) { e.classList.add('rv'); io.observe(e); }); }
