@@ -2,15 +2,15 @@
 """Makes small WebP copies (400, 600, 800 and 1200 px wide) of every photo in images/uploads into images/opt.
 The website uses these instead of the original files, which can be several MB each.
 EVERY photo of every product (1st, 2nd, 3rd ...) is also evened out: when it is a cut-out on a transparent or plain light background,
-the empty space around it is trimmed and it is placed on a 4:5 canvas at one fixed size; any other photo is placed whole on a 4:5 canvas
-(nothing is cut off). So photo 1 of one product matches photo 1 of the next, and so on, on computers and phones. The original file is never changed.
+the empty space around it is trimmed and it is placed on a 4:5 canvas at one fixed size; any other photo (a scene with its own background)
+is kept exactly as uploaded, with no bars added. So photo 1 of one product matches photo 1 of the next, and so on, on computers and phones. The original file is never changed.
 Names: /images/opt/<lowercase-name-with-dashes>-<width>.webp. Run by the GitHub Action whenever a photo is added or changed."""
 import os, re, glob, json, hashlib
 from urllib.parse import unquote
 from PIL import Image, ImageChops
 SRC, OUT, WIDTHS = 'images/uploads', 'images/opt', (400, 600, 800, 1200)
 def slug(name): return re.sub(r'[^a-z0-9]+', '-', unquote(name).lower()).strip('-')
-NORM = 'even-v2'          # change this text to redo every evened-out photo
+NORM = 'even-v3'          # change this text to redo every evened-out photo
 CANVAS = (1200, 1500)     # 4:5, the shape of a product card
 FIT_H, FIT_W = 0.76, 0.74 # the bottle fills at most this share of the canvas height and width
 def main_photos():
@@ -61,7 +61,7 @@ for f in sorted(glob.glob(SRC + '/*')):
     im = im.convert('RGBA' if ('A' in im.getbands() or im.mode == 'P' and 'transparency' in im.info) else 'RGB')
     if os.path.basename(f) in MAIN:
         ev = even_out(im)
-        im = ev if ev is not None else frame(im)
+        if ev is not None: im = ev      # other photos (with their own background) are kept exactly as uploaded, no bars added
     for w in WIDTHS:
         o = im if im.width <= w else im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
         o.save(f'{OUT}/{s}-{w}.webp', 'WEBP', quality=80, method=6)
