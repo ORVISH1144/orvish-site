@@ -106,7 +106,20 @@
   }
   function loadProfile() {
     if (!FB || !USER) { PROFILE = null; return Promise.resolve(null); }
-    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; fillCheckout(); return PROFILE; }).catch(function () { PROFILE = null; return null; });
+    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; return PROFILE && PROFILE.address ? PROFILE : guestDetails(); }).catch(function () { PROFILE = null; return guestDetails(); }).then(function (x) { fillCheckout(); return x; });
+  }
+  /* no saved address in the account yet: take it from an earlier order (also one placed as a guest) with this email or phone */
+  var GUEST_NEED_PHONE = false;
+  function guestDetails(phone) {
+    if (!USER || !S.order_webhook_url || !USER.getIdToken) return Promise.resolve(PROFILE);
+    var ph = last10(phone || saved('phone') || '');
+    return USER.getIdToken().then(function (tok) { return fetch(S.order_webhook_url + '?action=my_details&id_token=' + encodeURIComponent(tok) + (ph.length === 10 ? '&phone=' + ph : '') + '&_=' + Date.now()); }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.found) { GUEST_NEED_PHONE = !!(d && d.need_phone); return PROFILE; }
+      GUEST_NEED_PHONE = false; var cur = PROFILE || {}, f = {};
+      ['name', 'phone', 'email', 'house', 'address', 'city', 'pin', 'loc'].forEach(function (k) { f[k] = cur[k] || d[k] || ''; });
+      if (!cur.address) { f.house = d.house || ''; f.address = d.address || ''; f.city = d.city || ''; f.pin = d.pin || ''; f.loc = d.loc || ''; }
+      f.street = f.address; return saveProfile(f).then(function () { return PROFILE; });
+    }).catch(function () { return PROFILE; });
   }
   function saveProfile(f) {
     var d = { name: f.name || '', phone: f.phone || '', email: f.email || '', house: f.house || '', address: f.street != null ? f.street : (f.address || ''), city: f.city || '', pin: f.pin || '', loc: f.loc || '', updated: Date.now() };
@@ -959,8 +972,10 @@
           '<div class="field"><label>Flat / house no. and building</label><input name="house" maxlength="80" autocomplete="address-line1" placeholder="e.g. Flat 4B, Sunrise Apartments" value="' + g('house') + '"></div>' +
           '<div class="field"><label>Street, area and landmark</label><textarea name="address" rows="2" autocomplete="address-line2" placeholder="Street, locality, nearby landmark">' + g('address') + '</textarea></div>' +
           '<div class="two"><div class="field"><label>City</label><input name="city" value="' + g('city') + '"></div><div class="field"><label>PIN code</label><input name="pin" pattern="[0-9]{6}" inputmode="numeric" value="' + g('pin') + '"></div></div>' +
-          '<div class="msg" id="dmsg"></div><button class="btn" type="submit">Save details</button></form>';
+          '<div class="msg" id="dmsg"></div><button class="btn" type="submit">Save details</button>' +
+          (!saved('address') && GUEST_NEED_PHONE ? '<p class="msg" style="margin-top:14px">Ordered with us before as a guest? Type the phone number you used in the Phone box above and press <button type="button" class="link lnk" id="df-load">Load my address</button>.</p>' : '') + '</form>';
         var dfm = $('#df'), dset = function (pl) { if (pl.address) dfm.address.value = pl.address; if (pl.city) dfm.city.value = pl.city; if (pl.pin) dfm.pin.value = pl.pin; dfm.loc.value = pl.loc || ''; };
+        if ($('#df-load')) $('#df-load').onclick = function () { var m = $('#dmsg'), ph = last10(dfm.phone.value); if (ph.length !== 10) { m.className = 'msg err'; m.textContent = 'Type your 10-digit phone number first.'; return; } m.className = 'msg'; m.textContent = 'Looking for your address…'; guestDetails(ph).then(function () { if (saved('address')) { drawDetails(); $('#dmsg').textContent = 'Your address from your earlier order is filled in.'; } else { m.className = 'msg err'; m.textContent = 'No order found with this email and phone number.'; } }); };
         $('#df-here').onclick = function () { pickLocation(dset, true); }; $('#df-map').onclick = function () { pickLocation(dset, false); };
         $('#df').onsubmit = function (e) {
           e.preventDefault(); var m = $('#dmsg'), b = $('#df button[type=submit]'); b.disabled = true; m.className = 'msg'; m.textContent = 'Saving…';
@@ -968,7 +983,7 @@
           saveProfile(fd).then(function (ok) { b.disabled = false; m.className = ok ? 'msg' : 'msg err'; m.textContent = ok ? 'Saved. These details will be filled in at checkout.' : 'Saved on this device only. We could not save to your account right now.'; });
         };
       }
-      loadProfile().then(drawDetails);
+      var profP = loadProfile(); profP.then(drawDetails);
       /* orders: shown at once from the copy saved on this device, then refreshed in the background with one request */
       var ck = 'orvish_acct_' + u.uid, mem = store.get(ck, null) || { orders: null, status: {} }, box = $('#tab-orders');
       function paint(c, x, d) {
@@ -1005,12 +1020,14 @@
       FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
         var o = q.docs.map(function (d) { return d.data(); });
         /* orders placed as a guest with this same email (and phone) are added to the account too */
-        var ph = last10(saved('phone') || u.phoneNumber || ''), em = String(u.email || '').trim().toLowerCase();
-        var guest = (em && ph.length === 10 && S.order_webhook_url) ? fetch(S.order_webhook_url + '?action=track_list&email=' + encodeURIComponent(em) + '&phone=' + ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
-          var have = {}; o.forEach(function (x) { have[x.order_id] = 1; });
-          ((d && d.orders) || []).forEach(function (g) { if (!g.order_id || have[g.order_id]) return; var x = { uid: u.uid, order_id: g.order_id, phone: g.ph || ph, items: g.items || '', total: Number(g.total) || 0, created: Date.parse(g.date) || Date.now() };
-            o.push(x); try { FB.db.collection('orders').doc(x.order_id).set(x).catch(function () {}); } catch (e) {} });
-        }).catch(function () {}) : Promise.resolve();
+        var guest = profP.then(function () {
+          var ph = last10(saved('phone') || u.phoneNumber || ''), em = String(u.email || '').trim().toLowerCase();
+          return (em && ph.length === 10 && S.order_webhook_url) ? fetch(S.order_webhook_url + '?action=track_list&email=' + encodeURIComponent(em) + '&phone=' + ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+            var have = {}; o.forEach(function (x) { have[x.order_id] = 1; });
+            ((d && d.orders) || []).forEach(function (g) { if (!g.order_id || have[g.order_id]) return; var x = { uid: u.uid, order_id: g.order_id, phone: g.ph || ph, items: g.items || '', total: Number(g.total) || 0, created: Date.parse(g.date) || Date.now() };
+              o.push(x); try { FB.db.collection('orders').doc(x.order_id).set(x).catch(function () {}); } catch (e) {} });
+          }).catch(function () {}) : Promise.resolve();
+        });
         return guest.then(function () {
           o.sort(function (a, b) { return b.created - a.created; });
           if (!mem.orders || JSON.stringify(mem.orders) !== JSON.stringify(o)) { mem.orders = o; show(o); }
