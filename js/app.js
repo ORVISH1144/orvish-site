@@ -431,7 +431,7 @@
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img ' + oa(u.p.images[0], 400) + ' alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
     m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
       '<div class="sum">' + sum + '</div>' +
-      (who ? '<div class="co-who" id="co-who"><p class="cw-h">How would you like to check out?</p><a class="btn block" href="/account?next=1" data-go="in">Log in</a><a class="btn secondary block" href="/account?next=1&signup=1" data-go="up">Create an account</a><div class="or"><span>or</span></div><button type="button" class="btn secondary block" id="co-guest">Continue as guest</button><small>No account needed. Track your order any time with your order ID and email.</small></div>' : guestOn ? '<p class="msg" style="margin:0 0 8px">Checking out as a guest. <a class="link" href="/account?next=1" data-go="in">Log in instead</a></p>' : '') + '<form id="co-form"' + (who ? ' hidden' : '') + '><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('house'), saved('address'), saved('city'), saved('pin')].filter(Boolean).join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><p class="fsec">Contact</p><div class="two ph2"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
+      (who ? '<div class="co-who" id="co-who"><p class="cw-h">How would you like to check out?</p><a class="btn block" href="/account?next=1" data-go="in">Log in</a><a class="btn secondary block" href="/account?next=1&signup=1" data-go="up">Create an account</a><div class="or"><span>or</span></div><button type="button" class="btn secondary block" id="co-guest">Continue as guest</button><small>No account needed. Track your orders any time with your email and phone number.</small></div>' : guestOn ? '<p class="msg" style="margin:0 0 8px">Checking out as a guest. <a class="link" href="/account?next=1" data-go="in">Log in instead</a></p>' : '') + '<form id="co-form"' + (who ? ' hidden' : '') + '><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('house'), saved('address'), saved('city'), saved('pin')].filter(Boolean).join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><p class="fsec">Contact</p><div class="two ph2"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
       '<div class="field"><label>Email (for your order confirmation)</label><input name="email" type="email" required autocomplete="email" placeholder="name@example.com" value="' + esc((USER && USER.email) || saved('email')) + '"></div>' +
       '<p class="fsec">Delivery address</p><div class="locbtns"><button type="button" class="btn secondary" id="co-here">' + ico('locate') + 'Use my current location</button><button type="button" class="btn secondary" id="co-map">' + ico('pin') + 'Choose on map</button></div><input type="hidden" name="loc" value="' + esc(saved('loc')) + '">' +
       '<div class="field"><label>Flat / house no. and building <i class="req">*</i></label><input name="house" required maxlength="80" autocomplete="address-line1" placeholder="e.g. Flat 4B, Sunrise Apartments" value="' + esc(saved('house')) + '"></div>' +
@@ -524,7 +524,7 @@
     var f = o.f || {}, ph = String(f.phone || '').replace(/\D/g, '').slice(-10), row = function (a, b) { return b ? '<div class="row"><span>' + a + '</span><span>' + b + '</span></div>' : ''; };
     $('#checkout-modal').innerHTML = '<div class="box thanks"><div class="tick">' + ico('check') + '</div><h4>Thank you for your order</h4><p>' + esc(S.order_thanks_message || 'Your order has been placed successfully.') + '</p>' +
       '<div class="tsum">' + row('Order ID', o.id ? '<b>' + esc(o.id) + '</b>' : '') + row('Total', '<b>' + money(o.total) + '</b>') + row('Payment', esc(o.pay)) + row('Payment reference', esc(o.pid || '')) + row('Delivering to', esc([f.address, f.city, f.pin].filter(Boolean).join(', '))) + '</div>' +
-      (f.email ? '<p class="msg">A confirmation email is on its way to ' + esc(f.email) + '.' + (!USER && o.id ? ' To track this order later, go to <a class="link" href="/track">Track your order</a> and enter your order ID <b>' + esc(o.id) + '</b> with this email or your phone number.' : '') + '</p>' : '') + refHTML(f.phone) +
+      (f.email ? '<p class="msg">A confirmation email is on its way to ' + esc(f.email) + '.' + (!USER && o.id ? ' To track it later, open <a class="link" href="/track">Track your order</a> and enter this email and your phone number.' : '') + '</p>' : '') + refHTML(f.phone) +
       '<div class="tact">' + (o.id ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(o.id) + '&ph=' + encodeURIComponent(ph) + '">Track my order</a><a class="btn secondary" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(o.id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Invoice</a>' : '') + '<a class="btn" href="/shop">Continue shopping</a></div></div>';
   }
 
@@ -856,25 +856,39 @@
   }
   /* order tracking (looks the order up in the Google Sheet through the Apps Script web app) */
   function track() {
-    var el = $('#track-body'), mine = store.get('orvish_orders', []), qph = (qs.get('ph') || '').replace(/\D/g, '');
-    el.innerHTML = '<h1>Track your order</h1><p class="sub">Enter your order ID and the phone number or email you used when ordering.</p><form id="tf" class="tf"><div class="field"><label>Order ID</label><input name="id" required placeholder="ORV-261107-AB12" value="' + esc(qs.get('id') || '') + '"></div><div class="field"><label>Phone number or email</label><input name="phone" required autocomplete="email" placeholder="Mobile number or email" value="' + esc(qph || (mine[0] ? mine[0].phone : '')) + '"></div><button class="btn block" type="submit">Track order</button></form><div id="tres"></div>' +
-      (mine.length ? '<h3 style="margin-top:30px">Orders placed on this device</h3><div class="mine">' + mine.map(function (o) { return '<button data-id="' + esc(o.id) + '" data-ph="' + esc(o.phone) + '"><b>' + esc(o.id) + '</b><span>' + money(o.total) + ' · ' + new Date(o.date).toLocaleDateString('en-IN') + '</span></button>'; }).join('') + '</div>' : '');
-    function look(id, phone) {
-      var r = $('#tres'), ph = /@/.test(phone) ? String(phone).trim().toLowerCase() : String(phone).replace(/\D/g, ''); if (!S.order_webhook_url) { r.innerHTML = '<p class="msg">Tracking is not available right now.</p>'; return; }
-      r.innerHTML = '<p class="msg">Looking up your order…</p>';
-      fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(id.trim()) + '&phone=' + encodeURIComponent(ph) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
-        if (!d || !d.found) { r.innerHTML = '<p class="msg err">We could not find an order with these details. Please check the order ID and the phone number or email, or <a class="link" href="' + (waLink('Hi, I need help with order ' + id) || '/info/contact/') + '">contact us</a>.</p>'; return; }
-        var s = stInfo(d.order_status); if (d.ph) ph = d.ph;
-        r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
+    var el = $('#track-body'), last = store.get('orvish_track', {}), mine = store.get('orvish_orders', []), dp = saved('phone') || (mine[0] && mine[0].phone) || '';
+    el.innerHTML = '<h1>Track your order</h1><p class="sub">Enter the email and phone number you used when ordering. We will show all your orders.</p><form id="tf" class="tf"><div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email" placeholder="you@example.com" value="' + esc(last.email || saved('email') || '') + '"></div><div class="field"><label>Phone number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="10-digit mobile number" value="' + esc(last10(last.phone || dp)) + '"></div><button class="btn block" type="submit">Show my orders</button></form><div id="tres"></div>';
+    /* one order card (status steps, items, payment, invoice, return, reviews) */
+    function card(r, d, ph) {
+      var s = stInfo(d.order_status); if (d.ph) ph = d.ph;
+      r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
           (s.off ? '' : '<ol class="steps">' + stepsHTML(s.i) + '</ol>') + '<div class="ois">' + itemRows(d.items_json, d.items) + '</div>' +
           '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + payPill(d.payment_status) + '</span></div><div class="row"><span>Invoice</span><span><a class="link" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Download invoice</a></span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
           '<div class="ret"></div>' + (/delivered/i.test(s.st) ? reviewLinks(d.items_json, d.items, d.order_id, ph) : '') + '</div>';
-        returnBox($('.ret', r), d.order_id, ph, d, function () { $('.pill', r).className = 'pill warn'; $('.pill', r).textContent = 'Return requested'; var o = $('.steps', r); if (o) o.remove(); });
+      returnBox($('.ret', r), d.order_id, ph, d, function () { $('.pill', r).className = 'pill warn'; $('.pill', r).textContent = 'Return requested'; var o = $('.steps', r); if (o) o.remove(); });
+    }
+    function many(email, phone) {
+      var r = $('#tres'), ph = last10(phone); if (!S.order_webhook_url) { r.innerHTML = '<p class="msg">Tracking is not available right now.</p>'; return; }
+      if (ph.length !== 10) { r.innerHTML = '<p class="msg err">Please enter your 10-digit mobile number.</p>'; return; }
+      store.set('orvish_track', { email: email, phone: ph }); r.innerHTML = '<p class="msg">Looking up your orders…</p>';
+      fetch(S.order_webhook_url + '?action=track_list&email=' + encodeURIComponent(String(email).trim()) + '&phone=' + ph + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
+        var l = (d && d.orders) || [];
+        if (!l.length) { r.innerHTML = '<p class="msg err">We could not find any orders with this email and phone number. Please check both are the ones you used when ordering, or <a class="link" href="' + (waLink('Hi, I need help finding my order') || '/info/contact/') + '">contact us</a>.</p>'; return; }
+        r.innerHTML = '<p class="msg">' + l.length + ' order' + (l.length === 1 ? '' : 's') + ' found.</p>' + l.map(function (o, i) { return '<div class="tone" data-i="' + i + '"></div>'; }).join('');
+        l.forEach(function (o, i) { var b = $('.tone[data-i="' + i + '"]', r); card(b, o, ph); });
+      }).catch(function () { r.innerHTML = '<p class="msg err">Could not load your orders right now. Please try again in a moment.</p>'; });
+    }
+    /* a direct link from an email or the account page (?id=…&ph=…) still opens that one order */
+    function one(id, phone) {
+      var r = $('#tres'); r.innerHTML = '<p class="msg">Looking up your order…</p>';
+      fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(id.trim()) + '&phone=' + encodeURIComponent(phone) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
+        if (!d || !d.found) { r.innerHTML = '<p class="msg">Enter your email and phone number above to see your orders.</p>'; return; }
+        r.innerHTML = '<div class="tone"></div>'; card($('.tone', r), d, String(phone).replace(/\D/g, ''));
       }).catch(function () { r.innerHTML = '<p class="msg err">Could not load the status right now. Please try again in a moment.</p>'; });
     }
-    $('#tf').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); look(f.id, f.phone); });
-    $$('.mine button').forEach(function (b) { b.onclick = function () { $('#tf').elements.id.value = b.dataset.id; $('#tf').elements.phone.value = b.dataset.ph; look(b.dataset.id, b.dataset.ph); }; });
-    if (qs.get('id') && (qph || mine[0])) look(qs.get('id'), qph || mine[0].phone);
+    $('#tf').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); many(f.email, f.phone); });
+    var qid = qs.get('id'), qph = qs.get('ph') || '';
+    if (qid && qph && S.order_webhook_url) one(qid, qph); else if (last.email && last.phone && S.order_webhook_url) many(last.email, last.phone);
   }
 
   function account() {
