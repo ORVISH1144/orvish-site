@@ -156,7 +156,7 @@
         "/images/uploads/Bristol Topaz Perfume Set.png",
         "/images/uploads/Bristol Topaz Perfume Still Life.png"
       ],
-      "hidden": false,
+      "hidden": true,
       "in_stock": true,
       "stock": null,
       "hsn": "3303",
