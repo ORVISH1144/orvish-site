@@ -30,7 +30,7 @@ function t12(t){t=String(t||'').trim();var m=/^(?:(\d{4}-\d{2}-\d{2})\s+)?(\d{1,
 if(/embed=1/.test(location.search))document.querySelector('header').classList.add('embed');
 var $=function(s){return document.querySelector(s)},app=$('#app'),esc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var load=function(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
-var auth,api='',orders=[],user=null,view='orders',stock={},srOn=false,titles={},STATUS=['New','Confirmed','Packed','Shipped','Out for delivery','Delivered','Cancelled','Return requested','Return approved','Returned','Refunded'],PAY=['COD','Pending','Paid','Refund pending','Refunded'],retDays=0;
+var auth,api='',orders=[],user=null,view='orders',stock={},srOn=false,titles={},STATUS=['New','Confirmed','Packed','Shipped','Out for delivery','Delivered','Cancelled','Return requested','Return approved','Returned','Refunded'],PAY=['COD','Pending','Paid','Paid (verified)','Failed','Refund pending','Partly refunded','Refunded'],retDays=0;
 try{if(localStorage.getItem('orvish_notrack')===null)localStorage.setItem('orvish_notrack','true')}catch(e){}
 fetch('/data/site.json?v='+Date.now()).then(function(r){return r.json()}).then(function(S){
   var c=S.firebase_config;api=S.order_webhook_url||'';
@@ -59,7 +59,7 @@ function fetchOrders(){
 function num(v){return Number(String(v||'').replace(/[^0-9.]/g,''))||0}
 function ph10(x){return String(x||'').replace(/\D/g,'').slice(-10)}
 function refCode(phone){var t='orv'+ph10(phone),h=5381;for(var i=0;i<t.length;i++)h=((h*33)^t.charCodeAt(i))>>>0;return'ORV'+('00000'+h.toString(36).toUpperCase()).slice(-5)}
-function liveO(o){return!/cancel|return|refund/i.test(o.order_status)}
+function liveO(o){return!/cancel|return|refund/i.test(o.order_status)&&!/^refunded/i.test(o.payment_status||'')}
 function custs(){var by={},l=[];orders.slice().reverse().forEach(function(o){if(!liveO(o))return;var p=ph10(o.phone);if(!p)return;var c=by[p];if(!c){c=by[p]={phone:p,n:0,total:0,first:o.date,source:o.source||''};l.push(c)}c.n++;c.total+=num(o.total);c.name=o.name;c.email=o.email;c.city=o.city;c.last=o.date;c.items=o.items});return{by:by,list:l}}
 var SUP={};fetch('/data/commerce.json?v='+Date.now()).then(function(r){return r.json()}).then(function(c){SUP=c.supplier||{};if(orders.length)draw()}).catch(function(){});
 /* the message a supplier needs to pack and ship one order */
@@ -123,7 +123,7 @@ function draw(){
   $('#kp').innerHTML='<div class="kpis">'+k('Orders today',orders.filter(function(o){return o.date===today}).length)+k('To process (New / Confirmed / Packed)',orders.filter(function(o){return/^(new|confirmed|packed)$/i.test(String(o.order_status).trim())}).length)+k('Return requests to handle',rets,rets>0)+k('Total orders',orders.length)+k('Sales (not cancelled or returned)','₹'+live.reduce(function(a,o){return a+num(o.total)},0).toLocaleString('en-IN'))+(period()?k('Orders · '+esc(period()[2]),l.length)+k('Sales · '+esc(period()[2]),'₹'+l.filter(liveO).reduce(function(a,o){return a+num(o.total)},0).toLocaleString('en-IN')):'')+'</div><p class="help">Changing <b>Order status</b> emails the customer (only for the emails switched on under Customer emails in the store admin). Changing <b>Payment</b> does not send an email.'+(retDays>0?' Customers can request a return within '+retDays+' days of delivery.':' Customer return requests are switched off.')+'</p>';
   if(!l.length){$('#list').innerHTML='<div class="tw"><p class="empty">'+(orders.length?'No orders match this search.':'No orders yet.')+'</p></div>';return}
   $('#list').innerHTML='<div class="tw"><table><thead><tr><th>Date &amp; time (IST)</th><th>Order</th><th>Customer</th><th>Delivery address</th><th>Items</th><th>Total</th><th>Payment</th><th>Order status</th></tr></thead><tbody>'+l.map(function(o){
-    var pay=String(o.payment_status||'').trim(),pc=/not verified|refund/i.test(pay)?' warn':/paid/i.test(pay)?' ok':'',st=String(o.order_status||'').trim();
+    var pay=String(o.payment_status||'').trim(),pc=/not verified|refund|fail/i.test(pay)?' warn':/paid/i.test(pay)?' ok':'',st=String(o.order_status||'').trim();
     var items;try{items=JSON.parse(o.items_json||'[]')}catch(e){items=[]}
     var thumbs=items.length?'<div class="thumbs">'+items.map(function(it){return'<img src="'+esc(it.image||'/images/perfume-1.svg')+'" alt="" title="'+esc((it.qty||1)+' x '+(it.title||''))+'">'}).join('')+'</div>':'';
     var opt=function(list,cur){return(list.map(function(x){return x.toLowerCase()}).indexOf(cur.toLowerCase())<0&&cur?'<option selected>'+esc(cur)+'</option>':'')+list.map(function(x){return'<option'+(x.toLowerCase()===cur.toLowerCase()?' selected':'')+'>'+x+'</option>'}).join('')};

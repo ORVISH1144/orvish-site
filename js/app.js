@@ -815,6 +815,9 @@
   }
   /* order helpers shared by the tracking page and the account page */
   var STEPS = ['New', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'], STEP_LABEL = ['Placed', 'Confirmed', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'];
+  /* how the payment is shown to the customer: Paid, Partly refunded, Refunded, Cash on delivery ... (the sheet fills it in from Razorpay) */
+  function payInfo(t) { t = String(t || '').trim(); var l = t.toLowerCase(), w = /^refund pending/.test(l) ? 'Refund on the way' : /^partly refunded/.test(l) ? 'Partly refunded' : /^refunded/.test(l) ? 'Refunded' : /^paid/.test(l) ? 'Paid' : /^cod|^cash/.test(l) ? 'Cash on delivery' : /^fail/.test(l) ? 'Payment failed' : t || '–'; return { w: w, c: /refund/.test(l) ? 'warn' : /^paid/.test(l) ? 'ok' : /^fail/.test(l) ? 'bad' : '' }; }
+  function payPill(t) { var i = payInfo(t); return '<span class="pill ' + i.c + '">' + esc(i.w) + '</span>'; }
   function stInfo(st) { st = String(st || 'New').trim(); var i = STEPS.map(function (s) { return s.toLowerCase(); }).indexOf(st.toLowerCase()); return { st: st, i: i, cls: /cancel/i.test(st) ? ' bad' : /return|refund/i.test(st) ? ' warn' : /delivered/i.test(st) ? ' ok' : '', off: i < 0 }; }
   function stepsHTML(i) { return STEP_LABEL.map(function (s, k) { return '<li class="' + (k <= i ? 'on' : '') + '"><i></i><span>' + s + '</span></li>'; }).join(''); }
   function itemRows(list, text) {
@@ -861,7 +864,7 @@
         var s = stInfo(d.order_status);
         r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
           (s.off ? '' : '<ol class="steps">' + stepsHTML(s.i) + '</ol>') + '<div class="ois">' + itemRows(d.items_json, d.items) + '</div>' +
-          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + esc(d.payment_status) + '</span></div><div class="row"><span>Invoice</span><span><a class="link" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Download invoice</a></span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
+          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + payPill(d.payment_status) + '</span></div><div class="row"><span>Invoice</span><span><a class="link" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Download invoice</a></span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
           '<div class="ret"></div>' + (/delivered/i.test(s.st) ? reviewLinks(d.items_json, d.items, d.order_id, ph) : '') + '</div>';
         returnBox($('.ret', r), d.order_id, ph, d, function () { $('.pill', r).className = 'pill warn'; $('.pill', r).textContent = 'Return requested'; var o = $('.steps', r); if (o) o.remove(); });
       }).catch(function () { r.innerHTML = '<p class="msg err">Could not load the status right now. Please try again in a moment.</p>'; });
@@ -956,7 +959,7 @@
         pill.className = 'pill st' + (d ? s.cls : ' wait'); pill.textContent = d ? (d.found ? s.st : 'Received') : 'Updating…';
         var ol = $('.steps', c); ol.hidden = s.off; if (!s.off) ol.innerHTML = stepsHTML(d && d.found ? s.i : 0);
         if (!d || !d.found) return;
-        $('.ps', c).textContent = d.payment_status || '–';
+        $('.ps', c).innerHTML = payPill(d.payment_status);
         $('.trk', c).hidden = !d.tracking; $('.trk b', c).textContent = d.tracking || '';
         returnBox($('.ret', c), x.order_id, x.phone, d, function () { d.order_status = 'Return requested'; d.can_return = false; mem.status[x.order_id] = d; store.set(ck, mem); paint(c, x, d); });
         $('.rvl', c).innerHTML = /delivered/i.test(s.st) ? reviewLinks(x.items_detail, x.items, x.order_id, x.phone) : '';
