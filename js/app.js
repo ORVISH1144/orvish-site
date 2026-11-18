@@ -982,7 +982,7 @@
         $('.rvl', c).innerHTML = /delivered/i.test(s.st) ? reviewLinks(x.items_detail, x.items, x.order_id, x.phone) : '';
       }
       function show(o) {
-        if (!o.length) { box.innerHTML = '<div class="acct-card acct-empty"><h3>No orders yet</h3><p class="sub">When you place an order while logged in, it will appear here with its live status.</p><a class="btn" href="/shop">Start shopping</a></div>'; return; }
+        if (!o.length) { box.innerHTML = '<div class="acct-card acct-empty"><h3>No orders yet</h3><p class="sub">Your orders appear here with their live status, including orders placed as a guest with this email and phone number.</p><a class="btn" href="/shop">Start shopping</a></div>'; return; }
         box.innerHTML = o.map(function (x) {
           return '<article class="ocard" data-id="' + esc(x.order_id) + '"><header><div><small>Placed on ' + new Date(x.created).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st wait">Updating…</span></header>' +
             '<ol class="steps"></ol><div class="ois">' + itemRows(x.items_detail, x.items) + '</div>' +
@@ -1003,9 +1003,19 @@
       }
       if (mem.orders) show(mem.orders); else box.innerHTML = '<div class="ocard sk"><i></i><i></i><i></i></div>';
       FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
-        var o = q.docs.map(function (d) { return d.data(); }).sort(function (a, b) { return b.created - a.created; });
-        if (!mem.orders || JSON.stringify(mem.orders) !== JSON.stringify(o)) { mem.orders = o; show(o); }
-        store.set(ck, mem); refresh(o);
+        var o = q.docs.map(function (d) { return d.data(); });
+        /* orders placed as a guest with this same email (and phone) are added to the account too */
+        var ph = last10(saved('phone') || u.phoneNumber || ''), em = String(u.email || '').trim().toLowerCase();
+        var guest = (em && ph.length === 10 && S.order_webhook_url) ? fetch(S.order_webhook_url + '?action=track_list&email=' + encodeURIComponent(em) + '&phone=' + ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+          var have = {}; o.forEach(function (x) { have[x.order_id] = 1; });
+          ((d && d.orders) || []).forEach(function (g) { if (!g.order_id || have[g.order_id]) return; var x = { uid: u.uid, order_id: g.order_id, phone: g.ph || ph, items: g.items || '', total: Number(g.total) || 0, created: Date.parse(g.date) || Date.now() };
+            o.push(x); try { FB.db.collection('orders').doc(x.order_id).set(x).catch(function () {}); } catch (e) {} });
+        }).catch(function () {}) : Promise.resolve();
+        return guest.then(function () {
+          o.sort(function (a, b) { return b.created - a.created; });
+          if (!mem.orders || JSON.stringify(mem.orders) !== JSON.stringify(o)) { mem.orders = o; show(o); }
+          store.set(ck, mem); refresh(o);
+        });
       }).catch(function () { if (!mem.orders) box.innerHTML = '<p class="msg err">Could not load your orders. Please refresh.</p>'; });
     }
   }
