@@ -1,6 +1,7 @@
 {
   "logo": "",
   "reply_line": "Questions? Simply reply to this email and we will help you.",
+  "owner_email": "sales@orvish.com",
   "placed": {
     "send": true,
     "subject": "We have received your order {id}",
@@ -56,13 +57,12 @@
     "subject": "Your refund for order {id} has been processed",
     "message": "Your refund has been processed. Depending on your bank, it can take 5 to 7 working days to show in your account."
   },
-  "owner_email": "sales@orvish.com",
   "abandoned": {
     "send": true,
     "hours": 2,
-    "code": "COMEBACK20",
+    "code": "COMEBACK50",
     "subject": "You left something in your cart, {name}",
-    "message": "You were so close. Your perfume is still waiting in your cart.\nUse code {code} at checkout for ₹20 off. It works once, so do not wait too long."
+    "message": "You were so close. Your perfume is still waiting in your cart.\nUse code {code} at checkout for ₹50 off. It works once, so do not wait too long."
   },
   "refill": {
     "send": true,
