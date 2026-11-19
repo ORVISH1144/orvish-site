@@ -436,7 +436,7 @@
       (t.off ? '<div class="row off"><span>Coupon discount</span><span>−' + money(t.off) + '</span></div>' : '') +
       '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : '<b class="free">Free</b>') + '</span></div>' +
       '<div class="row total"><span>Total<small>Inclusive of all taxes</small></span><span>' + money(t.total) + '</span></div>' +
-      (sv > 0 ? '<div class="saved">You save ' + money(Math.round(sv)) + ' on this order</div>' : '') + '</div></div>');
+      '</div></div>');
     foot.innerHTML = (sv > 0 ? '<p class="cf-save">You save <b>' + money(Math.round(sv)) + '</b> on this order</p>' : '') + '<button class="btn block cta" id="checkout">' + ico('lock') + 'Secure checkout · ' + money(t.total) + '</button>' + payLogos();
     $$('.cart-n').forEach(function (e) { e.textContent = '(' + t.items + ' item' + (t.items === 1 ? '' : 's') + ')'; });
   }
