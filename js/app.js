@@ -106,10 +106,15 @@
   }
   function loadProfile() {
     if (!FB || !USER) { PROFILE = null; return Promise.resolve(null); }
-    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; return PROFILE && PROFILE.address ? PROFILE : guestDetails(); }).catch(function () { PROFILE = null; return guestDetails(); }).then(function (x) { fillCheckout(); return x; });
+    return FB.db.collection('customers').doc(USER.uid).get().then(function (d) { PROFILE = d.exists ? d.data() : null; }).catch(function () { PROFILE = null; }).then(function () {
+      fillCheckout();
+      /* no address saved yet: look for one from an earlier (guest) order in the background, without holding up the page */
+      GUEST_P = PROFILE && PROFILE.address ? Promise.resolve(PROFILE) : guestDetails().then(function (x) { fillCheckout(); return x; });
+      return PROFILE;
+    });
   }
   /* no saved address in the account yet: take it from an earlier order (also one placed as a guest) with this email or phone */
-  var GUEST_NEED_PHONE = false;
+  var GUEST_NEED_PHONE = false, GUEST_P = Promise.resolve(null);
   function guestDetails(phone) {
     if (!USER || !S.order_webhook_url || !USER.getIdToken) return Promise.resolve(PROFILE);
     var ph = last10(phone || saved('phone') || '');
@@ -151,6 +156,11 @@
     var a = Number(S.delivery_days_min) || 3, b = Math.max(a, Number(S.delivery_days_max) || 6);
     var f = function (n) { return new Date(Date.now() + n * 86400000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }); };
     return f(a) + ' – ' + f(b);
+  }
+  /* the three promises shown under the checkout buttons */
+  function trustRow() {
+    var rd = Number(S.return_window_days) || 0;
+    return '<div class="trust3"><span>' + ico('shield') + '100% authentic</span><span>' + ico('truck') + 'Delivery by ' + new Date(Date.now() + Math.max(Number(S.delivery_days_min) || 3, Number(S.delivery_days_max) || 6) * 86400000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + '</span><span>' + ico(rd ? 'refresh' : 'lock') + (rd ? rd + '-day easy returns' : 'Secure payment') + '</span></div>';
   }
   function refCode(phone) { var t = 'orv' + last10(phone), h = 5381; for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return 'ORV' + ('00000' + h.toString(36).toUpperCase()).slice(-5); }
   function refHTML(phone) {
@@ -427,22 +437,25 @@
       '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : '<b class="free">Free</b>') + '</span></div>' +
       '<div class="row total"><span>Total<small>Inclusive of all taxes</small></span><span>' + money(t.total) + '</span></div>' +
       (sv > 0 ? '<div class="saved">You save ' + money(Math.round(sv)) + ' on this order</div>' : '') + '</div></div>');
-    foot.innerHTML = '<button class="btn block" id="checkout">Checkout · ' + money(t.total) + '</button>' + payLogos();
+    foot.innerHTML = (sv > 0 ? '<p class="cf-save">You save <b>' + money(Math.round(sv)) + '</b> on this order</p>' : '') + '<button class="btn block cta" id="checkout">' + ico('lock') + 'Secure checkout · ' + money(t.total) + '</button>' + trustRow() + payLogos();
+    $$('.cart-n').forEach(function (e) { e.textContent = '(' + t.items + ' item' + (t.items === 1 ? '' : 's') + ')'; });
   }
-  function openCart(o) { $('#cart').classList.toggle('open', o); $('#ov').classList.toggle('on', o); }
+  /* wakes the order script up early (it is slow on its first answer), so tracking, accounts and checkout answer faster */
+  function warm() { if (warm.done || !S.order_webhook_url) return; warm.done = 1; try { fetch(S.order_webhook_url + '?action=version').catch(function () {}); } catch (e) {} }
+  function openCart(o) { if (o) warm(); $('#cart').classList.toggle('open', o); $('#ov').classList.toggle('on', o); }
   function toast(m) { var t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('on'); }, 1800); }
 
   /* checkout */
   function methods() { var m = []; if (S.razorpay_key_id) m.push(['online', 'Pay online (UPI / Cards / Netbanking)']); if (S.cod_enabled !== false) m.push(['cod', 'Cash on delivery']); if (!m.length) m.push(['cod', 'Pay on delivery / we will contact you']); return m; }
   function openCheckout() {
     var ar0 = areaRule(saved('pin'), saved('city'), saved('address')); areaFee = ar0 && ar0.action === 'extra_fee' ? Number(ar0.extra_fee) || 0 : 0;
-    var t = totals(); if (!t.items) return; logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
+    var t = totals(); if (!t.items) return; warm(); logVisit('checkout'); fbq_('track', 'InitiateCheckout', { value: t.total, currency: 'INR', num_items: t.items });
     var m = $('#checkout-modal'), ms = methods();
     /* not logged in: first ask log in, create an account, or continue as a guest */
     var guestOn = !USER && Date.now() - store.get('orvish_guest', 0) < 3600000, who = !!(S.firebase_config && S.firebase_config.apiKey) && !USER && !guestOn;
     var quick = !!(saved('name') && /^[0-9+ ]{10,15}$/.test(saved('phone')) && saved('house') && saved('address') && saved('city') && /^[0-9]{6}$/.test(saved('pin')) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((USER && USER.email) || saved('email')));
     var sum = cart.map(function (l) { var u = unit(l); return '<div class="sum-l"><img ' + oa(u.p.images[0], 400) + ' alt=""><div><b>' + esc(u.p.title) + '</b>' + (u.label ? '<br><small>' + esc(u.label) + '</small>' : '') + '</div><span>×' + l.q + '</span><span>' + money(u.price * l.q) + '</span></div>'; }).join('');
-    m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4>Checkout</h4>' +
+    m.innerHTML = '<div class="box"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><div class="co-title"><h4>Checkout</h4><span class="co-sec">' + ico('lock') + 'Secure</span></div>' +
       '<div class="sum">' + sum + '</div>' +
       (who ? '<div class="co-who" id="co-who"><p class="cw-h">How would you like to check out?</p><a class="btn block" href="/account?next=1" data-go="in">Log in</a><a class="btn secondary block" href="/account?next=1&signup=1" data-go="up">Create an account</a><div class="or"><span>or</span></div><button type="button" class="btn secondary block" id="co-guest">Continue as guest</button><small>No account needed. Track your orders any time with your email and phone number.</small></div>' : guestOn ? '<p class="msg" style="margin:0 0 8px">Checking out as a guest. <a class="link" href="/account?next=1" data-go="in">Log in instead</a></p>' : '') + '<form id="co-form"' + (who ? ' hidden' : '') + '><h6 class="co-h">Contact &amp; delivery</h6>' + (quick ? '<div class="co-saved" id="co-saved">' + ico('pin') + '<div><b>' + esc(saved('name')) + '</b> · ' + esc(saved('phone')) + '<br>' + esc([saved('house'), saved('address'), saved('city'), saved('pin')].filter(Boolean).join(', ')) + '</div><button type="button" class="link lnk" id="co-change">Change</button></div>' : '') + '<div id="co-fields"' + (quick ? ' hidden' : '') + '><p class="fsec">Contact</p><div class="two ph2"><div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name') || (USER && USER.displayName) || '') + '"></div><div class="field"><label>Phone</label>' + phoneField(saved('phone') || (USER && USER.phoneNumber) || '', true) + '</div></div>' +
       '<div class="field"><label>Email (for your order confirmation)</label><input name="email" type="email" required autocomplete="email" placeholder="name@example.com" value="' + esc((USER && USER.email) || saved('email')) + '"></div>' +
@@ -454,7 +467,7 @@
       '<h6 class="co-h">Payment</h6><div class="pay2">' + ms.map(function (x, i) { var on = x[0] === 'online'; return '<label class="pm"><input type="radio" name="pm" value="' + x[0] + '"' + (i ? '' : ' checked') + '><span class="pmi">' + ico(on ? 'card' : 'cash') + '</span><span class="pmt"><b>' + (on ? 'Pay online' : 'Cash on delivery') + '</b><small>' + (on ? 'UPI, cards, netbanking and wallets' : 'Pay when your order arrives') + '</small></span><span class="pmr"></span></label>'; }).join('') + '</div><div class="csum co">' +
       '<div class="row"><span>Subtotal</span><span>' + money(t.base) + '</span></div>' + (t.bsave > 0 ? '<div class="row off"><span>Bundle saving</span><span>−' + money(t.bsave) + '</span></div>' : '') + (t.off && discount ? '<div class="row"><span>Discount <span class="cotag">' + ico('ticket') + esc(discount.code) + ' applied</span></span><span>−' + money(t.off) + '</span></div>' : '') + '<div class="row"><span>Shipping</span><span>' + (t.ship ? money(t.ship) : 'Free') + '</span></div>' +
       '<div class="row total"><span>Total<small>Inclusive of all taxes</small></span><span>' + money(t.total) + '</span></div></div>' +
-      '<div class="msg" id="co-area" hidden></div><div class="msg err" id="co-msg"></div><button class="btn block" type="submit" style="margin-top:10px">' + (ms[0][0] === 'online' ? 'Continue to payment · ' : 'Place order · ') + money(t.total) + '</button></form></div>';
+      '<div class="msg" id="co-area" hidden></div><div class="msg err" id="co-msg"></div><button class="btn block cta" type="submit" style="margin-top:10px">' + ico('lock') + (ms[0][0] === 'online' ? 'Pay securely · ' : 'Place order · ') + money(t.total) + '</button>' + trustRow() + (ms.some(function (x) { return x[0] === 'online'; }) ? '<p class="co-rzp">Payments are processed securely by Razorpay. We never see your card or UPI PIN.</p>' : '') + '</form></div>';
     $('#cart').classList.remove('open'); m.classList.add('open'); $('#ov').classList.add('on');
     var fm0 = $('#co-form'), flds = $('#co-fields'), sum0 = $('#co-saved');
     $$('[data-go]', m).forEach(function (a) { a.onclick = function () { store.set('orvish_after_login', Date.now()); store.set('orvish_guest', 0); }; });
@@ -471,6 +484,9 @@
       else { sb0.disabled = false; if (r && fee) { box.hidden = false; box.className = 'msg'; box.textContent = r.message || ('An extra delivery charge of ' + money(fee) + ' applies to your area.'); } else { box.hidden = true; } }
     };
     ['pin', 'city'].forEach(function (k) { fm0.elements[k].addEventListener('change', function () { areaCheck(true); }); }); fm0.elements.address.addEventListener('change', function () { areaCheck(true); }); areaCheck(false);
+    $$('input[name=pm]', fm0).forEach(function (r) { r.addEventListener('change', function () { var b = $('#co-form button[type=submit]'); if (b) b.innerHTML = ico('lock') + (r.value === 'online' ? 'Pay securely · ' : 'Place order · ') + money(totals().total); }); });
+    var pre = function () { var z = fm0.elements; if (discount && Number(discount.max_uses) > 0 && z.phone) couponPre(discount.code, z.phone.value, z.email ? z.email.value : ''); }; pre();
+    ['phone', 'email'].forEach(function (n) { if (fm0.elements[n]) fm0.elements[n].addEventListener('change', pre); });
     abandon(); $('#co-form').addEventListener('change', function () { var z = Object.fromEntries(new FormData($('#co-form'))); abandon({ name: z.name, email: z.email, phone: z.phone }); });
     $('#co-form').addEventListener('submit', function (e) { e.preventDefault(); var f = Object.fromEntries(new FormData(e.target)); f.phone = fullPhone(f.phone);
       var short = cart.filter(function (l) { var n = stockLeft(l.id); return n != null && cart.filter(function (x) { return x.id === l.id; }).reduce(function (a, x) { return a + x.q; }, 0) > n; })[0];
@@ -483,12 +499,20 @@
         payRazorpay(f, t);
       } else emailOrder(f, t); };
       if (!lim || !S.order_webhook_url) return go();
-      var lbl = sb.textContent; sb.disabled = true; sb.textContent = 'Checking coupon…';
-      fetch(S.order_webhook_url + '?action=coupon_uses&code=' + encodeURIComponent(discount.code) + '&phone=' + encodeURIComponent(f.phone) + '&email=' + encodeURIComponent(f.email || '') + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
-        sb.disabled = false; sb.textContent = lbl;
+      var lbl = sb.innerHTML; sb.disabled = true; sb.textContent = 'Checking coupon…';
+      couponPre(discount.code, f.phone, f.email).then(function (d) {
+        sb.disabled = false; sb.innerHTML = lbl;
         if (d && Number(d.uses) >= lim) { var code = discount.code, cu2 = store.get('orvish_coupon_used', {}); cu2[code] = Math.max(cu2[code] || 0, Number(d.uses)); store.set('orvish_coupon_used', cu2); saveProfile(f); applyCode(''); openCheckout(); $('#co-msg').textContent = code + ' can be used ' + timesText(lim) + ' per customer and you have already used it. It has been removed, please check the new total.'; return; }
         go();
-      }).catch(function () { sb.disabled = false; sb.textContent = lbl; go(); }); });
+      }).catch(function () { sb.disabled = false; sb.innerHTML = lbl; go(); }); });
+  }
+  /* coupon limit check, started early (when checkout opens or the phone/email is typed) so paying does not wait for it */
+  var CPRE = {};
+  function couponPre(code, phone, email) {
+    var ph = last10(phone), em = String(email || '').trim().toLowerCase(), k = code + '|' + ph + '|' + em;
+    if (!S.order_webhook_url || ph.length !== 10) return Promise.resolve(null);
+    if (!CPRE[k]) CPRE[k] = fetch(S.order_webhook_url + '?action=coupon_uses&code=' + encodeURIComponent(code) + '&phone=' + ph + '&email=' + encodeURIComponent(em) + '&_=' + Date.now()).then(function (x) { return x.json(); }).catch(function () { delete CPRE[k]; return null; });
+    return CPRE[k];
   }
   function orderLines() { return cart.map(function (l) { var u = unit(l); return l.q + ' x ' + u.p.title + (u.label ? ' ' + u.label : '') + ' (' + money(u.price) + ')'; }); }
   function itemsDetail() { return cart.map(function (l) { var u = unit(l); return { id: u.p.id, title: u.p.title, image: u.p.images[0], qty: l.q, price: u.price }; }); }
@@ -519,7 +543,7 @@
           prefill: { name: f.name, email: f.email, contact: f.phone },
           notes: { items: orderLines().join(' | ').slice(0, 250), address: (f.address + ', ' + f.city + ' - ' + f.pin).slice(0, 250), phone: f.phone },
           theme: { color: '#761941' },
-          modal: { ondismiss: function () { if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment · ' + money(t.total); } } },
+          modal: { ondismiss: function () { if (btn) { btn.disabled = false; btn.innerHTML = ico('lock') + 'Pay securely · ' + money(t.total); } } },
           handler: function (r) { var oid = sendOrder(f, t, 'Paid', r.razorpay_payment_id, { o: r.razorpay_order_id || '', s: r.razorpay_signature || '' }); done({ id: oid, total: t.total, f: f, pay: 'Paid online', pid: r.razorpay_payment_id }); }
         };
         if (rzOrder) o.order_id = rzOrder;
@@ -571,7 +595,7 @@
       '<div class="f-grid">' + cols + '</div>' + payLogos() + '<div class="copy">© ' + new Date().getFullYear() + ' ' + esc(S.store_name) + '. All rights reserved.</div></div>';
     document.body.insertAdjacentHTML('beforeend',
       '<div class="mobile-nav" id="mnav">' + mobileNavHTML() + '</div><div class="overlay" id="ov"></div>' +
-      '<aside class="drawer" id="cart"><div class="d-head"><h4>Cart</h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
+      '<aside class="drawer" id="cart"><div class="d-head"><h4>Your cart <small class="cart-n"></small></h4><button class="icon-btn" style="color:var(--ink)" id="close-cart">' + ico('close') + '</button></div><div class="d-body" id="cart-body"></div><div class="d-foot" id="cart-foot"></div></aside>' +
       '<div class="modal" id="checkout-modal"></div><div class="search-box" id="sb" role="dialog" aria-label="Search"><div class="sbin"><label class="sfield">' + ico('search') + '<input id="sq" type="search" placeholder="Search perfumes, brands or notes" autocomplete="off" enterkeyhint="search"></label><button class="lnk" id="close-search" type="button">Cancel</button></div>' +
       '<div class="sbody"><div id="sdef">' + ((S.trending || []).length ? '<h6>Trending</h6><div class="trend">' + S.trending.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</div>' : '') + '<h6>Popular right now</h6><div class="hits">' + P.filter(function (x) { return x.best_seller; }).concat(P.filter(function (x) { return !x.best_seller; })).slice(0, 4).map(hitHTML).join('') + '</div></div><div class="hits" id="hits"></div></div></div><div class="toast" id="toast"></div>' +
       '<nav class="bnav" id="bnav"><a href="/">' + ico('home') + 'Home</a><a href="/shop">' + ico('grid') + 'Shop</a><button id="b-search">' + ico('search') + 'Search</button><a href="/account">' + ico('user') + 'Account</a><button id="b-cart">' + ico('bag') + 'Cart<span class="cart-count"></span></button></nav>' +
@@ -794,6 +818,7 @@
         (x ? '<div class="rlist">' + x.list.slice().reverse().map(function (y) { return '<div class="rev"><div class="rh">' + starsHTML(Number(y.rating)) + '<small>' + esc(y.date || '') + '</small></div><div class="rn"><i>' + ico('user') + '</i><b>' + esc(y.name) + '</b>' + (y.verified ? '<em>Verified</em>' : '') + '</div><p>' + esc(y.review) + '</p>' + (y.photo ? '<a class="rph" href="' + esc(y.photo) + '" target="_blank" rel="noopener"><img loading="lazy" src="' + esc(/^\/images\/uploads\//.test(y.photo) ? oi(y.photo, 400) : y.photo) + '" alt="Customer photo"></a>' : '') + '</div>'; }).join('') + '</div>' : '');
       var rate = 0, f = $('#rf'); if (!f) return;
       $$('#pick button').forEach(function (b) { b.onclick = function () { rate = Number(b.dataset.n); $$('#pick button').forEach(function (z) { z.classList.toggle('on', Number(z.dataset.n) <= rate); }); $('#pick-t').textContent = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'][rate]; }; });
+      if (/^[1-5]$/.test(qs.get('rate') || '')) { var rb0 = $('#pick button[data-n="' + qs.get('rate') + '"]'); if (rb0) rb0.click(); }
       f.onsubmit = function (e) {
         e.preventDefault(); var d = Object.fromEntries(new FormData(f)); if (d.website) return;
         if (!rate) { $('#rmsg').textContent = 'Please tap the stars to give a rating.'; return; }
@@ -842,6 +867,44 @@
     if (!list.length) return text ? '<p class="oi-text">' + esc(text) + '</p>' : '';
     return list.map(function (it) { return '<div class="oi"><img ' + oa(it.image || '/images/perfume-1.svg', 400) + ' alt="" loading="lazy"><div><b>' + esc(it.title) + '</b><small>Qty ' + esc(it.qty || 1) + '</small></div><span>' + money(Number(it.price || 0) * Number(it.qty || 1)) + '</span></div>'; }).join('');
   }
+
+  /* ---------- one order, shown the same way in My account and on the Track page ---------- */
+  var OC_STEPS = ['Ordered', 'Packed', 'Shipped', 'Out for delivery', 'Delivered'];
+  var OC_HEAD = {
+    'new': ['Order placed', 'We have your order and will confirm it shortly.'], 'confirmed': ['Order confirmed', 'We are getting your perfume ready.'],
+    'packed': ['Packed and ready', 'Your order is packed and will be handed to the courier soon.'], 'shipped': ['On the way', 'Your parcel is with the courier.'],
+    'out for delivery': ['Out for delivery', 'Your parcel will reach you today.'], 'delivered': ['Delivered', 'Your order has been delivered. Enjoy your new fragrance.'],
+    'cancelled': ['Order cancelled', 'This order was cancelled.'], 'return requested': ['Return requested', 'We have your return request and will contact you soon.'],
+    'return approved': ['Return approved', 'Your return is approved. We will arrange the pickup.'], 'returned': ['Returned', 'We have received your return.'], 'refunded': ['Refunded', 'Your money has been sent back to you.']
+  };
+  function ocStep(st) { return { 'new': 0, 'confirmed': 0, 'packed': 1, 'shipped': 2, 'out for delivery': 3, 'delivered': 4 }[String(st || 'new').trim().toLowerCase()]; }
+  function ocDate(v) { var d = typeof v === 'number' ? new Date(v) : new Date(String(v || '').replace(/^(\d{4}-\d\d-\d\d)$/, '$1T12:00:00')); return isNaN(d) ? String(v || '') : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  function ocItems(list, text) { if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } } list = (list || []).filter(function (x) { return x && x.title; }); return list.length ? list : (text ? String(text).split(/;\s*/).filter(Boolean).map(function (t) { var m = t.match(/^(\d+)\s*x\s*(.*?)(?:\s*\(₹?([\d,.]+)\))?$/); return { title: m ? m[2] : t, qty: m ? Number(m[1]) : 1, price: m && m[3] ? Number(m[3].replace(/,/g, '')) : 0 }; }) : []); }
+  /* o = { order_id, date|created, time, order_status, payment_status, tracking, total, items_json|items_detail, items, ph, loading } */
+  function orderCard(o, opt) {
+    opt = opt || {};
+    var st = String(o.order_status || 'New').trim(), k = st.toLowerCase(), step = ocStep(k), head = OC_HEAD[k] || [st, ''], ph = last10(o.ph || o.phone), bad = /cancel/.test(k), warn = /return|refund/.test(k), done = k === 'delivered';
+    var dt = o.created || o.date, id = esc(o.order_id), items = ocItems(o.items_json || o.items_detail, o.items);
+    var eta = '';
+    if (!o.loading && step != null && step < 4) { var base = typeof dt === 'number' ? dt : Date.parse(String(dt || '').replace(/^(\d{4}-\d\d-\d\d)$/, '$1T12:00:00')); if (!isNaN(base)) { var mx = Math.max(Number(S.delivery_days_min) || 3, Number(S.delivery_days_max) || 6), e = new Date(base + mx * 86400000); if (e > Date.now()) eta = ' Expected by <b>' + e.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) + '</b>.'; } }
+    var icon = o.loading ? 'refresh' : bad ? 'close' : warn ? 'refresh' : done ? 'check' : step >= 2 ? 'truck' : step === 1 ? 'bag' : 'check';
+    var badge = o.loading ? '<span class="oc-badge wait">Updating…</span>' : '<span class="oc-badge ' + (bad ? 'bad' : warn ? 'warn' : done ? 'ok' : 'live') + '">' + esc(head[0]) + '</span>';
+    var track = (o.loading || step == null) ? '' : '<div class="oc-track" style="--p:' + (step / 4 * 100) + '%"><div class="oc-bar"><i></i></div><ol>' + OC_STEPS.map(function (s, n) { return '<li class="' + (n < step ? 'done' : n === step ? 'now' : '') + '"><i>' + (n <= step ? ico('check') : '') + '</i><span>' + s + '</span></li>'; }).join('') + '</ol></div>';
+    var awb = o.tracking ? '<div class="oc-awb">' + ico('truck') + '<div><small>Courier tracking number</small><b>' + esc(o.tracking) + '</b></div><button type="button" class="oc-copy" data-copy="' + esc(o.tracking) + '">' + ico('copy') + 'Copy</button>' + (/^[A-Za-z0-9]{8,}$/.test(o.tracking) ? '<a class="oc-go" target="_blank" rel="noopener" href="https://shiprocket.co/tracking/' + encodeURIComponent(o.tracking) + '">Track parcel</a>' : '') + '</div>' : '';
+    var rows = items.map(function (it) {
+      var pp = (it.id && findP(it.id)) || P.filter(function (x) { return String(it.title || '').toLowerCase().indexOf(x.title.toLowerCase()) === 0; })[0], img = it.image || (pp && pp.images[0]) || '/images/perfume-1.svg', line = Number(it.price || 0) * Number(it.qty || 1);
+      var rev = done && pp ? '<div class="oc-rev"><span>Rate it</span>' + [1, 2, 3, 4, 5].map(function (n) { return '<a href="' + purl(pp.id) + '?oid=' + encodeURIComponent(o.order_id) + '&ph=' + ph + '&rate=' + n + '#reviews" aria-label="' + n + ' star' + (n > 1 ? 's' : '') + '">★</a>'; }).join('') + '<a class="oc-wr" href="' + purl(pp.id) + '?oid=' + encodeURIComponent(o.order_id) + '&ph=' + ph + '#reviews">Write a review</a></div>' : '';
+      return '<div class="oc-it"><span class="oc-im"><img ' + oa(img, 400) + ' alt="" loading="lazy"><em>' + esc(it.qty || 1) + '</em></span><div class="oc-tx">' + (pp ? '<a href="' + purl(pp.id) + '">' + esc(it.title) + '</a>' : '<b>' + esc(it.title) + '</b>') + '<small>Qty ' + esc(it.qty || 1) + (it.price ? ' · ' + money(it.price) + ' each' : '') + '</small>' + rev + '</div>' + (line ? '<span class="oc-pr">' + money(line) + '</span>' : '') + '</div>';
+    }).join('');
+    var inv = '/invoice?id=' + encodeURIComponent(o.order_id) + '&ph=' + ph, help = waLink('Hi, I need help with my order ' + o.order_id);
+    return '<div class="oc-top"><div class="oc-id"><small>Order</small><b>' + id + '</b><span>Placed on ' + esc(ocDate(dt)) + (o.time ? ' · ' + esc(o.time) : '') + '</span></div>' + badge + '</div>' +
+      '<div class="oc-status' + (bad ? ' bad' : warn ? ' warn' : done ? ' ok' : '') + '"><span class="oc-ic">' + ico(icon) + '</span><div><h3>' + (o.loading ? 'Checking the latest status' : esc(head[0])) + '</h3><p>' + (o.loading ? 'This takes a moment.' : esc(head[1]) + eta) + '</p></div></div>' +
+      track + awb +
+      (rows ? '<div class="oc-items">' + rows + '</div>' : '') +
+      '<div class="oc-sum"><div><small>Total</small><b>' + money(o.total) + '</b></div><div><small>Payment</small>' + (o.loading ? '<b>–</b>' : payPill(o.payment_status)) + '</div><div class="oc-act">' + (opt.trackLink ? '<a class="btn secondary" href="/track?id=' + encodeURIComponent(o.order_id) + '&ph=' + ph + '">Track order</a>' : '') + '<a class="btn secondary" target="_blank" rel="noopener" href="' + inv + '">Invoice</a>' + (help ? '<a class="btn secondary" target="_blank" rel="noopener" href="' + help + '">Get help</a>' : '') + '</div></div>' +
+      '<div class="ret"></div>';
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.oc-copy'); if (!b) return; try { navigator.clipboard.writeText(b.dataset.copy); } catch (x) {} toast('Tracking number copied'); });
   function reviewLinks(list, itemsText, oid, ph) {
     if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } }
     var ids = (list || []).map(function (x) { return x.id; });
@@ -869,16 +932,14 @@
   }
   /* order tracking (looks the order up in the Google Sheet through the Apps Script web app) */
   function track() {
+    warm();
     var el = $('#track-body'), last = store.get('orvish_track', {}), mine = store.get('orvish_orders', []), dp = saved('phone') || (mine[0] && mine[0].phone) || '';
     el.innerHTML = '<h1>Track your order</h1><p class="sub">Enter the email and phone number you used when ordering. We will show all your orders.</p><form id="tf" class="tf"><div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email" placeholder="you@example.com" value="' + esc(last.email || saved('email') || '') + '"></div><div class="field"><label>Phone number</label><input name="phone" type="tel" required autocomplete="tel" placeholder="10-digit mobile number" value="' + esc(last10(last.phone || dp)) + '"></div><button class="btn block" type="submit">Show my orders</button></form><div id="tres"></div>';
     /* one order card (status steps, items, payment, invoice, return, reviews) */
     function card(r, d, ph) {
-      var s = stInfo(d.order_status); if (d.ph) ph = d.ph;
-      r.innerHTML = '<div class="tcard"><div class="th"><div><small>Order</small><b>' + esc(d.order_id) + '</b></div><span class="pill' + s.cls + '">' + esc(s.st) + '</span></div>' +
-          (s.off ? '' : '<ol class="steps">' + stepsHTML(s.i) + '</ol>') + '<div class="ois">' + itemRows(d.items_json, d.items) + '</div>' +
-          '<div class="row"><span>Placed on</span><span>' + esc(d.date) + ' ' + esc(d.time || '') + '</span></div><div class="row"><span>Total</span><span>' + money(d.total) + '</span></div><div class="row"><span>Payment</span><span>' + payPill(d.payment_status) + '</span></div><div class="row"><span>Invoice</span><span><a class="link" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(d.order_id) + '&ph=' + encodeURIComponent(last10(ph)) + '">Download invoice</a></span></div>' + (d.tracking ? '<div class="row"><span>Courier tracking</span><span>' + esc(d.tracking) + '</span></div>' : '') +
-          '<div class="ret"></div>' + (/delivered/i.test(s.st) ? reviewLinks(d.items_json, d.items, d.order_id, ph) : '') + '</div>';
-      returnBox($('.ret', r), d.order_id, ph, d, function () { $('.pill', r).className = 'pill warn'; $('.pill', r).textContent = 'Return requested'; var o = $('.steps', r); if (o) o.remove(); });
+      if (d.ph) ph = d.ph;
+      r.innerHTML = '<article class="oc">' + orderCard(Object.assign({}, d, { ph: ph })) + '</article>';
+      returnBox($('.ret', r), d.order_id, ph, d, function () { d.order_status = 'Return requested'; d.can_return = false; card(r, d, ph); });
     }
     function many(email, phone) {
       var r = $('#tres'), ph = last10(phone); if (!S.order_webhook_url) { r.innerHTML = '<p class="msg">Tracking is not available right now.</p>'; return; }
@@ -905,6 +966,7 @@
   }
 
   function account() {
+    warm();
     var el = $('#acct-body');
     if (!(S.firebase_config && S.firebase_config.apiKey)) { el.innerHTML = '<h1>My account</h1><p class="sub">Customer accounts are not switched on yet. You can still <a class="link" href="/track">track an order</a> with your order ID and phone number.</p>'; return; }
     /* show something at once: the login form for a visitor who was not logged in last time, otherwise a light skeleton; the real state replaces it when the login system is ready */
@@ -983,31 +1045,23 @@
           saveProfile(fd).then(function (ok) { b.disabled = false; m.className = ok ? 'msg' : 'msg err'; m.textContent = ok ? 'Saved. These details will be filled in at checkout.' : 'Saved on this device only. We could not save to your account right now.'; });
         };
       }
-      var profP = loadProfile(); profP.then(drawDetails);
+      var profP = loadProfile().then(function () { drawDetails(); var had = saved('address'); return GUEST_P.then(function () { if (!had && (saved('address') || GUEST_NEED_PHONE) && $('#tab-details') && !($('#df') && $('#df').contains(document.activeElement))) drawDetails(); }); });
       /* orders: shown at once from the copy saved on this device, then refreshed in the background with one request */
       var ck = 'orvish_acct_' + u.uid, mem = store.get(ck, null) || { orders: null, status: {} }, box = $('#tab-orders');
       function paint(c, x, d) {
-        var pill = $('.st', c), s = stInfo(d && d.found ? d.order_status : 'New');
-        pill.className = 'pill st' + (d ? s.cls : ' wait'); pill.textContent = d ? (d.found ? s.st : 'Received') : 'Updating…';
-        var ol = $('.steps', c); ol.hidden = s.off; if (!s.off) ol.innerHTML = stepsHTML(d && d.found ? s.i : 0);
-        if (!d || !d.found) return;
-        $('.ps', c).innerHTML = payPill(d.payment_status);
-        $('.trk', c).hidden = !d.tracking; $('.trk b', c).textContent = d.tracking || '';
-        returnBox($('.ret', c), x.order_id, x.phone, d, function () { d.order_status = 'Return requested'; d.can_return = false; mem.status[x.order_id] = d; store.set(ck, mem); paint(c, x, d); });
-        $('.rvl', c).innerHTML = /delivered/i.test(s.st) ? reviewLinks(x.items_detail, x.items, x.order_id, x.phone) : '';
+        var v = Object.assign({}, x, d && d.found ? d : { loading: !d }, { ph: x.phone, created: x.created });
+        if (x.items_detail && x.items_detail.length) v.items_json = x.items_detail;
+        c.innerHTML = orderCard(v);
+        if (d && d.found) returnBox($('.ret', c), x.order_id, x.phone, d, function () { d.order_status = 'Return requested'; d.can_return = false; mem.status[x.order_id] = d; store.set(ck, mem); paint(c, x, d); });
       }
       function show(o) {
         if (!o.length) { box.innerHTML = '<div class="acct-card acct-empty"><h3>No orders yet</h3><p class="sub">Your orders appear here with their live status, including orders placed as a guest with this email and phone number.</p><a class="btn" href="/shop">Start shopping</a></div>'; return; }
-        box.innerHTML = o.map(function (x) {
-          return '<article class="ocard" data-id="' + esc(x.order_id) + '"><header><div><small>Placed on ' + new Date(x.created).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</small><b>' + esc(x.order_id) + '</b></div><span class="pill st wait">Updating…</span></header>' +
-            '<ol class="steps"></ol><div class="ois">' + itemRows(x.items_detail, x.items) + '</div>' +
-            '<footer><div><small>Total</small><b>' + money(x.total) + '</b></div><div><small>Payment</small><b class="ps">–</b></div><div class="trk" hidden><small>Courier tracking</small><b></b></div><a class="btn secondary" href="/track?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(x.phone) + '">Track order</a><a class="btn secondary inv" target="_blank" rel="noopener" href="/invoice?id=' + encodeURIComponent(x.order_id) + '&ph=' + encodeURIComponent(last10(x.phone)) + '">Invoice</a></footer><div class="ret"></div><div class="rvl"></div></article>';
-        }).join('');
-        $$('.ocard', box).forEach(function (c, n) { paint(c, o[n], mem.status[o[n].order_id] || null); });
+        box.innerHTML = o.map(function (x) { return '<article class="oc" data-id="' + esc(x.order_id) + '"></article>'; }).join('');
+        $$('.oc', box).forEach(function (c, n) { paint(c, o[n], mem.status[o[n].order_id] || null); });
       }
       function refresh(o) {
         if (!o.length) return;
-        var cards = $$('.ocard', box), set = function (n, d) { mem.status[o[n].order_id] = d; if (cards[n]) paint(cards[n], o[n], d); };
+        var set = function (n, d) { mem.status[o[n].order_id] = d; var c = $$('.oc', box).filter(function (x) { return x.dataset.id === o[n].order_id; })[0]; if (c) paint(c, o[n], d); };
         var one = function (n) { return fetch(S.order_webhook_url + '?action=track&order_id=' + encodeURIComponent(o[n].order_id) + '&phone=' + encodeURIComponent(o[n].phone) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) { set(n, d); }).catch(function () { if (!mem.status[o[n].order_id]) set(n, { found: false }); }); };
         if (!S.order_webhook_url) { o.forEach(function (x, n) { set(n, { found: false }); }); return; }
         var list = o.slice(0, 25);
@@ -1018,21 +1072,23 @@
       }
       if (mem.orders) show(mem.orders); else box.innerHTML = '<div class="ocard sk"><i></i><i></i><i></i></div>';
       FB.db.collection('orders').where('uid', '==', u.uid).get().then(function (q) {
-        var o = q.docs.map(function (d) { return d.data(); });
-        /* orders placed as a guest with this same email (and phone) are added to the account too */
-        var guest = profP.then(function () {
+        var o = q.docs.map(function (d) { return d.data(); }), byNew = function (a, b) { return b.created - a.created; };
+        o.sort(byNew);
+        /* show the account's orders at once and ask for their status (one request) */
+        if (!mem.orders || JSON.stringify(mem.orders) !== JSON.stringify(o)) { mem.orders = o; show(o); }
+        store.set(ck, mem); refresh(o);
+        /* at the same time: orders placed as a guest with this same email and phone come with their status in one request */
+        profP.then(function () {
           var ph = last10(saved('phone') || u.phoneNumber || ''), em = String(u.email || '').trim().toLowerCase();
-          return (em && ph.length === 10 && S.order_webhook_url) ? fetch(S.order_webhook_url + '?action=track_list&email=' + encodeURIComponent(em) + '&phone=' + ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
-            var have = {}; o.forEach(function (x) { have[x.order_id] = 1; });
-            ((d && d.orders) || []).forEach(function (g) { if (!g.order_id || have[g.order_id]) return; var x = { uid: u.uid, order_id: g.order_id, phone: g.ph || ph, items: g.items || '', total: Number(g.total) || 0, created: Date.parse(g.date) || Date.now() };
-              o.push(x); try { FB.db.collection('orders').doc(x.order_id).set(x).catch(function () {}); } catch (e) {} });
-          }).catch(function () {}) : Promise.resolve();
-        });
-        return guest.then(function () {
-          o.sort(function (a, b) { return b.created - a.created; });
-          if (!mem.orders || JSON.stringify(mem.orders) !== JSON.stringify(o)) { mem.orders = o; show(o); }
-          store.set(ck, mem); refresh(o);
-        });
+          if (!(em && ph.length === 10 && S.order_webhook_url)) return;
+          return fetch(S.order_webhook_url + '?action=track_list&email=' + encodeURIComponent(em) + '&phone=' + ph + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+            var have = {}, add = []; o.forEach(function (x) { have[x.order_id] = 1; });
+            ((d && d.orders) || []).forEach(function (g) { if (!g.order_id || have[g.order_id]) return; var x = { uid: u.uid, order_id: g.order_id, phone: g.ph || ph, items: g.items || '', total: Number(g.total) || 0, created: Date.parse(String(g.date || '').replace(/^(\d{4}-\d\d-\d\d)$/, '$1T12:00:00')) || Date.now() };
+              add.push(x); mem.status[g.order_id] = g; try { FB.db.collection('orders').doc(x.order_id).set(x).catch(function () {}); } catch (e) {} });
+            if (!add.length) return;
+            o = o.concat(add).sort(byNew); mem.orders = o; store.set(ck, mem); show(o);
+          });
+        }).catch(function () {});
       }).catch(function () { if (!mem.orders) box.innerHTML = '<p class="msg err">Could not load your orders. Please refresh.</p>'; });
     }
   }
