@@ -1002,3 +1002,6 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 /* v73 checkout: log in, create an account or continue as a guest */
 .co-who{display:grid;gap:10px;margin:4px 0 6px;text-align:center}.co-who .cw-h{margin:0 0 4px;font:600 15px var(--font-accent)}.co-who .or{margin:6px 0}.co-who small{color:var(--mute,#5d6a66);font-size:12.5px;line-height:1.4}
 .tone+.tone{margin-top:18px}
+
+/* v75 phone menu: By Type / By Notes / By Gender in the same gold as the other links */
+.mobile-nav summary{color:var(--gold)}
