@@ -76,5 +76,12 @@
     "days": 3,
     "subject": "How is your new perfume, {name}?",
     "message": "We hope you are enjoying your order. Would you share a short review? A photo of the perfume you received helps other customers a lot.\nTap the button below. It takes one minute."
+  },
+  "back_in_stock": {
+    "send": true,
+    "code": "",
+    "button": "Shop now",
+    "subject": "{title} is back in stock",
+    "message": "Good news: {title} is back in stock at ORVISH.\nPopular perfumes sell out quickly, so order soon if you would like one."
   }
 }
