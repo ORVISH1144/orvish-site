@@ -225,7 +225,7 @@
         "/images/uploads/Hawas Kobra Aquatic Splash.png"
       ],
       "hidden": false,
-      "in_stock": true,
+      "in_stock": false,
       "stock": 30,
       "hsn": "",
       "gst_rate": null,
