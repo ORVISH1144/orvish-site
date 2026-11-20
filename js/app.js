@@ -618,7 +618,7 @@
       else if (t.dataset.inc) { kk(t.dataset.inc).q++; saveCart(); }
       else if (t.dataset.dec) { var l = kk(t.dataset.dec); l.q = Math.max(1, l.q - 1); saveCart(); }
       else if (t.dataset.rm) { cart = cart.filter(function (l) { return key(l) !== t.dataset.rm; }); saveCart(); }
-      else if (t.dataset.notify) { e.preventDefault(); e.stopPropagation(); var np = findP(t.dataset.notify); if (np) { var mm = $('#checkout-modal'); mm.innerHTML = '<div class="box nbox"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><div class="nhead"><img ' + oa(np.images[0], 400) + ' alt=""><div><small>' + esc(np.brand || '') + '</small><b>' + esc(np.title) + '</b></div></div>' + notifyHTML(np) + '</div>'; mm.classList.add('open'); $('#ov').classList.add('on'); notifyWire(mm, np); } }
+      else if (t.dataset.notify) { e.preventDefault(); e.stopPropagation(); notifyGo(t.dataset.notify, t); }
       else if (t.dataset.add) { e.preventDefault(); e.stopPropagation(); addToCart(t.dataset.add, 1); openCart(true); }
       else if (t.id === 'dc-apply') { if (($('#dc').value || '').trim()) applyCode($('#dc').value); else { $('#dc-msg').textContent = 'Type a coupon code first'; $('#dc').focus(); } }
       else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} } applyCode(pickedCoupon() === t.dataset.coupon ? '' : t.dataset.coupon, t.dataset.copy ? pendingQty : 0); }
@@ -644,24 +644,37 @@
   /* views */
   function pct(p) { return p.compare_at_price && p.compare_at_price > p.price ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0; }
   /* "Notify me" for a sold-out perfume: the email goes to the order sheet (Back in stock tab), which emails the customer once it is back */
-  function notifyHTML(p) {
-    var done = store.get('orvish_notify', []).indexOf(p.id) > -1;
-    return '<div class="notify-box">' + (done ? '<p class="nok">' + ico('check') + 'We will email you as soon as this perfume is back.</p>' :
-      '<p class="nt"><b>Coming back soon</b>Leave your email and we will tell you the moment it is back in stock.</p><form class="nform"><input name="email" type="email" required autocomplete="email" placeholder="Your email" value="' + esc((USER && USER.email) || saved('email')) + '"><button class="btn" type="submit">' + ico('bell') + 'Notify me</button></form><div class="msg err nmsg"></div>') + '</div>';
+  function notified(id) { return store.get('orvish_notify', []).indexOf(id) > -1; }
+  function notifyBtn(p, cls) { return notified(p.id) ? '<button class="btn notify on ' + (cls || '') + '" type="button" disabled>' + ico('check') + 'We will notify you</button>' : '<button class="btn secondary notify ' + (cls || '') + '" type="button" data-notify="' + esc(p.id) + '">' + ico('bell') + 'Notify me</button>'; }
+  function notifyHTML(p) { return '<div class="soldbox"><span class="sold-tag">Sold out</span><p>' + (notified(p.id) ? 'We will email you as soon as this perfume is back in stock.' : 'Coming back soon. Tap Notify me and we will email you the moment it is back in stock.') + '</p>' + notifyBtn(p, 'block') + '</div>'; }
+  function notifyWire() {}
+  /* logged in: saved at once with the account email. Not logged in: log in first, then it is saved and they come back here. */
+  function notifySave(id, email) {
+    var p = findP(id); if (!p || !S.order_webhook_url) return Promise.resolve(false);
+    return fetch(S.order_webhook_url + '?action=notify&pid=' + encodeURIComponent(p.id) + '&title=' + encodeURIComponent(p.title) + '&email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(saved('name') || (USER && USER.displayName) || '') + '&phone=' + encodeURIComponent(last10(saved('phone') || (USER && USER.phoneNumber) || '')) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.ok) return false;
+      var l = store.get('orvish_notify', []); if (l.indexOf(id) < 0) l.push(id); store.set('orvish_notify', l);
+      $$('[data-notify="' + id + '"]').forEach(function (b) { b.outerHTML = notifyBtn(p, b.classList.contains('block') ? 'block' : ''); });
+      var sb = $('.soldbox p'); if (sb && $('.soldbox [disabled]')) sb.textContent = 'We will email you as soon as this perfume is back in stock.';
+      toast('Done. We will email you when it is back.'); return true;
+    }).catch(function () { return false; });
   }
-  function notifyWire(box, p) {
-    var fm = $('.nform', box); if (!fm) return;
-    fm.onsubmit = function (e) {
-      e.preventDefault(); var em = fm.email.value.trim(), b = $('button', fm), m = $('.nmsg', box);
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { m.textContent = 'Please enter a valid email.'; return; }
-      if (!S.order_webhook_url) { m.textContent = 'This is not available right now.'; return; }
-      b.disabled = true; m.textContent = '';
-      fetch(S.order_webhook_url + '?action=notify&pid=' + encodeURIComponent(p.id) + '&title=' + encodeURIComponent(p.title) + '&email=' + encodeURIComponent(em) + '&name=' + encodeURIComponent(saved('name') || (USER && USER.displayName) || '') + '&phone=' + encodeURIComponent(last10(saved('phone'))) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
-        if (!d || !d.ok) throw 0;
-        var l = store.get('orvish_notify', []); if (l.indexOf(p.id) < 0) l.push(p.id); store.set('orvish_notify', l);
-        $('.notify-box', box).outerHTML = notifyHTML(p); toast('Done. We will email you when it is back.');
-      }).catch(function () { b.disabled = false; m.textContent = 'Could not save right now. Please try again.'; });
-    };
+  function notifyGo(id, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+    var reset = function () { if (btn) { btn.disabled = false; btn.innerHTML = ico('bell') + 'Notify me'; } };
+    fbReady().then(function () {
+      var em = String((USER && USER.email) || (USER && saved('email')) || '').trim();
+      if (USER && em) return notifySave(id, em).then(function (ok) { if (!ok) { reset(); toast('Could not save right now. Please try again.'); } });
+      if (USER) {   /* logged in with a phone number only: ask for the email once */
+        reset(); var mm = $('#checkout-modal'), np = findP(id);
+        mm.innerHTML = '<div class="box nbox"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><h4 style="margin-right:36px">Notify me</h4><p>Which email should we use to tell you when <b>' + esc(np.title) + '</b> is back?</p><form class="nform"><input name="email" type="email" required autocomplete="email" placeholder="Your email"><button class="btn" type="submit">Notify me</button></form></div>';
+        mm.classList.add('open'); $('#ov').classList.add('on');
+        $('.nform', mm).onsubmit = function (e) { e.preventDefault(); var v = this.email.value.trim(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return; saveProfile(Object.assign({}, PROFILE || {}, { email: v })); notifySave(id, v).then(function () { closeAll(); }); };
+        return;
+      }
+      store.set('orvish_notify_next', { pid: id, t: Date.now(), back: location.pathname });
+      location.href = '/account?next=1&notify=' + encodeURIComponent(id);
+    });
   }
   function cardHTML(p) {
     var sale = pct(p), so = !inStock(p), href = '' + purl(p.id), multi = vs(p);
@@ -669,7 +682,7 @@
       '<img loading="lazy" ' + oa(p.images[0], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" ' + oa(p.images[1], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
-      (so ? '<button class="btn block secondary notify" data-notify="' + esc(p.id) + '">' + ico('bell') + 'Notify me</button>' : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">' + ico('bag') + 'Add to cart</button>') + '</div></div>';
+      (so ? notifyBtn(p, 'block') : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">' + ico('bag') + 'Add to cart</button>') + '</div></div>';
   }
   function row(title, list, link) {
     if (!list.length) return '';
@@ -781,7 +794,7 @@
     function paint() {
       $('#pp').innerHTML = priceHTML(); var i = info();
       $('#buyarea').innerHTML = i.so ? notifyHTML(p) : (p.bundles && p.bundles.length ? '<div class="bundles"><b>Bundle &amp; save</b>' + p.bundles.filter(function (b) { return Number(b.qty) > 1 && Number(b.percent) > 0; }).sort(function (x, y) { return x.qty - y.qty; }).map(function (b) { var n = Number(b.qty), bu = unit({ id: p.id, v: cur, q: n }); return '<button class="bnd' + (bundlePct(p, q) === Number(b.percent) && q >= n ? ' on' : '') + '" data-q="' + n + '"><span>Buy ' + n + '</span><em>Save ' + Number(b.percent) + '%</em></button>'; }).join('') + '</div>' : '') + '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn gold" id="add">' + ico('bag') + 'Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
-      if (i.so) { notifyWire($('#buyarea'), p); return; }
+      if (i.so) return;
       $$('#pq button').forEach(function (b) { b.onclick = function () { q = Math.max(1, q + Number(b.dataset.d)); paint(); }; });
       $$('.bnd').forEach(function (b) { b.onclick = function () { q = b.classList.contains('on') ? 1 : Number(b.dataset.q); paint(); }; });
       $('#add').onclick = function () { addToCart(p.id, q, cur); openCart(true); };
@@ -996,7 +1009,7 @@
     else { loginForm(); shown = 'login'; }
     fbReady().then(function (f) {
       if (!f) { el.innerHTML = '<p class="msg err">Could not load accounts. Please refresh.</p>'; return; }
-      f.auth.onAuthStateChanged(function (u) { store.set('orvish_acct', u ? 1 : 0); var back = store.get('orvish_after_login', 0); if (u && back && Date.now() - back < 3600000 && cart.length) { store.set('orvish_after_login', 0); location.href = '/shop?checkout=1'; return; } if (u && back) store.set('orvish_after_login', 0); if (u) { shown = 'dash'; dash(u); } else if (shown !== 'login') { shown = 'login'; loginForm(); } else { shown = 'login'; } });
+      f.auth.onAuthStateChanged(function (u) { store.set('orvish_acct', u ? 1 : 0); var nn = store.get('orvish_notify_next', null); if (u && nn && Date.now() - nn.t < 3600000 && nn.back) { location.href = nn.back; return; } var back = store.get('orvish_after_login', 0); if (u && back && Date.now() - back < 3600000 && cart.length) { store.set('orvish_after_login', 0); location.href = '/shop?checkout=1'; return; } if (u && back) store.set('orvish_after_login', 0); if (u) { shown = 'dash'; dash(u); } else if (shown !== 'login') { shown = 'login'; loginForm(); } else { shown = 'login'; } });
     });
     function W(fn) { return fbReady().then(function (f) { if (f) return fn(f); }); }
     function err(e) { var m = (e && e.code) || ''; return /wrong-password|invalid-credential|user-not-found/.test(m) ? 'Wrong email or password.' : /email-already/.test(m) ? 'An account with this email already exists. Please log in.' : /weak-password/.test(m) ? 'Password must be at least 6 characters.' : /popup/.test(m) ? 'Sign-in window was closed.' : /invalid-phone/.test(m) ? 'Please enter a valid mobile number with country code, e.g. +91 98765 43210.' : /invalid-verification-code|code-expired/.test(m) ? 'That code is wrong or expired. Please try again.' : /too-many-requests|quota/.test(m) ? 'Too many SMS codes requested. Please try again later or log in with email or Google.' : /operation-not-allowed|billing/.test(m) ? 'Phone login is not available right now. Please use email or Google.' : /unauthorized-domain/.test(m) ? 'This website address is not allowed yet in Firebase settings.' : (e && e.message) || 'Something went wrong.'; }
@@ -1004,11 +1017,11 @@
       var mode = qs.get('signup') === '1' ? 'up' : 'in';
       function paint() {
         el.classList.remove('wide');
-        el.innerHTML = '<div class="authcard"><h1>' + (mode === 'in' ? 'Welcome back' : 'Create your account') + '</h1><p class="sub">' + (mode === 'in' ? 'Log in to see your orders, track deliveries and check out faster.' : 'Save your address, track every order and check out faster.') + '</p>' + (store.get('orvish_after_login', 0) ? '<p class="msg" style="margin:-6px 0 14px">Your cart is saved. Log in or create an account and we will take you back to checkout. ' + (mode === 'in' ? 'New here? Choose <b>Create an account</b> below. ' : '') + 'Or <a class="link" href="/shop?checkout=1&guest=1">continue as a guest</a>.</p>' : '') + '<form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name')) + '"></div>' : '') +
+        el.innerHTML = '<div class="authcard"><h1>' + (mode === 'in' ? 'Welcome back' : 'Create your account') + '</h1><p class="sub">' + (mode === 'in' ? 'Log in to see your orders, track deliveries and check out faster.' : 'Save your address, track every order and check out faster.') + '</p>' + (function () { var nn = store.get('orvish_notify_next', null), np = nn && Date.now() - nn.t < 3600000 && findP(nn.pid); return np ? '<p class="msg" style="margin:-6px 0 14px">Log in or create an account and we will email you when <b>' + esc(np.title) + '</b> is back in stock.</p>' : ''; })() + (store.get('orvish_after_login', 0) && !store.get('orvish_notify_next', null) ? '<p class="msg" style="margin:-6px 0 14px">Your cart is saved. Log in or create an account and we will take you back to checkout. ' + (mode === 'in' ? 'New here? Choose <b>Create an account</b> below. ' : '') + 'Or <a class="link" href="/shop?checkout=1&guest=1">continue as a guest</a>.</p>' : '') + '<form id="af">' + (mode === 'up' ? '<div class="field"><label>Full name</label><input name="name" required autocomplete="name" value="' + esc(saved('name')) + '"></div>' : '') +
           '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email" value="' + esc(saved('email')) + '"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
           '<button class="btn block" type="submit">' + (mode === 'in' ? 'Log in' : 'Create account') + '</button></form><div id="amsg" class="msg err"></div>' +
           (mode === 'in' ? '<p style="text-align:right;margin:6px 0"><button class="link lnk" id="forgot">Forgot password?</button></p>' : '') +
-          '<div class="or"><span>or</span></div><button class="btn secondary block soc" id="gbtn"><svg class="sl" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 01-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0012 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 010-4.6V6.6H1.3a12 12 0 000 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 001.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z"/></svg>Continue with Google</button>' + (S.facebook_login ? '<button class="btn secondary block soc" id="fbtn" style="margin-top:8px"><svg class="sl" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 10-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0024 12z"/></svg>Continue with Facebook</button>' : '') + '<button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
+          '<div class="or"><span>or</span></div><button class="btn secondary block soc" id="gbtn"><svg class="sl" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</button>' + (S.facebook_login ? '<button class="btn secondary block soc" id="fbtn" style="margin-top:8px"><svg class="sl" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 10-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0024 12z"/></svg>Continue with Facebook</button>' : '') + '<button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
           '<p style="text-align:center;margin-top:18px">' + (mode === 'in' ? 'New customer? <button class="link lnk" id="sw">Create an account</button>' : 'Already have an account? <button class="link lnk" id="sw">Log in</button>') + '</p>' +
           '<p style="text-align:center"><a class="link" href="/track">Track an order without an account</a></p></div>';
         $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
@@ -1127,6 +1140,8 @@
     var pg = document.body.dataset.page; ({ home: home, shop: shop, product: product, page: page, track: track, account: account }[pg] || function () {})(); railNav();
     $$('a[href^="/page?p="]').forEach(function (a) { a.setAttribute('href', '/info/' + a.getAttribute('href').slice(8).split('&')[0] + '/'); });   /* menu and footer links go to the real info pages */
     if (qs.get('guest') === '1') store.set('orvish_guest', Date.now());
+    (function () { var nn = store.get('orvish_notify_next', null); if (!nn) return; if (Date.now() - nn.t > 3600000) { store.set('orvish_notify_next', null); return; } if (document.body.dataset.page === 'account') return;
+      fbReady().then(function () { var em = USER && String(USER.email || saved('email') || '').trim(); if (!em) return; store.set('orvish_notify_next', null); notifySave(nn.pid, em); }); })();
     if (qs.get('checkout') === '1' && cart.length) { try { history.replaceState(null, '', location.pathname); } catch (e) {} fbReady().then(function () { setTimeout(openCheckout, 300); }); }
     document.body.classList.add('ready'); stockNote(); setTimeout(loadStock, 600); logVisit('view', document.body.dataset.page === 'product' ? pageId() : '');
     if (document.body.dataset.page !== 'product') loadReviews().then(fillRatings);

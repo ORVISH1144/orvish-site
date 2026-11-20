@@ -1099,3 +1099,10 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .nbox .nhead small{display:block;font:600 11px var(--font-accent);letter-spacing:.08em;text-transform:uppercase;opacity:.6}.nbox .nhead b{font:600 15px/1.3 var(--font-accent)}
 .nbox .notify-box{border:0;padding:0;margin:0;background:none}
 .btn.soc{display:flex;align-items:center;justify-content:center;gap:10px}.btn.soc .sl{width:18px;height:18px;flex:none}
+
+/* v79 sold out + Notify me (one tap for logged-in customers) */
+.btn.notify.on{background:#e3f3e8;color:#137333;border-color:#e3f3e8;opacity:1;cursor:default}
+.soldbox{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff;margin:6px 0 14px;font-family:var(--font-accent)}
+.soldbox .sold-tag{display:inline-block;font:700 12px var(--font-accent);letter-spacing:.08em;text-transform:uppercase;color:#b3261e;background:#fbe5e3;border-radius:99px;padding:5px 12px}
+.soldbox p{margin:10px 0 12px;font-size:14px;line-height:1.5;opacity:.85}
+.soldbox .btn{min-height:50px}
