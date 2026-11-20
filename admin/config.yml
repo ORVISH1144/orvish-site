@@ -888,6 +888,11 @@ collections:
         name: appId
         widget: string
         required: false
+    - label: Show "Continue with Facebook" on the login page (switch on only after Facebook login is set up in Firebase – see instructions)
+      name: facebook_login
+      widget: boolean
+      required: false
+      default: false
     - label: Order webhook URL (Zoho Flow – sends each order to your sheet)
       name: order_webhook_url
       widget: string

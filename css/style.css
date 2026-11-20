@@ -1085,3 +1085,17 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .co-title+.sum{margin-top:14px}
 .co-rzp{margin:6px 0 0;text-align:center;font:400 11.5px/1.4 var(--font-accent);opacity:.6}
 #cart-foot .paylogos{justify-content:center;margin-top:10px}
+
+/* v78 "Notify me" for sold-out perfumes */
+.btn.notify,.nform .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn.notify svg,.nform .btn svg,.nok svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.notify-box{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff;margin:6px 0 14px;font-family:var(--font-accent)}
+.notify-box .nt{margin:0 0 12px;font-size:13.5px;line-height:1.5;opacity:.85}.notify-box .nt b{display:block;font-size:16px;opacity:1;margin-bottom:2px;color:var(--ink)}
+.nform{display:flex;gap:8px;flex-wrap:wrap}.nform input{flex:1 1 200px;min-width:0;padding:12px 14px;border:1px solid #00000033;border-radius:8px;font:400 15px var(--font-accent);background:#fff}
+.nform .btn{flex:0 0 auto;min-height:46px;padding:0 20px}
+.nok{display:flex;align-items:center;gap:8px;margin:0;color:#137333;font-weight:600;font-size:14px}
+.nmsg:empty{display:none}.nmsg{margin-top:8px}
+.nbox .nhead{display:flex;gap:12px;align-items:center;margin:4px 36px 14px 0}.nbox .nhead img{width:56px;height:70px;object-fit:contain;flex:none}
+.nbox .nhead small{display:block;font:600 11px var(--font-accent);letter-spacing:.08em;text-transform:uppercase;opacity:.6}.nbox .nhead b{font:600 15px/1.3 var(--font-accent)}
+.nbox .notify-box{border:0;padding:0;margin:0;background:none}
+.btn.soc{display:flex;align-items:center;justify-content:center;gap:10px}.btn.soc .sl{width:18px;height:18px;flex:none}

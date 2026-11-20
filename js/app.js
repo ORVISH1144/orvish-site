@@ -17,7 +17,7 @@
     truck: '<path d="M2 6h12v10H2zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
     star: '<path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.3l1-6.2L3 9.7l6.2-.9z"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
-    bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
+    bell: '<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15zM10 20.5a2.2 2.2 0 004 0"/>', bag: '<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
     check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
@@ -360,7 +360,7 @@
         var sv = function (v) { return { stringValue: String(v || '') }; };
         var doc = { fields: { t: { integerValue: String(Date.now()) }, ev: sv(ev), p: sv(location.pathname.slice(0, 80)), pid: sv(String(pid || '').slice(0, 80)), ref: sv(String(ref || '').slice(0, 60)), src: sv(src), c: sv(String(g.c || '').slice(0, 40)), r: sv(String(g.r || '').slice(0, 40)), city: sv(String(g.city || '').slice(0, 40)), dev: sv(window.innerWidth < 821 ? 'Mobile' : 'Desktop'), sid: sv(sid) } };
         /* a copy goes to the order sheet (Traffic Log tab), which keeps the monthly and yearly totals; sent exactly the way orders are sent */
-        if (S.order_webhook_url) { try { var fl = doc.fields; var pk = { ev: ev, utm: utmText().slice(0, 120), p: fl.p.stringValue, pid: fl.pid.stringValue, ref: fl.ref.stringValue, src: fl.src.stringValue, c: fl.c.stringValue, r: fl.r.stringValue, city: fl.city.stringValue, dev: fl.dev.stringValue, sid: sid }; var tok = btoa(unescape(encodeURIComponent(JSON.stringify(pk)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); new Image().src = S.order_webhook_url + (S.order_webhook_url.indexOf('?') < 0 ? '?' : '&') + 'action=visit&d=' + tok; } catch (e2) {} }
+        if (S.order_webhook_url) { try { var fl = doc.fields; var pk = { ev: ev, utm: utmText().slice(0, 120), p: fl.p.stringValue, pid: fl.pid.stringValue, ref: fl.ref.stringValue, src: fl.src.stringValue, c: fl.c.stringValue, r: fl.r.stringValue, city: fl.city.stringValue, dev: fl.dev.stringValue, sid: sid, em: String((USER && USER.email) || saved('email') || '').slice(0, 80) }; var tok = btoa(unescape(encodeURIComponent(JSON.stringify(pk)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); new Image().src = S.order_webhook_url + (S.order_webhook_url.indexOf('?') < 0 ? '?' : '&') + 'action=visit&d=' + tok; } catch (e2) {} }
         /* written straight to the database so a quick visit still counts; if that is refused, fall back to the full Firebase library */
         var viaSdk = function () { fbReady().then(function (f) { if (!f) { tell('Not recorded: this device could not reach the traffic database. A content blocker or private mode can cause this.'); return; } var d = {}; Object.keys(doc.fields).forEach(function (k) { d[k] = k === 't' ? Number(doc.fields.t.integerValue) : doc.fields[k].stringValue; }); f.db.collection('visits').add(d).then(function () { tell('Visit recorded (backup way).'); }).catch(function (x) { tell('Not recorded: the database refused this visit (' + ((x && x.code) || 'blocked') + ').'); }); }); };
         fetch('https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(cfg.projectId) + '/databases/(default)/documents/visits?key=' + encodeURIComponent(cfg.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(doc), keepalive: true }).then(function (r) { if (!r.ok) viaSdk(); else { tell('Visit recorded on the traffic page. Checking the sheet…'); if (chk && S.order_webhook_url) fetch(S.order_webhook_url + '?action=version&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) { tell(d && Number(d.version) >= 13 ? 'Visit recorded on the traffic page and sent to the sheet (script version ' + d.version + '). Look at the Traffic Log tab.' : 'Visit recorded on the traffic page, but the order script that is live is older than version 13, so nothing is written to the sheet. In Apps Script use Deploy > Manage deployments > edit > New version.'); }).catch(function () { tell('Visit recorded on the traffic page. The order script could not be reached to check the sheet.'); }); } }).catch(viaSdk);
@@ -618,6 +618,7 @@
       else if (t.dataset.inc) { kk(t.dataset.inc).q++; saveCart(); }
       else if (t.dataset.dec) { var l = kk(t.dataset.dec); l.q = Math.max(1, l.q - 1); saveCart(); }
       else if (t.dataset.rm) { cart = cart.filter(function (l) { return key(l) !== t.dataset.rm; }); saveCart(); }
+      else if (t.dataset.notify) { e.preventDefault(); e.stopPropagation(); var np = findP(t.dataset.notify); if (np) { var mm = $('#checkout-modal'); mm.innerHTML = '<div class="box nbox"><button class="icon-btn" style="position:absolute;right:8px;top:8px;color:var(--ink)" data-close-modal>' + ico('close') + '</button><div class="nhead"><img ' + oa(np.images[0], 400) + ' alt=""><div><small>' + esc(np.brand || '') + '</small><b>' + esc(np.title) + '</b></div></div>' + notifyHTML(np) + '</div>'; mm.classList.add('open'); $('#ov').classList.add('on'); notifyWire(mm, np); } }
       else if (t.dataset.add) { e.preventDefault(); e.stopPropagation(); addToCart(t.dataset.add, 1); openCart(true); }
       else if (t.id === 'dc-apply') { if (($('#dc').value || '').trim()) applyCode($('#dc').value); else { $('#dc-msg').textContent = 'Type a coupon code first'; $('#dc').focus(); } }
       else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} } applyCode(pickedCoupon() === t.dataset.coupon ? '' : t.dataset.coupon, t.dataset.copy ? pendingQty : 0); }
@@ -642,13 +643,33 @@
   }
   /* views */
   function pct(p) { return p.compare_at_price && p.compare_at_price > p.price ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0; }
+  /* "Notify me" for a sold-out perfume: the email goes to the order sheet (Back in stock tab), which emails the customer once it is back */
+  function notifyHTML(p) {
+    var done = store.get('orvish_notify', []).indexOf(p.id) > -1;
+    return '<div class="notify-box">' + (done ? '<p class="nok">' + ico('check') + 'We will email you as soon as this perfume is back.</p>' :
+      '<p class="nt"><b>Coming back soon</b>Leave your email and we will tell you the moment it is back in stock.</p><form class="nform"><input name="email" type="email" required autocomplete="email" placeholder="Your email" value="' + esc((USER && USER.email) || saved('email')) + '"><button class="btn" type="submit">' + ico('bell') + 'Notify me</button></form><div class="msg err nmsg"></div>') + '</div>';
+  }
+  function notifyWire(box, p) {
+    var fm = $('.nform', box); if (!fm) return;
+    fm.onsubmit = function (e) {
+      e.preventDefault(); var em = fm.email.value.trim(), b = $('button', fm), m = $('.nmsg', box);
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { m.textContent = 'Please enter a valid email.'; return; }
+      if (!S.order_webhook_url) { m.textContent = 'This is not available right now.'; return; }
+      b.disabled = true; m.textContent = '';
+      fetch(S.order_webhook_url + '?action=notify&pid=' + encodeURIComponent(p.id) + '&title=' + encodeURIComponent(p.title) + '&email=' + encodeURIComponent(em) + '&name=' + encodeURIComponent(saved('name') || (USER && USER.displayName) || '') + '&phone=' + encodeURIComponent(last10(saved('phone'))) + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.ok) throw 0;
+        var l = store.get('orvish_notify', []); if (l.indexOf(p.id) < 0) l.push(p.id); store.set('orvish_notify', l);
+        $('.notify-box', box).outerHTML = notifyHTML(p); toast('Done. We will email you when it is back.');
+      }).catch(function () { b.disabled = false; m.textContent = 'Could not save right now. Please try again.'; });
+    };
+  }
   function cardHTML(p) {
     var sale = pct(p), so = !inStock(p), href = '' + purl(p.id), multi = vs(p);
-    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '<span class="badge so">Sold out</span>' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (p.best_seller && !so ? '<span class="badge l">Best seller</span>' : '') +
+    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (p.best_seller && !so ? '<span class="badge l">Best seller</span>' : '') +
       '<img loading="lazy" ' + oa(p.images[0], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" ' + oa(p.images[1], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
-      (so ? '<button class="btn block" disabled>Sold out</button>' : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">' + ico('bag') + 'Add to cart</button>') + '</div></div>';
+      (so ? '<button class="btn block secondary notify" data-notify="' + esc(p.id) + '">' + ico('bell') + 'Notify me</button>' : multi ? '<a class="btn block" href="' + href + '">Choose options</a>' : '<button class="btn block" data-add="' + esc(p.id) + '">' + ico('bag') + 'Add to cart</button>') + '</div></div>';
   }
   function row(title, list, link) {
     if (!list.length) return '';
@@ -759,8 +780,8 @@
       (p.details || []).map(function (d) { return '<details class="acc"><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('') + '</div>';
     function paint() {
       $('#pp').innerHTML = priceHTML(); var i = info();
-      $('#buyarea').innerHTML = i.so ? '<p><strong>Sold out</strong></p>' : (p.bundles && p.bundles.length ? '<div class="bundles"><b>Bundle &amp; save</b>' + p.bundles.filter(function (b) { return Number(b.qty) > 1 && Number(b.percent) > 0; }).sort(function (x, y) { return x.qty - y.qty; }).map(function (b) { var n = Number(b.qty), bu = unit({ id: p.id, v: cur, q: n }); return '<button class="bnd' + (bundlePct(p, q) === Number(b.percent) && q >= n ? ' on' : '') + '" data-q="' + n + '"><span>Buy ' + n + '</span><em>Save ' + Number(b.percent) + '%</em></button>'; }).join('') + '</div>' : '') + '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn gold" id="add">' + ico('bag') + 'Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
-      if (i.so) return;
+      $('#buyarea').innerHTML = i.so ? notifyHTML(p) : (p.bundles && p.bundles.length ? '<div class="bundles"><b>Bundle &amp; save</b>' + p.bundles.filter(function (b) { return Number(b.qty) > 1 && Number(b.percent) > 0; }).sort(function (x, y) { return x.qty - y.qty; }).map(function (b) { var n = Number(b.qty), bu = unit({ id: p.id, v: cur, q: n }); return '<button class="bnd' + (bundlePct(p, q) === Number(b.percent) && q >= n ? ' on' : '') + '" data-q="' + n + '"><span>Buy ' + n + '</span><em>Save ' + Number(b.percent) + '%</em></button>'; }).join('') + '</div>' : '') + '<div class="qty" id="pq"><button data-d="-1">−</button><span>' + q + '</span><button data-d="1">+</button></div><div class="buy-row"><button class="btn gold" id="add">' + ico('bag') + 'Add to cart</button><button class="btn" id="buy">Buy it now</button></div>';
+      if (i.so) { notifyWire($('#buyarea'), p); return; }
       $$('#pq button').forEach(function (b) { b.onclick = function () { q = Math.max(1, q + Number(b.dataset.d)); paint(); }; });
       $$('.bnd').forEach(function (b) { b.onclick = function () { q = b.classList.contains('on') ? 1 : Number(b.dataset.q); paint(); }; });
       $('#add').onclick = function () { addToCart(p.id, q, cur); openCart(true); };
@@ -987,7 +1008,7 @@
           '<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email" value="' + esc(saved('email')) + '"></div><div class="field"><label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="' + (mode === 'in' ? 'current-password' : 'new-password') + '"></div>' +
           '<button class="btn block" type="submit">' + (mode === 'in' ? 'Log in' : 'Create account') + '</button></form><div id="amsg" class="msg err"></div>' +
           (mode === 'in' ? '<p style="text-align:right;margin:6px 0"><button class="link lnk" id="forgot">Forgot password?</button></p>' : '') +
-          '<div class="or"><span>or</span></div><button class="btn secondary block" id="gbtn">Continue with Google</button><button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
+          '<div class="or"><span>or</span></div><button class="btn secondary block soc" id="gbtn"><svg class="sl" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 01-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0012 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 010-4.6V6.6H1.3a12 12 0 000 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 001.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z"/></svg>Continue with Google</button>' + (S.facebook_login ? '<button class="btn secondary block soc" id="fbtn" style="margin-top:8px"><svg class="sl" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 10-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0024 12z"/></svg>Continue with Facebook</button>' : '') + '<button class="btn secondary block" id="pbtn" style="margin-top:8px">Continue with phone number</button>' +
           '<p style="text-align:center;margin-top:18px">' + (mode === 'in' ? 'New customer? <button class="link lnk" id="sw">Create an account</button>' : 'Already have an account? <button class="link lnk" id="sw">Log in</button>') + '</p>' +
           '<p style="text-align:center"><a class="link" href="/track">Track an order without an account</a></p></div>';
         $('#sw').onclick = function () { mode = mode === 'in' ? 'up' : 'in'; paint(); };
@@ -995,6 +1016,7 @@
           e.preventDefault(); var d = Object.fromEntries(new FormData(e.target)), m = $('#amsg'); m.textContent = '';
           W(function (f) { return mode === 'in' ? f.auth.signInWithEmailAndPassword(d.email, d.pw) : f.auth.createUserWithEmailAndPassword(d.email, d.pw).then(function (c) { return c.user.updateProfile({ displayName: d.name }); }); }).catch(function (x) { m.textContent = err(x); });
         };
+        if ($('#fbtn')) $('#fbtn').onclick = function () { W(function (f) { var pr = new firebase.auth.FacebookAuthProvider(); pr.addScope('email'); return f.auth.signInWithPopup(pr); }).catch(function (x) { $('#amsg').textContent = /account-exists-with-different-credential/.test((x && x.code) || '') ? 'This email already has an account. Please log in with Google or your email and password.' : err(x); }); };
         $('#gbtn').onclick = function () { W(function (f) { return f.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }).catch(function (x) { $('#amsg').textContent = err(x); }); };
         $('#pbtn').onclick = phoneForm;
         var fg = $('#forgot'); if (fg) fg.onclick = function () { var em = $('#af').elements.email.value; if (!em) { $('#amsg').textContent = 'Type your email above first.'; return; } W(function (f) { return f.auth.sendPasswordResetEmail(em); }).then(function () { $('#amsg').className = 'msg'; $('#amsg').textContent = 'Password reset email sent. Check your inbox.'; }).catch(function (x) { $('#amsg').textContent = err(x); }); };
