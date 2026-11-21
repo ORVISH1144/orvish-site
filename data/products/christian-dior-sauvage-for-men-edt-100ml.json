@@ -1,12 +1,15 @@
 {
   "id": "christian-dior-sauvage-for-men-edt-100ml",
   "title": "Christian Dior Sauvage – Eau de Toilette for Men, 100 ml",
-  "price": 6499,
-  "compare_at_price": 8499,
+  "price": 1899,
+  "compare_at_price": 2300,
   "collection": "signature",
-  "images": [],
+  "images": [
+    "/images/uploads/Dior Sauvage Perfume Bottle on Transparent Background.png"
+  ],
   "hidden": false,
   "in_stock": true,
+  "stock": null,
   "hsn": "3303",
   "gst_rate": 18,
   "featured": true,
@@ -50,5 +53,6 @@
   ],
   "faqs": [],
   "auto_faq": true,
+  "reviews": [],
   "position": 7
 }
