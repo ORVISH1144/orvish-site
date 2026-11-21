@@ -4,9 +4,12 @@
   "price": 6999,
   "compare_at_price": 8999,
   "collection": "signature",
-  "images": [],
+  "images": [
+    "/images/uploads/YSL_Y_for_Men_EDP_1200x1600_transparent.png"
+  ],
   "hidden": false,
-  "in_stock": true,
+  "in_stock": false,
+  "stock": null,
   "hsn": "3303",
   "gst_rate": 18,
   "featured": true,
@@ -50,5 +53,6 @@
   ],
   "faqs": [],
   "auto_faq": true,
+  "reviews": [],
   "position": 6
 }
