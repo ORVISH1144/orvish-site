@@ -464,6 +464,60 @@
       "faqs": [],
       "auto_faq": true,
       "reviews": []
+    },
+    {
+      "id": "chopard-oud-malaki-for-men-edp-80ml",
+      "title": "Chopard Oud Malaki – Eau de Parfum for Men, 80 ml",
+      "price": 3499,
+      "compare_at_price": 4999,
+      "collection": "signature",
+      "images": [],
+      "hidden": false,
+      "in_stock": true,
+      "hsn": "3303",
+      "gst_rate": 18,
+      "featured": true,
+      "brand": "Chopard",
+      "gender": "men",
+      "type": "Eau de Parfum",
+      "notes": [
+        "Oud",
+        "Spicy",
+        "Amber",
+        "Leather"
+      ],
+      "best_seller": false,
+      "badge": "New",
+      "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
+      "note_pyramid": {
+        "top": "Saffron, Cardamom, Nutmeg",
+        "heart": "Oud wood, Rose, Amber",
+        "base": "Agarwood, Sandalwood, Patchouli, Leather, Musk"
+      },
+      "short_description": "A rich, spicy oud fragrance with rose, amber and a deep leathery sandalwood base.",
+      "description": "Chopard Oud Malaki is a rich, evening fragrance for men. It opens with warm saffron, cardamom and nutmeg, deepens into oud wood, rose and amber, and settles into a long-lasting base of agarwood, sandalwood, patchouli, leather and musk. Long-lasting with moderate sillage.\n\n**Size:** 80 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** evenings, parties and special occasions, especially in autumn and winter.",
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        }
+      ],
+      "faqs": [],
+      "auto_faq": true
     }
   ]
 }
