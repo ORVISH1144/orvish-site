@@ -347,6 +347,59 @@
       "faqs": [],
       "auto_faq": true,
       "reviews": []
+    },
+    {
+      "id": "yves-saint-laurent-y-for-men-edp-100ml",
+      "title": "Yves Saint Laurent Y – Eau de Parfum for Men, 100 ml",
+      "price": 6999,
+      "compare_at_price": 8999,
+      "collection": "signature",
+      "images": [],
+      "hidden": false,
+      "in_stock": true,
+      "hsn": "3303",
+      "gst_rate": 18,
+      "featured": true,
+      "brand": "Yves Saint Laurent",
+      "gender": "men",
+      "type": "Eau de Parfum",
+      "notes": [
+        "Fresh",
+        "Woody",
+        "Amber"
+      ],
+      "best_seller": false,
+      "badge": "New",
+      "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
+      "note_pyramid": {
+        "top": "Bergamot, Apple, Ginger",
+        "heart": "Sage, Juniper berries, Geranium",
+        "base": "Amberwood, Cedar, Vetiver, Musk"
+      },
+      "short_description": "A fresh, woody-amber men's fragrance with a clean, modern and long-lasting character.",
+      "description": "Yves Saint Laurent Y Eau de Parfum is a modern, confident fragrance for men. It opens bright and fresh with bergamot, apple and ginger, moves into sage and geranium, and rests on a warm, woody base of amberwood, cedar and vetiver. Long-lasting with moderate sillage.\n\n**Size:** 100 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** everyday wear, office, evenings out and gifting. Especially good in autumn and winter.",
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        }
+      ],
+      "faqs": [],
+      "auto_faq": true
     }
   ]
 }
