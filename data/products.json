@@ -406,6 +406,59 @@
       "faqs": [],
       "auto_faq": true,
       "reviews": []
+    },
+    {
+      "id": "christian-dior-sauvage-for-men-edt-100ml",
+      "title": "Christian Dior Sauvage – Eau de Toilette for Men, 100 ml",
+      "price": 6499,
+      "compare_at_price": 8499,
+      "collection": "signature",
+      "images": [],
+      "hidden": false,
+      "in_stock": true,
+      "hsn": "3303",
+      "gst_rate": 18,
+      "featured": true,
+      "brand": "Christian Dior",
+      "gender": "men",
+      "type": "Eau de Toilette",
+      "notes": [
+        "Citrus",
+        "Spicy",
+        "Woody"
+      ],
+      "best_seller": false,
+      "badge": "New",
+      "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
+      "note_pyramid": {
+        "top": "Calabrian bergamot, Pepper",
+        "heart": "Sichuan pepper, Lavender, Star anise, Nutmeg",
+        "base": "Ambroxan, Cedar, Labdanum"
+      },
+      "short_description": "A fresh, spicy citrus fragrance with lavender and a clean ambroxan base, made for daily wear.",
+      "description": "Christian Dior Sauvage is a fresh, discreet classic for men, inspired by wild rocky landscapes and open blue skies. It opens with Calabrian bergamot and pepper, warms with Sichuan pepper, lavender, star anise and nutmeg, and rests on a smooth base of ambroxan, cedar and labdanum. Moderate longevity and sillage.\n\n**Size:** 100 ml\n\n**Concentration:** Eau de Toilette\n\n**Best for:** daily wear and office, especially in spring and summer.",
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        }
+      ],
+      "faqs": [],
+      "auto_faq": true
     }
   ]
 }
