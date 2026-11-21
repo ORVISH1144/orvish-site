@@ -1,12 +1,16 @@
 {
   "id": "chopard-oud-malaki-for-men-edp-80ml",
   "title": "Chopard Oud Malaki – Eau de Parfum for Men, 80 ml",
-  "price": 3499,
-  "compare_at_price": 4999,
+  "price": 1799,
+  "compare_at_price": 2299,
   "collection": "signature",
-  "images": [],
+  "images": [
+    "/images/uploads/Chopard Oud Malaki Luxury Perfume Bottle.png",
+    "/images/uploads/chopard_oud_malaki_1200x1600.png"
+  ],
   "hidden": false,
   "in_stock": true,
+  "stock": null,
   "hsn": "3303",
   "gst_rate": 18,
   "featured": true,
@@ -51,5 +55,6 @@
   ],
   "faqs": [],
   "auto_faq": true,
+  "reviews": [],
   "position": 8
 }
