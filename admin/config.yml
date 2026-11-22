@@ -893,7 +893,7 @@ collections:
       widget: boolean
       required: false
       default: false
-    - label: Order webhook URL (Zoho Flow – sends each order to your sheet)
+    - label: Order script web address (your Google Apps Script – sends each order to your sheet)
       name: order_webhook_url
       widget: string
       required: false
