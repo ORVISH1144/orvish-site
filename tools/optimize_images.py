@@ -69,6 +69,51 @@ for f in sorted(glob.glob(SRC + '/*')):
 for f in glob.glob(OUT + '/*.webp'):
     base = re.sub(r'-\d+\.webp$', '', os.path.basename(f))
     if base not in seen: os.remove(f)
-stamps = {k: v for k, v in stamps.items() if k in seen}
+stamps = {k: v for k, v in stamps.items() if k in seen or k.startswith('share:')}
 json.dump(stamps, open(stamp_file, 'w'), indent=0)
 print('optimised', made, 'photos;', len(seen), 'in total')
+
+# ---- link preview pictures (WhatsApp, Instagram/Facebook stories, Google): 1200 x 630 JPEG, small enough for WhatsApp ----
+# images/share/<product id>.jpg: the product's first photo on the cream brand colour. images/share/home.jpg: the first bottles side by side.
+SHARE, SW, SH, CREAM = 'images/share', 1200, 630, (241, 236, 225)
+os.makedirs(SHARE, exist_ok=True)
+def bottle(path):
+    im = Image.open(path); im.load(); im = im.convert('RGBA')
+    ev = even_out(im)
+    if ev is not None: im = ev.convert('RGBA')
+    a = im.split()[3]; box = a.point(lambda v: 255 if v > 40 else 0).getbbox()
+    if box and a.getextrema()[0] < 128: im = im.crop(box)          # cut-out: just the bottle
+    return im
+def on_cream(parts, out):
+    c = Image.new('RGB', (SW, SH), CREAM); n = len(parts); slot = SW // n
+    for i, im in enumerate(parts):
+        k = min(SH * 0.86 / im.height, slot * 0.86 / im.width); r = im.resize((max(1, round(im.width * k)), max(1, round(im.height * k))), Image.LANCZOS)
+        x = i * slot + (slot - r.width) // 2; y = (SH - r.height) // 2
+        c.paste(r, (x, y), r if r.mode == 'RGBA' else None)
+    c.save(out, 'JPEG', quality=84, optimize=True, progressive=True)
+prods = []
+for f in glob.glob('data/products/*.json'):
+    try: prods.append(json.load(open(f, encoding='utf8')))
+    except Exception: pass
+prods.sort(key=lambda p: (p.get('position', 100), p.get('title', '')))
+made_share, home_parts, keep_share = 0, [], {'home.jpg'}
+for p in prods:
+    im = (p.get('images') or [None])[0]; im = im.get('image') if isinstance(im, dict) else im
+    if not p.get('id') or not im: continue
+    src = os.path.join(SRC, os.path.basename(unquote(str(im))))
+    if not os.path.exists(src): continue
+    out = f"{SHARE}/{p['id']}.jpg"; keep_share.add(os.path.basename(out))
+    h = hashlib.sha1(open(src, 'rb').read()).hexdigest() + '|share-v1'
+    try:
+        b = bottle(src)
+        if not p.get('hidden') and len(home_parts) < 4: home_parts.append(b)
+        if stamps.get('share:' + p['id']) == h and os.path.exists(out): continue
+        on_cream([b], out); stamps['share:' + p['id']] = h; made_share += 1
+    except Exception as e: print('share picture not made for', p['id'], e)
+if home_parts:
+    hh = '|'.join(stamps.get('share:' + p['id'], '') for p in prods if not p.get('hidden'))[:4000]
+    if stamps.get('share:home') != hh or not os.path.exists(SHARE + '/home.jpg'): on_cream(home_parts, SHARE + '/home.jpg'); stamps['share:home'] = hh
+for f in glob.glob(SHARE + '/*.jpg'):
+    if os.path.basename(f) not in keep_share: os.remove(f)
+json.dump(stamps, open(stamp_file, 'w'), indent=0)
+print('share pictures made:', made_share)

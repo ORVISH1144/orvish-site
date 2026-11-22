@@ -23,6 +23,10 @@ keep = set()
 for p in shown:
     pid = p['id']; keep.add(pid); url = f'{SITE}/p/{quote(pid)}/'
     imgs = [absu(i) for i in (p.get('images') or [])] or [SITE + '/images/share.jpg']
+    # the link preview picture (WhatsApp, stories, Google): a small 1200 x 630 JPEG made by optimize_images.py, else the first photo
+    og = f'{SITE}/images/share/{quote(pid)}.jpg' if os.path.exists(f'images/share/{pid}.jpg') else imgs[0]
+    ogm = (f'<meta property="og:image" content="{esc(og)}"><meta property="og:image:secure_url" content="{esc(og)}">' + ('<meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">' if og.endswith('.jpg') else '')
+           + f'<meta property="og:image:alt" content="{esc(p["title"])}"><meta name="twitter:image" content="{esc(og)}">')
     brand = p.get('brand') or ''; price = p.get('price') or 0; notes = ', '.join(p.get('notes') or [])
     title = clip(f"{p['title']} | Buy Online – ORVISH", 70)
     free = commerce.get('free_shipping_above')
@@ -49,7 +53,7 @@ for p in shown:
         pre = f'<link rel="preload" as="image" href="/images/opt/{sl}-800.webp" imagesrcset="/images/opt/{sl}-400.webp 400w, /images/opt/{sl}-600.webp 600w, /images/opt/{sl}-800.webp 800w, /images/opt/{sl}-1200.webp 1200w" imagesizes="(max-width:820px) 100vw, 50vw" fetchpriority="high">'
     head = (f'<title>{esc(title)}</title><meta name="description" content="{esc(desc)}"><link rel="canonical" href="{url}">'
             f'<meta property="og:type" content="product"><meta property="og:title" content="{esc(p["title"])}"><meta property="og:description" content="{esc(desc)}"><meta property="og:url" content="{url}">'
-            f'<meta property="og:image" content="{esc(imgs[0])}">{pre}<meta property="product:price:amount" content="{price}"><meta property="product:price:currency" content="INR"><meta name="twitter:card" content="summary_large_image">'
+            f'{ogm}{pre}<meta property="product:price:amount" content="{price}"><meta property="product:price:currency" content="INR"><meta name="twitter:card" content="summary_large_image">'
             + ''.join(f'<script type="application/ld+json" data-static-ld>{json.dumps(x, ensure_ascii=False).replace("</", "<\\/")}</script>' for x in ld))
     page = re.sub(r'<title>.*?</title><meta name="description" content="[^"]*">', lambda m: head, tpl, count=1, flags=re.S)
     page = re.sub(r'<meta property="og:image" content="https://www\.orvish\.com/images/share\.jpg">', '', page, count=1)
