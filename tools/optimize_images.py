@@ -96,7 +96,7 @@ for f in glob.glob('data/products/*.json'):
     try: prods.append(json.load(open(f, encoding='utf8')))
     except Exception: pass
 prods.sort(key=lambda p: (p.get('position', 100), p.get('title', '')))
-made_share, home_parts, keep_share = 0, [], {'home.jpg'}
+made_share, home_parts, keep_share = 0, [], {'banner.jpg'}
 for p in prods:
     im = (p.get('images') or [None])[0]; im = im.get('image') if isinstance(im, dict) else im
     if not p.get('id') or not im: continue
@@ -110,9 +110,19 @@ for p in prods:
         if stamps.get('share:' + p['id']) == h and os.path.exists(out): continue
         on_cream([b], out); stamps['share:' + p['id']] = h; made_share += 1
     except Exception as e: print('share picture not made for', p['id'], e)
-if home_parts:
+# the home page (and other non-product pages) use the first banner photo of the home page, cut to 1200 x 630
+hero = ''
+try: hero = ((json.load(open('data/home.json', encoding='utf8')).get('slides') or [{}])[0].get('image') or '')
+except Exception: pass
+hsrc = os.path.join(SRC, os.path.basename(unquote(hero))) if hero else ''
+if hsrc and os.path.exists(hsrc):
+    hh = hashlib.sha1(open(hsrc, 'rb').read()).hexdigest() + '|hero-v1'
+    if stamps.get('share:home') != hh or not os.path.exists(SHARE + '/banner.jpg'):
+        im = Image.open(hsrc).convert('RGB'); k = max(SW / im.width, SH / im.height); im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+        x, y = (im.width - SW) // 2, (im.height - SH) // 2; im.crop((x, y, x + SW, y + SH)).save(SHARE + '/banner.jpg', 'JPEG', quality=84, optimize=True, progressive=True); stamps['share:home'] = hh
+elif home_parts:
     hh = '|'.join(stamps.get('share:' + p['id'], '') for p in prods if not p.get('hidden'))[:4000]
-    if stamps.get('share:home') != hh or not os.path.exists(SHARE + '/home.jpg'): on_cream(home_parts, SHARE + '/home.jpg'); stamps['share:home'] = hh
+    if stamps.get('share:home') != hh or not os.path.exists(SHARE + '/banner.jpg'): on_cream(home_parts, SHARE + '/banner.jpg'); stamps['share:home'] = hh
 for f in glob.glob(SHARE + '/*.jpg'):
     if os.path.basename(f) not in keep_share: os.remove(f)
 json.dump(stamps, open(stamp_file, 'w'), indent=0)

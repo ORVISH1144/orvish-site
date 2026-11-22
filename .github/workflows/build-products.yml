@@ -2,7 +2,7 @@ name: Build product list
 on:
   push:
     branches: [main]
-    paths: ['images/uploads/**', 'data/products/**', 'data/commerce.json', 'data/pages.json', 'product.html', 'page.html', 'tools/**']
+    paths: ['images/uploads/**', 'data/products/**', 'data/home.json', 'data/commerce.json', 'data/pages.json', 'product.html', 'page.html', 'tools/**']
   workflow_dispatch:
 permissions:
   contents: write
