@@ -1148,3 +1148,8 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .pc-go{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-weight:700;font-size:13px;color:var(--maroon);opacity:1!important}.pc-go svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2}
 .pc-act{display:flex;gap:16px;margin-top:3px}.pc-act .lnk{font-size:12.5px}
 @media(max-width:420px){.pc-map{width:92px;height:78px}}
+.lochelp{margin-top:6px;padding:12px 14px;border-radius:10px;background:#fff8e6;border:1px solid #e9d9a6;color:var(--ink);font:400 13px/1.45 var(--font-accent)}
+.lochelp>b{display:flex;align-items:center;gap:7px;font-size:14px;margin-bottom:6px}.lochelp>b svg{width:18px;height:18px;stroke:var(--maroon);fill:none;stroke-width:1.8;flex:none}
+.lochelp ol{margin:0 0 10px;padding-left:20px}.lochelp li{margin:3px 0}
+.lochelp .btn{padding:9px 18px;font-size:13px;margin-bottom:8px}.lochelp small{display:block;opacity:.7}
+#loc-msg:has(.lochelp){color:inherit}

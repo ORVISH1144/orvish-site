@@ -297,6 +297,15 @@
     return m ? '<div class="pincard on"><div class="pc-map">' + m + '<span class="pc-pin">' + ico('pin') + '</span><small class="pc-osm">© OpenStreetMap</small></div><div class="pc-tx"><b>' + ico('check') + 'Delivery spot pinned</b><span>The courier will see this exact spot on the map.</span><div class="pc-act"><button type="button" class="link lnk" data-pin="edit">Change pin</button><button type="button" class="link lnk" data-pin="off">Remove</button></div></div></div>'
       : '<button type="button" class="pincard" data-pin="add"><span class="pc-map blank"><span class="pc-pin">' + ico('pin') + '</span></span><span class="pc-tx"><b>Pin your exact location <em>Optional</em></b><span>Helps the courier find your door faster. Takes a few seconds.</span><span class="pc-go">Pin on map ' + ico('right') + '</span></span></button>';
   }
+  /* location is blocked: a phone cannot be made to ask again, so show the customer exactly where to switch it on */
+  function locHelp() {
+    var u = navigator.userAgent || '', ios = /iPhone|iPad|iPod/i.test(u), app = /Instagram|FBAN|FBAV|FB_IAB|WhatsApp|Snapchat|Line\//i.test(u), chr = /CriOS/i.test(u);
+    var steps = app ? ['Tap the ••• (or share) button at the top of this page', 'Choose <b>Open in browser</b> (Chrome or Safari)', 'Open checkout again and tap <b>Use my current location</b>']
+      : ios ? [chr ? 'Open the iPhone <b>Settings</b> app, then <b>Chrome</b> > <b>Location</b> > <b>While Using the App</b>' : 'Open the iPhone <b>Settings</b> app, then <b>Privacy &amp; Security</b> > <b>Location Services</b> (turn it on) > <b>Safari Websites</b> > <b>While Using the App</b>',
+        chr ? 'Back here, tap <b>Try again</b> and choose <b>Allow</b>' : 'In Safari tap <b>aA</b> in the address bar > <b>Website Settings</b> > <b>Location</b> > <b>Allow</b>', 'Tap <b>Try again</b> below']
+      : ['Tap the <b>lock</b> or <b>settings</b> icon next to orvish.com in the address bar', 'Open <b>Permissions</b> (or Site settings) > <b>Location</b> > <b>Allow</b>', 'Make sure the phone\'s <b>Location</b> is on in the quick settings, then tap <b>Try again</b>'];
+    return '<div class="lochelp"><b>' + ico('locate') + 'Allow location to find you automatically</b><ol>' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>' + (app ? '' : '<button type="button" class="btn secondary" id="loc-try">Try again</button>') + '<small>Or just search your area above and move the map to your door. Location is optional.</small></div>';
+  }
   function pickLocation(cb, auto, start) {
     var m = $('#locm');
     if (!m) { document.body.insertAdjacentHTML('beforeend', '<div class="locm" id="locm" role="dialog" aria-label="Choose delivery location"><div class="locbox"><div class="lochead"><h4>Choose delivery location</h4><button class="icon-btn" id="loc-x" aria-label="Close" style="color:var(--ink)">' + ico('close') + '</button></div>' +
@@ -317,7 +326,7 @@
       if (!navigator.geolocation) { msg.textContent = 'This browser cannot share its location. Search for your area or move the map instead.'; return; }
       var b = $('#loc-me'); b.disabled = true; msg.textContent = '';
       navigator.geolocation.getCurrentPosition(function (p) { b.disabled = false; LMAP.setView([p.coords.latitude, p.coords.longitude], 17); },
-        function (e) { b.disabled = false; msg.textContent = e && e.code === 1 ? 'Location permission is off. Allow it in your browser, or search for your area and move the map.' : 'Could not find your location. Search for your area or move the map instead.'; }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+        function (e) { b.disabled = false; if (e && e.code === 1) { msg.innerHTML = locHelp(); var t = $('#loc-try'); if (t) t.onclick = me; try { msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (x) {} } else msg.textContent = 'Could not find your location. Search for your area or move the map instead.'; }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
     };
     $('#loc-me').onclick = me;
     $('#loc-q').oninput = function (e) {
