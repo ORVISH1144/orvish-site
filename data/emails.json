@@ -64,6 +64,36 @@
     "subject": "You left something in your cart, {name}",
     "message": "You were so close. Your perfume is still waiting in your cart.\nUse code {code} at checkout for ₹50 off. It works once, so do not wait too long."
   },
+  "back_in_stock": {
+    "send": true,
+    "code": "",
+    "button": "Shop now",
+    "subject": "{title} is back in stock",
+    "message": "Good news: {title} is back in stock at ORVISH.\nPopular perfumes sell out quickly, so order soon if you would like one."
+  },
+  "campaigns": [
+    {
+      "name": "Example – New Year sale",
+      "send": false,
+      "date": "2026-11-23 11:11",
+      "audience": "all",
+      "subject": "New Year offer at Orvish, {name}",
+      "preheader": "",
+      "image": "",
+      "headline": "",
+      "message": "Start the new year with a new signature scent.\nUse code {code} at checkout. The offer ends on 2 January.",
+      "code": "",
+      "button_text": "Shop now",
+      "button_link": "/shop",
+      "products": [
+        "bristol-flash-edp-50ml",
+        "bristol-topaz-edp-50ml",
+        "christian-dior-sauvage-for-men-edt-100ml"
+      ],
+      "products_title": "Picked for you",
+      "test_email": "orvish.info@gmail.com"
+    }
+  ],
   "refill": {
     "send": true,
     "days": 60,
@@ -76,26 +106,5 @@
     "days": 3,
     "subject": "How is your new perfume, {name}?",
     "message": "We hope you are enjoying your order. Would you share a short review? A photo of the perfume you received helps other customers a lot.\nTap the button below. It takes one minute."
-  },
-  "back_in_stock": {
-    "send": true,
-    "code": "",
-    "button": "Shop now",
-    "subject": "{title} is back in stock",
-    "message": "Good news: {title} is back in stock at ORVISH.\nPopular perfumes sell out quickly, so order soon if you would like one."
-  },
-  "campaigns": [
-    {
-      "name": "Example – New Year sale",
-      "send": false,
-      "date": "2026-12-31 10:00",
-      "audience": "all",
-      "subject": "New Year offer at ORVISH, {name}",
-      "message": "Start the new year with a new signature scent.\nUse code {code} at checkout. The offer ends on 2 January.",
-      "code": "",
-      "button_text": "Shop now",
-      "button_link": "/shop",
-      "test_email": ""
-    }
-  ]
+  }
 }
