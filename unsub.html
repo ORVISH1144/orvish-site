@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Unsubscribe – ORVISH</title><link rel="icon" href="/favicon.ico" sizes="48x48">
+<style>
+:root{--green:#092d29;--gold:#b89519;--cream:#f1ece1;--ink:#14211f;--mute:#5d6a66}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:400 16px/1.6 "Helvetica Neue",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--green);padding:18px;text-align:center}header img{height:34px;width:auto}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 18px}
+.card{background:#fff;max-width:460px;width:100%;padding:34px 28px;text-align:center;border:1px solid #e3dccb}
+h1{margin:0 0 10px;font:400 28px/1.2 Georgia,serif;color:var(--green)}p{margin:0 0 18px;color:#3a4542}
+.rule{width:46px;height:2px;background:var(--gold);margin:0 auto 18px}
+a.btn{display:inline-block;background:var(--green);color:#fff;text-decoration:none;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-size:13px;padding:14px 30px}
+small{display:block;margin-top:18px;color:var(--mute);font-size:13px}
+</style></head>
+<body><header><a href="/"><img src="/images/uploads/noBgWhite%20(1).png" alt="ORVISH"></a></header>
+<main><div class="card" id="c"><h1>One moment…</h1><div class="rule"></div><p>Updating your email settings.</p></div></main>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search),em=(q.get('em')||'').trim(),k=q.get('k')||'',c=document.getElementById('c');
+  function show(h,t,extra){c.innerHTML='<h1>'+h+'</h1><div class="rule"></div><p>'+t+'</p><a class="btn" href="/">Back to the shop</a>'+(extra||'')}
+  function esc(t){return String(t).replace(/[&<>"']/g,function(x){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]})}
+  if(!em||!k){show('Link not complete','Please use the unsubscribe link from the email.');return}
+  fetch('/data/site.json').then(function(r){return r.json()}).then(function(S){
+    return fetch(S.order_webhook_url+'?action=unsub&fmt=json&em='+encodeURIComponent(em)+'&k='+encodeURIComponent(k)+'&_='+Date.now()).then(function(r){return r.json()})
+  }).then(function(d){
+    if(d&&d.ok)show('You are unsubscribed','<b>'+esc(em)+'</b> will not get offer and event emails from ORVISH any more. Emails about your own orders still reach you.','<small>Changed your mind? Sign up again at the bottom of any page on orvish.com.</small>');
+    else show('This link is not valid','Please use the unsubscribe link from the email, or reply to the email and we will remove you.');
+  }).catch(function(){show('Please try again','We could not update your settings right now. Try again in a minute, or reply to the email and we will remove you.')});
+})();
+</script></body></html>
