@@ -17,7 +17,7 @@
 <div id="tf-panel"><button id="tf-close" type="button">✕ Back to store admin</button><iframe id="tf-frame" title="Live traffic"></iframe></div>
 <script>
 (function(){var b=document.getElementById('tf-btn'),p=document.getElementById('tf-panel'),f=document.getElementById('tf-frame');
-var cur='';function show(u){if(cur!==u){f.src=u;cur=u}p.classList.add('on')}
+var cur='';function show(u){if(cur!==u){f.src=u+(u.indexOf('?')>-1?'&':'?')+'t='+Date.now();cur=u}p.classList.add('on')}   /* t= makes the browser load the newest version of the page every time */
 b.onclick=function(){show('/admin/traffic.html?embed=1')};document.getElementById('od-btn').onclick=function(){show('/admin/orders.html?embed=1')};
 document.getElementById('ar-btn').onclick=function(){show('/admin/arrange.html?embed=1')};document.getElementById('sl-btn').onclick=function(){show('/admin/links.html?embed=1')};document.getElementById('tf-close').onclick=function(){p.classList.remove('on')};})();
 </script>
