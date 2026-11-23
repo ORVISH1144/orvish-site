@@ -84,6 +84,7 @@
     "whatsapp": ""
   },
   "low_stock": 5,
+  "courier": "Delhivery",
   "shiprocket": {
     "pickup_location": "Primary",
     "weight_kg": 0.4,

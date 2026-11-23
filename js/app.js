@@ -983,6 +983,16 @@
   function ocStep(st) { return { 'new': 0, 'confirmed': 0, 'packed': 1, 'shipped': 2, 'out for delivery': 3, 'delivered': 4 }[String(st || 'new').trim().toLowerCase()]; }
   function ocDate(v) { var d = typeof v === 'number' ? new Date(v) : new Date(String(v || '').replace(/^(\d{4}-\d\d-\d\d)$/, '$1T12:00:00')); return isNaN(d) ? String(v || '') : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); }
   function ocItems(list, text) { if (typeof list === 'string') { try { list = JSON.parse(list || '[]'); } catch (e) { list = []; } } list = (list || []).filter(function (x) { return x && x.title; }); return list.length ? list : (text ? String(text).split(/;\s*/).filter(Boolean).map(function (t) { var m = t.match(/^(\d+)\s*x\s*(.*?)(?:\s*\(₹?([\d,.]+)\))?$/); return { title: m ? m[2] : t, qty: m ? Number(m[1]) : 1, price: m && m[3] ? Number(m[3].replace(/,/g, '')) : 0 }; }) : []); }
+  /* courier + tracking number from the admin's "Courier tracking" text, e.g. "Delhivery 28277105999396" or just "28277105999396" (then the default courier in commerce.json is used) */
+  var COURIERS = { delhivery: ['Delhivery', 'https://www.delhivery.com/track-v2/package/'], shiprocket: ['Shiprocket', 'https://shiprocket.co/tracking/'], bluedart: ['Blue Dart', 'https://www.bluedart.com/web/guest/trackdartresultthirdparty?trackFor=0&trackNo='], dtdc: ['DTDC', 'https://www.dtdc.in/trace.asp?strCnno='], xpressbees: ['Xpressbees', 'https://www.xpressbees.com/shipment/tracking?awbNo='], ekart: ['Ekart', 'https://ekartlogistics.com/shipmenttrack/'] };
+  function courierOf(t) {
+    t = String(t || '').trim(); if (!t) return null;
+    var m = t.match(/[A-Za-z0-9]*\d[A-Za-z0-9]{6,}/), no = m ? m[0] : t, word = t.replace(no, '').replace(/[^a-z]/gi, '').toLowerCase();
+    var key = Object.keys(COURIERS).filter(function (k) { return word.indexOf(k) > -1 || (k === 'bluedart' && word.indexOf('blue') > -1); })[0];
+    if (!key && !word) key = String(S.courier || 'delhivery').replace(/[^a-z]/gi, '').toLowerCase();
+    var c = COURIERS[key];
+    return { name: c ? c[0] : t.replace(no, '').replace(/[:\-–|]+/g, ' ').trim(), no: no, url: c && m ? c[1] + encodeURIComponent(no) : '' };
+  }
   /* o = { order_id, date|created, time, order_status, payment_status, tracking, total, items_json|items_detail, items, ph, loading } */
   function orderCard(o, opt) {
     opt = opt || {};
@@ -993,7 +1003,8 @@
     var icon = o.loading ? 'refresh' : bad ? 'close' : warn ? 'refresh' : done ? 'check' : step >= 2 ? 'truck' : step === 1 ? 'bag' : 'check';
     var badge = o.loading ? '<span class="oc-badge wait">Updating…</span>' : '<span class="oc-badge ' + (bad ? 'bad' : warn ? 'warn' : done ? 'ok' : 'live') + '">' + esc(head[0]) + '</span>';
     var track = (o.loading || step == null) ? '' : '<div class="oc-track" style="--p:' + (step / 4 * 100) + '%"><div class="oc-bar"><i></i></div><ol>' + OC_STEPS.map(function (s, n) { return '<li class="' + (n < step ? 'done' : n === step ? 'now' : '') + '"><i>' + (n <= step ? ico('check') : '') + '</i><span>' + s + '</span></li>'; }).join('') + '</ol></div>';
-    var awb = o.tracking ? '<div class="oc-awb">' + ico('truck') + '<div><small>Courier tracking number</small><b>' + esc(o.tracking) + '</b></div><button type="button" class="oc-copy" data-copy="' + esc(o.tracking) + '">' + ico('copy') + 'Copy</button>' + (/^[A-Za-z0-9]{8,}$/.test(o.tracking) ? '<a class="oc-go" target="_blank" rel="noopener" href="https://shiprocket.co/tracking/' + encodeURIComponent(o.tracking) + '">Track parcel</a>' : '') + '</div>' : '';
+    var cr = courierOf(o.tracking);
+    var awb = cr ? '<div class="oc-awb">' + ico('truck') + '<div><small>' + esc(cr.name ? cr.name + ' tracking number (AWB)' : 'Courier tracking number') + '</small><b>' + esc(cr.no) + '</b></div><button type="button" class="oc-copy" data-copy="' + esc(cr.no) + '">' + ico('copy') + 'Copy</button>' + (cr.url ? '<a class="oc-go" target="_blank" rel="noopener" href="' + esc(cr.url) + '">Track on ' + esc(cr.name || 'courier') + '</a>' : '') + '</div>' : '';
     var rows = items.map(function (it) {
       var pp = (it.id && findP(it.id)) || P.filter(function (x) { return String(it.title || '').toLowerCase().indexOf(x.title.toLowerCase()) === 0; })[0], img = it.image || (pp && pp.images[0]) || '/images/perfume-1.svg', line = Number(it.price || 0) * Number(it.qty || 1);
       var rev = done && pp ? '<div class="oc-rev"><span>Rate it</span>' + [1, 2, 3, 4, 5].map(function (n) { return '<a href="' + purl(pp.id) + '?oid=' + encodeURIComponent(o.order_id) + '&ph=' + ph + '&rate=' + n + '#reviews" aria-label="' + n + ' star' + (n > 1 ? 's' : '') + '">★</a>'; }).join('') + '<a class="oc-wr" href="' + purl(pp.id) + '?oid=' + encodeURIComponent(o.order_id) + '&ph=' + ph + '#reviews">Write a review</a></div>' : '';
