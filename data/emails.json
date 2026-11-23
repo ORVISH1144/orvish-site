@@ -75,7 +75,7 @@
     {
       "name": "Example – New Year sale",
       "send": false,
-      "date": "2026-11-23 11:11",
+      "date": "2026-11-23 11:15",
       "audience": "all",
       "subject": "New Year offer at Orvish, {name}",
       "preheader": "",
