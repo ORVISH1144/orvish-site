@@ -74,7 +74,7 @@
   "campaigns": [
     {
       "name": "Christmas gift 2026",
-      "send": true,
+      "send": false,
       "date": "2026-11-23 12:45",
       "audience": "all",
       "subject": "{name}, ₹69 off Christmas perfume gifts",
