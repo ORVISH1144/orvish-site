@@ -104,7 +104,10 @@ function drawEmails(){
   $('#cmp-re').onclick=function(){CMPS=null;drawEmails()};
   [].forEach.call(document.querySelectorAll('.cmp .go'),function(b){b.onclick=function(){
     var i=Number(b.dataset.i),to=b.previousElementSibling.value.trim(),n=$('#ct'+i);b.disabled=true;n.textContent='Sending…';
-    call({action:'cmp_test',to:to,c:b64u(JSON.stringify(CMPS[i]))}).then(function(d){b.disabled=false;n.textContent=d&&d.ok?'Sent to '+to+'. Check the inbox (and Promotions or Spam) in a minute.':'Not sent: '+((d&&d.error)||'please deploy the newest order script (version 46).')}).catch(function(){b.disabled=false;n.textContent='Could not reach the order script. Check your connection.'});
+    call({action:'cmp_test',to:to,c:b64u(JSON.stringify(CMPS[i]))}).then(function(d){b.disabled=false;n.textContent=d&&d.ok?'Sent to '+to+'. Check the inbox (and Promotions or Spam) in a minute.':'Not sent: '+((d&&d.error)||'please deploy the newest order script (version 46).')}).catch(function(){
+      /* not a proper answer: usually the sheet still runs an older script. Ask which version it runs. */
+      fetch(api+'?action=version&_='+Date.now()).then(function(r){return r.json()}).then(function(v){b.disabled=false;var ver=Number(v&&v.version)||0;n.innerHTML=ver<46?'<b>Not sent.</b> Your order sheet still runs script version '+ver+'. Paste <b>ORVISH-script-v46</b> into Apps Script, run <b>setup</b>, then <b>Deploy &gt; Manage deployments &gt; Edit &gt; New version &gt; Deploy</b>, and try again.':'<b>Not sent.</b> The order script (version '+ver+') gave an error. Try again in a minute; if it repeats, open Apps Script &gt; Executions to see the error.'}).catch(function(){b.disabled=false;n.textContent='Could not reach the order script. Check your connection and try again.'});
+    });
   }});
 }
 function drawStock(){
