@@ -1179,12 +1179,16 @@ collections:
         - {label: 'Everyone (customers who ordered, people who left at checkout, people waiting for a perfume)', value: all}
         - {label: 'Only customers who have ordered', value: ordered}
         - {label: 'Only people who have not ordered yet', value: not_ordered}
-      - {label: Subject, name: subject, widget: string}
-      - {label: Message, name: message, widget: text, hint: 'Plain text. Start a new line for a new paragraph. You can use {name} and {code}. "Hi <name>," is added at the top for you.'}
-      - {label: Picture at the top (optional – wide picture, e.g. 1200 x 600), name: image, widget: image, required: false}
+      - {label: Subject (shown in the inbox), name: subject, widget: string, hint: 'Short and inviting, e.g. "Diwali sale: 20% off every perfume". You can use {name}.'}
+      - {label: Preview line (grey text shown after the subject in the inbox – optional), name: preheader, widget: string, required: false}
+      - {label: Poster picture (wide, e.g. 1200 x 800 – made in Canva or similar), name: image, widget: image, required: false, hint: 'The big picture at the top, like brand emails. Without a picture a green poster with your headline is shown.'}
+      - {label: Big headline, name: headline, widget: string, required: false, hint: 'e.g. "The Diwali Edit". If empty, the subject is used.'}
+      - {label: Message, name: message, widget: text, hint: 'Two or three short lines work best. Start a new line for a new paragraph. You can use {name}, {code} and {offer}.'}
       - {label: Coupon code (optional – must exist in Discount codes), name: code, widget: string, required: false}
       - {label: Button text, name: button_text, widget: string, default: Shop now, required: false}
       - {label: Button opens (page on the website), name: button_link, widget: string, default: /shop, required: false, hint: 'e.g. /shop, /shop?best=1 or a product page like /p/bristol-zest-edp-50ml/'}
+      - {label: Perfumes to show under the button (optional), name: products, widget: relation, collection: products, value_field: id, search_fields: [title, brand], display_fields: [title], multiple: true, required: false}
+      - {label: Title above the perfumes, name: products_title, widget: string, default: Picked for you, required: false}
       - {label: Send a test to (your email), name: test_email, widget: string, required: false, hint: 'A test copy goes to this address within an hour of saving, and again each time you change the message.'}
     - label: 'Refill reminder – sent some days after delivery'
       name: refill

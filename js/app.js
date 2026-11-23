@@ -144,7 +144,7 @@
     var b = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
     return loadJS(b + 'app-compat.js').then(function () { return Promise.all([loadJS(b + 'auth-compat.js'), loadJS(b + 'firestore-compat.js')]); }).then(function () {
       firebase.initializeApp(c); FB = { auth: firebase.auth(), db: firebase.firestore() };
-      return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; if (u && u.email) store.set('orvish_em', u.email); var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; (u ? loadProfile() : (PROFILE = null, Promise.resolve())).then(function () { ok(FB); }); }); });
+      return new Promise(function (ok) { FB.auth.onAuthStateChanged(function (u) { USER = u; if (u && u.email) { store.set('orvish_em', u.email); if (store.get('orvish_member', '') !== u.email && S.order_webhook_url) { store.set('orvish_member', u.email); var how = ((u.providerData || [])[0] || {}).providerId || 'password'; try { fetch(S.order_webhook_url + '?action=member&email=' + encodeURIComponent(u.email) + '&name=' + encodeURIComponent(u.displayName || '') + '&phone=' + encodeURIComponent(last10(u.phoneNumber || '')) + '&how=' + encodeURIComponent(how.replace('.com', '')) + '&_=' + Date.now()).catch(function () {}); } catch (x) {} } } var a = $('#acct-dot'); if (a) a.style.display = u ? 'block' : 'none'; (u ? loadProfile() : (PROFILE = null, Promise.resolve())).then(function () { ok(FB); }); }); });
     }).catch(function () { return null; });
   }
   /* ---------- delivery location: current location or a pin on the map (OpenStreetMap, no account needed) ---------- */
@@ -685,7 +685,16 @@
     });
     $('#ov').addEventListener('click', closeAll);
     var hd = $('#header'), sc = function () { hd.classList.toggle('scrolled', window.scrollY > 30); }; window.addEventListener('scroll', sc, { passive: true }); sc();
-    $('#news').addEventListener('submit', function (e) { e.preventDefault(); location.href = 'mailto:' + S.support_email + '?subject=Subscribe&body=Please add ' + encodeURIComponent(e.target.querySelector('input').value) + ' to your mailing list.'; });
+    /* footer sign-up: the email goes to the Subscribers tab of the order sheet and gets the event / offer emails */
+    $('#news').addEventListener('submit', function (e) {
+      e.preventDefault(); var i = e.target.querySelector('input'), b = e.target.querySelector('button'), em = i.value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { toast('Please enter a valid email'); return; }
+      if (!S.order_webhook_url) { location.href = 'mailto:' + S.support_email + '?subject=Subscribe&body=Please add ' + encodeURIComponent(em) + ' to your mailing list.'; return; }
+      b.disabled = true; b.textContent = '…';
+      fetch(S.order_webhook_url + '?action=subscribe&email=' + encodeURIComponent(em) + '&name=' + encodeURIComponent(saved('name') || '') + '&_=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.ok) throw 0; e.target.outerHTML = '<p class="news-ok">' + ico('check') + 'Thank you! You are on the list for new collections and offers.</p>'; store.set('orvish_em_sub', em);
+      }).catch(function () { b.disabled = false; b.textContent = 'Sign up'; toast('Could not sign you up right now. Please try again.'); });
+    });
     $('#sq').addEventListener('input', function (e) {
       var q = e.target.value.toLowerCase().trim(), r = !q ? [] : P.filter(function (p) { return (p.title + ' ' + (p.brand || '') + ' ' + (p.type || '') + ' ' + (p.short_description || '') + ' ' + (p.notes || []).join(' ')).toLowerCase().indexOf(q) > -1; });
       $('#sdef').hidden = !!q && r.length > 0;
