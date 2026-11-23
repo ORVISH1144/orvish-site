@@ -704,8 +704,10 @@
     function auto() { clearInterval(timer); timer = setInterval(function () { go(cur + 1); }, 6000); }
     if (slides.length > 1) { $('.s-prev').onclick = function () { go(cur - 1); auto(); }; $('.s-next').onclick = function () { go(cur + 1); auto(); }; dots.forEach(function (d, i) { d.onclick = function () { go(i); auto(); }; }); auto(); }
     if (!(S.ticker || []).length) $('#ticker').style.display = 'none';
-    var items = (S.ticker || []).map(function (t) { return '<div class="t-item">' + ico(t.icon) + esc(t.text) + '</div>'; }).join('');
-    $('#ticker').innerHTML = '<div class="track">' + items + items + items + items + '</div>';
+    /* promises strip: all side by side on a computer; on a phone one at a time, softly fading to the next */
+    var tk = S.ticker || [];
+    $('#ticker').innerHTML = '<div class="tk">' + tk.map(function (t, i) { return '<div class="t-item' + (i ? '' : ' on') + '">' + ico(t.icon) + '<span>' + esc(t.text) + '</span></div>'; }).join('') + '</div>';
+    if (tk.length > 1) { var tn = 0, tis = $$('#ticker .t-item'); setInterval(function () { if (document.hidden) return; tis[tn].classList.remove('on'); tn = (tn + 1) % tis.length; tis[tn].classList.add('on'); }, 3500); }
     var pick = function (ids) { return (ids || []).map(findP).filter(Boolean); };
     var h = '', best = (S.best_pick || []).length ? pick(S.best_pick) : P.filter(function (p) { return p.best_seller; }), tabs = (S.home_tabs || []).filter(function (t) { return P.some(function (p) { return p.collection === t.collection; }); });
     var bl = best.length ? best : P;

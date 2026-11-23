@@ -1106,3 +1106,26 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .soldbox .sold-tag{display:inline-block;font:700 12px var(--font-accent);letter-spacing:.08em;text-transform:uppercase;color:#b3261e;background:#fbe5e3;border-radius:99px;padding:5px 12px}
 .soldbox p{margin:10px 0 12px;font-size:14px;line-height:1.5;opacity:.85}
 .soldbox .btn{min-height:50px}
+
+/* v80 premium promises strip under the banner + finer banner progress lines */
+.ticker{background:var(--maroon);color:#f1ece1;padding:0;border:0;overflow:hidden;position:relative;font:500 11.5px var(--font-accent);letter-spacing:.16em;text-transform:uppercase}
+.ticker::before,.ticker::after{display:none}
+.ticker .tk{max-width:var(--page);margin:0 auto;display:flex;justify-content:center;align-items:stretch}
+.ticker .t-item{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;white-space:nowrap;position:relative}
+.ticker .t-item+.t-item::before{content:"";position:absolute;left:0;top:30%;bottom:30%;width:1px;background:#b8951980}
+.ticker .t-item svg{width:17px;height:17px;flex:none;stroke:var(--gold);fill:none;stroke-width:1.6}
+@media(max-width:820px){
+  .ticker .tk{display:grid;height:46px}
+  .ticker .t-item{grid-area:1/1;padding:0 16px;opacity:0;transform:translateY(6px);transition:opacity .9s ease,transform .9s ease;font-size:11px}
+  .ticker .t-item.on{opacity:1;transform:none}
+  .ticker .t-item+.t-item::before{display:none}
+}
+@media(prefers-reduced-motion:reduce){.ticker .t-item{transition:none}}
+.slider+.ticker{margin-top:0}
+#home-main>.section:first-child{padding-top:40px}
+@media(max-width:820px){#home-main>.section:first-child{padding-top:30px}}
+.dots{justify-content:center;left:0;right:0;bottom:18px;gap:6px}
+.dots button{width:34px;height:2px;background:#fff7e240;border-radius:2px}
+.dots button.on{width:34px;background:#fff7e240}
+.dots button::after{background:var(--gold)}
+.ticker{border-top:1px solid #b8951966;border-bottom:1px solid #b8951966}
