@@ -278,12 +278,26 @@
     for (var j = -1; j <= 1; j++) for (var i = -1; i <= 1; i++) t += '<img alt="" loading="lazy" src="https://tile.openstreetmap.org/' + z + '/' + (tx + i) + '/' + (ty + j) + '.png" style="left:' + ((i + 1) * 256) + 'px;top:' + ((j + 1) * 256) + 'px">';
     return '<div class="pm-tiles" style="margin-left:' + (-256 - px) + 'px;margin-top:' + (-256 - py) + 'px">' + t + '</div>';
   }
-  function pinCard(loc) {
-    var m = loc && pinMap(loc);
+  /* where the typed address is (approximately), so the card can show it before the customer pins */
+  var GEO = { q: '', loc: '' }, geoT = null;
+  function geoTyped(f, done) {
+    var q = [f.address, f.city, f.pin].map(function (x) { return String(x || '').trim(); }).filter(Boolean).join(', ');
+    if (q.length < 6) { GEO = { q: q, loc: '' }; return done(); }
+    if (q === GEO.q) return done();
+    clearTimeout(geoT); geoT = setTimeout(function () {
+      var ask = function (qq) { return fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=in&q=' + encodeURIComponent(qq)).then(function (x) { return x.json(); }).then(function (r) { return r && r[0] ? Number(r[0].lat).toFixed(6) + ',' + Number(r[0].lon).toFixed(6) : ''; }); };
+      var tries = [q, [f.city, f.pin].filter(Boolean).join(' '), String(f.pin || '')].filter(function (x, i, a) { return x && String(x).trim().length > 2 && a.indexOf(x) === i; });
+      var next = function (i) { if (i >= tries.length) { GEO = { q: q, loc: '' }; return done(); } ask(tries[i]).then(function (l) { if (l) { GEO = { q: q, loc: l, rough: i > 0 }; done(); } else next(i + 1); }).catch(function () { GEO = { q: q, loc: '' }; done(); }); };
+      next(0);
+    }, 700);
+  }
+  function pinCard(loc, guess) {
+    var m = loc && pinMap(loc), g = !m && guess && guess.loc && pinMap(guess.loc);
+    if (g) return '<button type="button" class="pincard" data-pin="add"><span class="pc-map">' + g + '<span class="pc-pin">' + ico('pin') + '</span><small class="pc-osm">© OpenStreetMap</small></span><span class="pc-tx"><b>Is this your location? <em>Optional</em></b><span>We placed it from the address you typed' + (guess.rough ? ' (area only)' : '') + '. Tap to move the pin to your exact door.</span><span class="pc-go">Pin exact spot ' + ico('right') + '</span></span></button>';
     return m ? '<div class="pincard on"><div class="pc-map">' + m + '<span class="pc-pin">' + ico('pin') + '</span><small class="pc-osm">© OpenStreetMap</small></div><div class="pc-tx"><b>' + ico('check') + 'Delivery spot pinned</b><span>The courier will see this exact spot on the map.</span><div class="pc-act"><button type="button" class="link lnk" data-pin="edit">Change pin</button><button type="button" class="link lnk" data-pin="off">Remove</button></div></div></div>'
       : '<button type="button" class="pincard" data-pin="add"><span class="pc-map blank"><span class="pc-pin">' + ico('pin') + '</span></span><span class="pc-tx"><b>Pin your exact location <em>Optional</em></b><span>Helps the courier find your door faster. Takes a few seconds.</span><span class="pc-go">Pin on map ' + ico('right') + '</span></span></button>';
   }
-  function pickLocation(cb, auto) {
+  function pickLocation(cb, auto, start) {
     var m = $('#locm');
     if (!m) { document.body.insertAdjacentHTML('beforeend', '<div class="locm" id="locm" role="dialog" aria-label="Choose delivery location"><div class="locbox"><div class="lochead"><h4>Choose delivery location</h4><button class="icon-btn" id="loc-x" aria-label="Close" style="color:var(--ink)">' + ico('close') + '</button></div>' +
       '<div class="locbar"><input id="loc-q" placeholder="Search area, street or PIN code" autocomplete="off"><button class="btn secondary" id="loc-me" type="button">' + ico('locate') + 'Use my current location</button></div><div class="lochits" id="loc-hits"></div>' +
@@ -317,13 +331,14 @@
     };
     ok.onclick = function () { if (!cur) return; close(); cb(cur); };
     leaflet().then(function () {
-      var s = String(saved('loc') || '').split(','), has = s.length === 2 && !isNaN(Number(s[0]));
+      var s = String(start || saved('loc') || '').split(','), has = s.length === 2 && !isNaN(Number(s[0])) && !isNaN(Number(s[1]));
+      if (LMAP && has) LMAP.setView([Number(s[0]), Number(s[1])], start ? 17 : 16);
       if (!LMAP) {
         LMAP = L.map('loc-map', { zoomControl: true, attributionControl: true }).setView(has ? [Number(s[0]), Number(s[1])] : [20.5937, 78.9629], has ? 16 : 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(LMAP); LMAP.attributionControl.setPrefix(false);
         LMAP.on('moveend', function () { if (LMAP.getZoom() >= 13) LMAP._orvRev(); else { $('#loc-addr').textContent = 'Zoom in and move the map so the pin sits on your delivery spot.'; $('#loc-ok').disabled = true; } });
       }
-      LMAP._orvRev = rev; setTimeout(function () { LMAP.invalidateSize(); if (auto) me(); else if (has) rev(); }, 60);
+      LMAP._orvRev = rev; setTimeout(function () { LMAP.invalidateSize(); if (auto || !has) me(); else rev(); }, 60);
     }).catch(function () { msg.textContent = 'The map could not load. Please type your address at checkout.'; });
   }
   function saveLocation(p) {
@@ -500,13 +515,16 @@
     if ($('#co-guest')) $('#co-guest').onclick = function () { store.set('orvish_guest', Date.now()); $('#co-who').remove(); fm0.hidden = false; var x = fm0.querySelector('input[name=email]'); if (x && !x.value) x.focus(); };
     var expand = function () { if (flds) flds.hidden = false; if (sum0) sum0.remove(); };
     if ($('#co-change')) $('#co-change').onclick = function () { expand(); fm0.address.focus(); };
-    var drawPin = function () { $('#co-pin').innerHTML = pinCard(fm0.loc.value); };
+    var drawPin = function () { var b = $('#co-pin'); if (b) b.innerHTML = pinCard(fm0.loc.value, GEO); };
+    var guess = function () { if (fm0.loc.value) return; geoTyped({ address: fm0.address.value, city: fm0.city.value, pin: fm0.pin.value }, drawPin); };
+    ['address', 'city', 'pin'].forEach(function (k) { fm0.elements[k].addEventListener('change', guess); fm0.elements[k].addEventListener('input', function () { clearTimeout(guess.t); guess.t = setTimeout(guess, 900); }); });
+    guess();
     if ($('#co-clear')) $('#co-clear').onclick = function () { fm0.house.value = ''; fm0.address.value = ''; fm0.city.value = ''; fm0.pin.value = ''; fm0.loc.value = ''; drawPin(); $('#co-clear').closest('.msg').remove(); fm0.address.focus(); };
     var setLoc = function (pl) { expand(); if (pl.address) fm0.address.value = pl.address; if (pl.city) fm0.city.value = pl.city; if (pl.pin) fm0.pin.value = pl.pin; fm0.loc.value = pl.loc || ''; drawPin(); fm0.house.focus(); toast('Location added. Add your house or flat number'); };
     /* the map pin only adds the exact spot: the typed address stays; empty boxes are filled in */
     var setPin = function (pl) { fm0.loc.value = pl.loc || ''; if (!fm0.address.value.trim() && pl.address) fm0.address.value = pl.address; if (!fm0.city.value.trim() && pl.city) fm0.city.value = pl.city; if (!fm0.pin.value.trim() && pl.pin) fm0.pin.value = pl.pin; drawPin(); saveProfile(Object.fromEntries(new FormData(fm0))); toast('Delivery spot pinned. Thank you!'); };
     $('#co-here').onclick = function () { pickLocation(setLoc, true); };
-    $('#co-pin').addEventListener('click', function (e) { var b = e.target.closest('[data-pin]'); if (!b) return; if (b.dataset.pin === 'off') { fm0.loc.value = ''; drawPin(); } else pickLocation(setPin, false); });
+    $('#co-pin').addEventListener('click', function (e) { var b = e.target.closest('[data-pin]'); if (!b) return; if (b.dataset.pin === 'off') { fm0.loc.value = ''; GEO = { q: '', loc: '' }; drawPin(); guess(); } else pickLocation(setPin, false, fm0.loc.value || GEO.loc || ''); });
     var areaCheck = function (redo) {
       var f = fm0.elements, r = areaRule(f.pin.value, f.city.value, f.address.value), box = $('#co-area'), sb0 = $('#co-form button[type=submit]'), fee = r && r.action === 'extra_fee' ? Number(r.extra_fee) || 0 : 0;
       if (redo && fee !== areaFee) { saveProfile(Object.fromEntries(new FormData(fm0))); return openCheckout(); }
