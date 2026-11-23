@@ -21,7 +21,9 @@ td select{padding:5px 8px;font-size:13px;max-width:170px}td select.pay{margin-to
 .wa{display:inline-block;background:#25d366;color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
 .sr{display:block;margin-top:6px}.sr button{padding:4px 9px;font-size:12px}.sr a{font-size:12px}.src{color:#555}
 tr.rp td:first-child{box-shadow:inset 4px 0 0 #e0a100}
-.docs{display:block;margin-top:6px}.docs a{color:inherit;font-weight:600}.docs .sup{color:#137333}#pd,#rg input{font:inherit;padding:8px 10px;border:1px solid #c9c2ad;border-radius:4px;background:#fff}#rg{display:inline-flex;gap:6px;align-items:center}#rg[hidden]{display:none}</style></head><body>
+.docs{display:block;margin-top:6px}.docs a{color:inherit;font-weight:600}.docs .sup{color:#137333}#pd,#rg input{font:inherit;padding:8px 10px;border:1px solid #c9c2ad;border-radius:4px;background:#fff}#rg{display:inline-flex;gap:6px;align-items:center}#rg[hidden]{display:none}.cmps{display:grid;gap:14px}.cmp{background:#fff;border:1px solid #d9d2bd;border-radius:10px;padding:16px 18px}.cmp-h{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.cmp p{margin:6px 0 2px}.cmp small{color:#5d6a66}
+.cmp-t{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.cmp-t input{flex:1 1 220px;padding:10px 12px;border:1px solid #c9c1a8;border-radius:6px;font:inherit}.cmp-t .go{padding:10px 18px;border:0;border-radius:6px;background:#092d29;color:#f1ece1;font:600 14px inherit;cursor:pointer}.cmp-t .go:disabled{opacity:.5}
+</style></head><body>
 <header><h1>ORVISH · Orders</h1><span><a href="/admin/">Store admin</a> &nbsp;·&nbsp; <a href="/admin/traffic.html">Live traffic</a></span></header>
 <div class="wrap" id="app"><p class="empty">Loading…</p></div>
 <script>
@@ -44,7 +46,7 @@ function login(){
 }
 function call(params){return user.getIdToken().then(function(t){var q=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k])}).join('&');return fetch(api+'?'+q+'&token='+encodeURIComponent(t)+'&_='+Date.now())}).then(function(r){return r.json()})}
 function start(){
-  app.innerHTML='<div class="tabs"><button data-v="orders" class="on">Orders</button><button data-v="customers">Customers</button><button data-v="abandoned">Unfinished checkouts</button><button data-v="stock">Stock</button><button data-v="sales">Sales by month</button></div><div class="bar"><input id="q" placeholder="Search name, phone, order ID, city or item"><select id="fs"><option value="">All statuses</option>'+STATUS.map(function(s){return'<option>'+s+'</option>'}).join('')+'</select><select id="pd" aria-label="Period"><option value="">All dates</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="tm">This month</option><option value="lm">Last month</option><option value="range">Choose dates…</option></select><span id="rg" hidden><input type="date" id="d1" aria-label="From"> to <input type="date" id="d2" aria-label="To"></span><button id="rf">Refresh</button><small>'+esc(user.email||'')+'</small><button id="out">Log out</button></div><div id="kp"></div><div id="list"><p class="empty">Loading orders…</p></div>';
+  app.innerHTML='<div class="tabs"><button data-v="orders" class="on">Orders</button><button data-v="customers">Customers</button><button data-v="abandoned">Unfinished checkouts</button><button data-v="stock">Stock</button><button data-v="sales">Sales by month</button><button data-v="emails">Event emails</button></div><div class="bar"><input id="q" placeholder="Search name, phone, order ID, city or item"><select id="fs"><option value="">All statuses</option>'+STATUS.map(function(s){return'<option>'+s+'</option>'}).join('')+'</select><select id="pd" aria-label="Period"><option value="">All dates</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="tm">This month</option><option value="lm">Last month</option><option value="range">Choose dates…</option></select><span id="rg" hidden><input type="date" id="d1" aria-label="From"> to <input type="date" id="d2" aria-label="To"></span><button id="rf">Refresh</button><small>'+esc(user.email||'')+'</small><button id="out">Log out</button></div><div id="kp"></div><div id="list"><p class="empty">Loading orders…</p></div>';
   $('#out').onclick=function(){auth.signOut()};$('#rf').onclick=fetchOrders;$('#q').oninput=draw;$('#fs').onchange=draw;$('#pd').onchange=function(){$('#rg').hidden=$('#pd').value!=='range';draw()};$('#d1').onchange=draw;$('#d2').onchange=draw;fetchOrders();
   [].forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){view=b.dataset.v;[].forEach.call(document.querySelectorAll('.tabs button'),function(x){x.classList.toggle('on',x===b)});$('#fs').style.display=view==='orders'?'':'none';$('#pd').style.display=view==='orders'||view==='sales'?'':'none';$('#rg').hidden=!(view==='orders'||view==='sales')||$('#pd').value!=='range';draw()}});
   fetch('/data/products.json?v='+Date.now()).then(function(r){return r.json()}).then(function(d){(d.products||[]).forEach(function(p){titles[p.id]=p.title})}).catch(function(){});
@@ -85,6 +87,26 @@ function drawAbandoned(){
     $('#list').innerHTML=r.length?'<div class="tw"><table><thead><tr><th>Date &amp; time (IST)</th><th>Customer</th><th>Cart</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>'+r.map(function(x){var st=x.status,cl=st==='Recovered'?' ok':st==='Open'?' warn':'';return'<tr><td>'+esc(x.date)+'<small>'+esc(t12(x.time))+'</small></td><td>'+esc(x.name||'—')+'<small>'+esc(x.phone)+'</small><small>'+esc(x.email)+'</small></td><td>'+esc(x.items)+'</td><td class="n">₹'+esc(x.total)+'</td><td><span class="pill'+cl+'">'+esc(st)+'</span>'+(x.reminded?'<small>Email sent '+esc(t12(x.reminded))+' IST</small>':'')+'</td><td>'+(x.phone&&st!=='Recovered'?'<a class="wa" target="_blank" rel="noopener" href="'+waLink(x.phone,'Hi '+(x.name||'')+', this is ORVISH. You left '+x.items+' in your cart.'+(d.code?' Use code '+d.code+' for an extra discount today: ':' Complete your order here: ')+'https://www.orvish.com/shop')+'">Send WhatsApp</a>':'')+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="tw"><p class="empty">No unfinished checkouts yet.</p></div>';
   }).catch(function(){$('#list').innerHTML='<p class="err">Could not load. Check your connection.</p>'});
 }
+/* Event emails: send a test copy straight away (the planned emails themselves go out by date, from the sheet) */
+var CMPS=null;
+function b64u(t){return btoa(unescape(encodeURIComponent(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function loadCmps(){
+  /* the newest saved version comes straight from GitHub when the store admin is logged in, so a change can be tested at once */
+  var tok='';try{var su=JSON.parse(localStorage.getItem('sveltia-cms.user')||'null');tok=su&&su.token||''}catch(e){}
+  var gh=tok?fetch('https://api.github.com/repos/ORVISH1144/orvish-site/contents/data/emails.json?ref=main&_='+Date.now(),{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github.raw+json'}}).then(function(r){if(!r.ok)throw 0;return r.json()}):Promise.reject();
+  return gh.catch(function(){return fetch('/data/emails.json?_='+Date.now()).then(function(r){return r.json()})}).then(function(d){CMPS=(d&&d.campaigns)||[];return CMPS});
+}
+function drawEmails(){
+  $('#kp').innerHTML='<p class="help">Edit the emails in the store admin: <b>Customer emails &gt; Event emails</b>, and press Save there. Then press <b>Send test now</b> here: the test arrives in a minute. When it looks right, tick <b>Ready to send</b> in the store admin. It goes out by itself at its date and time.</p>';
+  if(!CMPS){$('#list').innerHTML='<p class="empty">Loading event emails…</p>';loadCmps().then(drawEmails).catch(function(){$('#list').innerHTML='<p class="err">Could not load the event emails.</p>'});return}
+  if(!CMPS.length){$('#list').innerHTML='<p class="empty">No event emails yet. Add one in the store admin: Customer emails &gt; Event emails.</p>';return}
+  $('#list').innerHTML='<div class="cmps">'+CMPS.map(function(c,i){return '<div class="cmp"><div class="cmp-h"><b>'+esc(c.name||c.subject)+'</b><span class="pill'+(c.send?' ok':'')+'">'+(c.send?'Ready to send':'Off – not sent yet')+'</span></div><p>'+esc(c.subject)+'</p><small>Sends on '+esc(c.date||'(no date)')+' India time · to '+esc({ordered:'customers who ordered',not_ordered:'people who have not ordered yet'}[c.audience]||'everyone')+'</small><div class="cmp-t"><input type="email" value="'+esc(c.test_email||user.email||'')+'" aria-label="Send the test to"><button class="go" data-i="'+i+'">Send test now</button></div><span class="note" id="ct'+i+'"></span></div>'}).join('')+'</div><p><button class="lk" id="cmp-re">Load the newest saved version</button></p>';
+  $('#cmp-re').onclick=function(){CMPS=null;drawEmails()};
+  [].forEach.call(document.querySelectorAll('.cmp .go'),function(b){b.onclick=function(){
+    var i=Number(b.dataset.i),to=b.previousElementSibling.value.trim(),n=$('#ct'+i);b.disabled=true;n.textContent='Sending…';
+    call({action:'cmp_test',to:to,c:b64u(JSON.stringify(CMPS[i]))}).then(function(d){b.disabled=false;n.textContent=d&&d.ok?'Sent to '+to+'. Check the inbox (and Promotions or Spam) in a minute.':'Not sent: '+((d&&d.error)||'please deploy the newest order script (version 46).')}).catch(function(){b.disabled=false;n.textContent='Could not reach the order script. Check your connection.'});
+  }});
+}
 function drawStock(){
   var ids=Object.keys(stock);
   $('#kp').innerHTML='<p class="help">Type the number of bottles in the store admin: <b>Products &gt; open a product &gt; Stock count</b>. Every order lowers it. Cancelled and returned orders give the bottles back. Products without a count are not limited.</p>';
@@ -114,6 +136,7 @@ function drawSales(){
 }
 function draw(){
   if(view==='sales')return drawSales();
+  if(view==='emails')return drawEmails();
   if(view==='customers')return drawCustomers();if(view==='abandoned')return drawAbandoned();if(view==='stock')return drawStock();
   var q=($('#q').value||'').toLowerCase(),fs=$('#fs').value,cb=custs().by;
   var l=orders.filter(function(o){return inPeriod(o)&&(!fs||String(o.order_status).trim().toLowerCase()===fs.toLowerCase())&&(!q||[o.name,o.phone,o.order_id,o.city,o.items,o.email,o.tracking,o.coupon,o.payment_method,o.source].join(' ').toLowerCase().indexOf(q)>-1)});
