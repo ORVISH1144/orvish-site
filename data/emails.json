@@ -73,27 +73,6 @@
   },
   "campaigns": [
     {
-      "name": "Example – New Year sale",
-      "send": false,
-      "date": "2026-11-23 11:15",
-      "audience": "all",
-      "subject": "New Year offer at Orvish, {name}",
-      "preheader": "",
-      "image": "",
-      "headline": "",
-      "message": "Start the new year with a new signature scent.\nUse code {code} at checkout. The offer ends on 2 January.",
-      "code": "",
-      "button_text": "Shop now",
-      "button_link": "/shop",
-      "products": [
-        "bristol-flash-edp-50ml",
-        "bristol-topaz-edp-50ml",
-        "christian-dior-sauvage-for-men-edt-100ml"
-      ],
-      "products_title": "Picked for you",
-      "test_email": "orvish.info@gmail.com"
-    },
-    {
       "name": "Christmas gift 2026",
       "send": false,
       "date": "2026-11-23 11:50",
