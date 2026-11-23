@@ -1160,6 +1160,32 @@ collections:
         name: message
         widget: text
         hint: 'You can use {title}, {name} and {code}. A button to the perfume page is added automatically.'
+    - label: 'Event emails – one email to every customer on a date you choose (sales, festivals, new arrivals)'
+      name: campaigns
+      widget: list
+      required: false
+      collapsed: true
+      summary: '{{fields.date}} · {{fields.subject}}'
+      hint: 'Add an email, fill it in, put your own email in "Send a test to" and save. Check the test (it arrives within an hour). When it looks right, tick "Ready to send". It goes out at the date and time you set, to everyone in the group you choose, about 40 emails an hour. Each person gets it once. The "Event emails sent" tab in the orders sheet shows who got it.'
+      fields:
+      - {label: Event name (only for you), name: name, widget: string, hint: 'e.g. Diwali sale 2026'}
+      - {label: Ready to send, name: send, widget: boolean, default: false, required: false, hint: 'Leave this off until the test email looks right.'}
+      - {label: Send on (date and time – India time IST), name: date, widget: datetime, format: 'YYYY-MM-DD HH:mm', date_format: 'YYYY-MM-DD', time_format: 'HH:mm', picker_utc: false}
+      - label: Send to
+        name: audience
+        widget: select
+        default: all
+        options:
+        - {label: 'Everyone (customers who ordered, people who left at checkout, people waiting for a perfume)', value: all}
+        - {label: 'Only customers who have ordered', value: ordered}
+        - {label: 'Only people who have not ordered yet', value: not_ordered}
+      - {label: Subject, name: subject, widget: string}
+      - {label: Message, name: message, widget: text, hint: 'Plain text. Start a new line for a new paragraph. You can use {name} and {code}. "Hi <name>," is added at the top for you.'}
+      - {label: Picture at the top (optional – wide picture, e.g. 1200 x 600), name: image, widget: image, required: false}
+      - {label: Coupon code (optional – must exist in Discount codes), name: code, widget: string, required: false}
+      - {label: Button text, name: button_text, widget: string, default: Shop now, required: false}
+      - {label: Button opens (page on the website), name: button_link, widget: string, default: /shop, required: false, hint: 'e.g. /shop, /shop?best=1 or a product page like /p/bristol-zest-edp-50ml/'}
+      - {label: Send a test to (your email), name: test_email, widget: string, required: false, hint: 'A test copy goes to this address within an hour of saving, and again each time you change the message.'}
     - label: 'Refill reminder – sent some days after delivery'
       name: refill
       widget: object
