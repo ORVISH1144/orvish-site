@@ -169,9 +169,22 @@
     return '<div class="refbox"><details class="refnote"><summary aria-label="How referral works">i</summary><ol><li>Send your code to a friend.</li><li>Your friend adds it in the coupon box in their cart. It works on their first order only.</li><li>Your friend gets ' + a + ' off straight away.</li><li>When their order is delivered, we email you a code worth ' + a + ' off your next order.</li><li>You cannot use your own code. One code can be used by many friends.</li></ol></details><b>Give ' + a + ', get ' + a + '</b><p>Share your code with a friend. They type it in the coupon box in their cart and get ' + a + ' off their first order, and you get ' + a + ' off your next one when their order is delivered.</p><div><code>' + c + '</code><a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Share on WhatsApp</a></div></div>';
   }
   /* where the visitor came from (advert or link labels), remembered for 30 days so the order shows it too */
+  /* where a visitor came from when the link has no utm_ tags: a short ?s= code on the link (made on the admin "Share links" page),
+     the in-app browser of Instagram, Facebook and others, or the app/website the link was opened from */
+  var SRC_CODES = { wa: 'WhatsApp', ws: 'WhatsApp status', wg: 'WhatsApp group', ig: 'Instagram', is: 'Instagram story', ib: 'Instagram bio', fb: 'Facebook', fs: 'Facebook story', yt: 'YouTube', em: 'Email', sms: 'SMS', qr: 'QR code', tg: 'Telegram' };
+  function srcGuess() {
+    var c = String(qs.get('s') || '').toLowerCase(); if (SRC_CODES[c]) return SRC_CODES[c];
+    var u = navigator.userAgent || '';
+    if (/Instagram/i.test(u)) return 'Instagram'; if (/FBAN|FBAV|FB_IAB|FBIOS|Messenger/i.test(u)) return 'Facebook'; if (/WhatsApp/i.test(u)) return 'WhatsApp';
+    if (/Snapchat/i.test(u)) return 'Snapchat'; if (/musical_ly|Bytedance|TikTok/i.test(u)) return 'TikTok'; if (/LinkedInApp/i.test(u)) return 'LinkedIn'; if (/Telegram/i.test(u)) return 'Telegram'; if (/Twitter/i.test(u)) return 'X (Twitter)';
+    var r = String(document.referrer || '').toLowerCase(); if (!r || r.indexOf(location.hostname.replace(/^www\./, '')) > -1) return '';
+    var m = [[/whatsapp|wa\.me/, 'WhatsApp'], [/instagram/, 'Instagram'], [/facebook|fb\.com|fb\.me|com\.facebook/, 'Facebook'], [/android\.gm|mail\.google|gmail/, 'Gmail'], [/youtube|youtu\.be/, 'YouTube'], [/telegram|t\.me\//, 'Telegram'], [/(^|\/\/)(t\.co|x\.com|twitter)/, 'X (Twitter)'], [/linkedin|lnkd/, 'LinkedIn'], [/snapchat/, 'Snapchat'], [/googlequicksearchbox|google\./, 'Google'], [/bing\./, 'Bing'], [/yahoo\./, 'Yahoo'], [/duckduckgo/, 'DuckDuckGo']];
+    for (var i = 0; i < m.length; i++) if (m[i][0].test(r)) return m[i][1];
+    return '';
+  }
   function utm() {
     var u = store.get('orvish_utm', null), g = function (k) { return String(qs.get(k) || '').slice(0, 60); };
-    var now = { s: g('utm_source') || (qs.get('fbclid') ? 'facebook' : '') || (qs.get('gclid') ? 'google-ads' : ''), m: g('utm_medium'), c: g('utm_campaign'), n: g('utm_content'), t: Date.now() };
+    var now = { s: g('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || (qs.get('fbclid') ? 'Facebook' : ''), m: g('utm_medium'), c: g('utm_campaign'), n: g('utm_content'), t: Date.now() };
     if (now.s || now.c) { store.set('orvish_utm', now); return now; }
     return u && Date.now() - u.t < 2592000000 ? u : { s: '', m: '', c: '', n: '' };
   }
@@ -354,7 +367,7 @@
       var did = store.get('orvish_did', ''); if (!/^[a-z0-9]{8}$/.test(did)) { did = (Math.random().toString(36) + '00000000').slice(2, 10); store.set('orvish_did', did); }
       var sid = sessionStorage.getItem('orvish_sid'); if (!sid || sid.indexOf(did + '.') !== 0) { sid = did + '.' + (Math.random().toString(36) + '00000000').slice(2, 10); sessionStorage.setItem('orvish_sid', sid); }
       var ref = ''; try { ref = document.referrer && new URL(document.referrer).hostname.replace(/^www\./, ''); if (ref === location.hostname.replace(/^www\./, '')) ref = ''; } catch (e) {}
-      var src = (qs.get('utm_source') || (qs.get('fbclid') ? 'facebook' : '') || (qs.get('gclid') ? 'google-ads' : '') || sessionStorage.getItem('orvish_src') || '').slice(0, 40); if (src) sessionStorage.setItem('orvish_src', src);
+      var src = (qs.get('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || (qs.get('fbclid') ? 'Facebook' : '') || sessionStorage.getItem('orvish_src') || '').slice(0, 40); if (src) sessionStorage.setItem('orvish_src', src);
       var cfg = S.firebase_config, wait = new Promise(function (ok) { setTimeout(function () { ok(store.get('orvish_geo', null) || { c: '', r: '', city: '' }); }, 2500); });
       Promise.race([geo(), wait]).then(function (g) {
         var sv = function (v) { return { stringValue: String(v || '') }; };

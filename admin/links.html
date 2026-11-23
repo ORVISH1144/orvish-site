@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Share links – ORVISH</title>
+<style>
+:root{--green:#092d29;--gold:#b89519;--cream:#f1ece1;--line:#d9d2bd;--ink:#14211f;--mute:#5d6a66}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:400 15px/1.5 "DM Sans",system-ui,Arial,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 60px}
+h1{margin:0 0 4px;font:600 24px Georgia,serif;color:var(--green)}p.sub{margin:0 0 18px;color:var(--mute)}
+.where{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.where button{font:600 13px system-ui,Arial,sans-serif;padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.where button.on{background:var(--green);border-color:var(--green);color:var(--cream)}
+.list{display:grid;gap:10px}
+.row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.row img{width:44px;height:54px;object-fit:contain;flex:none;background:#faf8f3;border-radius:4px}
+.row .tx{flex:1;min-width:0}.row b{display:block;font-weight:600;font-size:14px}.row code{display:block;font-size:12px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row button{flex:none;font:600 13px system-ui,Arial,sans-serif;padding:10px 16px;border-radius:6px;border:0;background:var(--green);color:var(--cream);cursor:pointer;min-width:84px}
+.row button.ok{background:#137333}
+.note{margin-top:22px;font-size:13px;color:var(--mute)}
+</style></head>
+<body><div class="wrap"><h1>Share links</h1><p class="sub">Pick where you will post, then copy the link. Visits and orders from that link show the right source (for example "WhatsApp status") in the Traffic Log, the Orders sheet and Live traffic.</p>
+<div class="where" id="where"></div><div class="list" id="list"><p>Loading products…</p></div>
+<p class="note">Links you share without these codes are still recognised when they are opened inside Instagram, Facebook and most other apps. WhatsApp hides where a link came from, so for WhatsApp always use a link from this page.</p></div>
+<script>
+(function(){
+var W=[['ws','WhatsApp status'],['wa','WhatsApp chat'],['wg','WhatsApp group'],['is','Instagram story'],['ib','Instagram bio'],['ig','Instagram post / DM'],['fs','Facebook story'],['fb','Facebook post'],['yt','YouTube'],['em','Email'],['sms','SMS'],['qr','QR code / print']];
+var cur=W[0][0],P=[],$=function(s){return document.querySelector(s)};
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function link(path){return 'https://www.orvish.com'+path+'?s='+cur}
+function img(p){var i=(p.images||[])[0]||'';return typeof i==='object'?(i.image||''):i}
+function draw(){
+  $('#where').innerHTML=W.map(function(w){return '<button data-w="'+w[0]+'"'+(w[0]===cur?' class="on"':'')+'>'+w[1]+'</button>'}).join('');
+  var rows=[{t:'Home page',path:'/',im:'/images/favicon-192.png'},{t:'Shop (all perfumes)',path:'/shop',im:'/images/favicon-192.png'}].concat(P.map(function(p){return{t:p.title,path:'/p/'+encodeURIComponent(p.id)+'/',im:img(p)}}));
+  $('#list').innerHTML=rows.map(function(r,i){var u=link(r.path);return '<div class="row"><img src="'+esc(encodeURI(r.im))+'" alt=""><div class="tx"><b>'+esc(r.t)+'</b><code>'+esc(u)+'</code></div><button data-u="'+esc(u)+'">Copy</button></div>'}).join('');
+}
+document.addEventListener('click',function(e){
+  var w=e.target.closest('[data-w]');if(w){cur=w.dataset.w;draw();return}
+  var b=e.target.closest('[data-u]');if(!b)return;
+  var done=function(){b.textContent='Copied';b.classList.add('ok');setTimeout(function(){b.textContent='Copy';b.classList.remove('ok')},1500)};
+  if(navigator.clipboard)navigator.clipboard.writeText(b.dataset.u).then(done,function(){prompt('Copy this link',b.dataset.u)});else prompt('Copy this link',b.dataset.u);
+});
+fetch('/data/products.json?_='+Date.now()).then(function(r){return r.json()}).then(function(d){P=(d.products||[]).filter(function(p){return!p.hidden});draw()}).catch(function(){draw()});
+})();
+</script></body></html>
