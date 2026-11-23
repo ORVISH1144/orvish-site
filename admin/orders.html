@@ -181,9 +181,11 @@ function draw(){
     call({action:'set_payment',row:o.row,order_id:o.order_id,status:val}).then(function(d){s.disabled=false;if(d&&d.ok){o.payment_status=val;draw()}else{s.value=old;note.textContent='Could not save. Make sure the newest script is deployed.'}}).catch(function(){s.disabled=false;s.value=old;note.textContent='Could not save. Check your connection.'});
   }});
   [].forEach.call(document.querySelectorAll('button.trk'),function(b){b.onclick=function(){
-    var o=byRow(b.dataset.row),val=prompt('Courier name and tracking number (AWB) for order '+o.order_id+'\nExample: Delhivery 28277105999396\n(shown in the customer\'s account, on the tracking page and in the shipped email, with a Track on Delhivery button)',o.tracking||'');
+    var o=byRow(b.dataset.row),val=prompt('Courier name and tracking number (AWB) for order '+o.order_id+'\nExample: Delhivery 28277105999396\n(shown in the customer\'s account, on the tracking page and in the shipped email, with a Track on Delhivery button)\n\nSaving it marks the order Shipped and emails the customer.',o.tracking||'');
     if(val===null)return;b.disabled=true;b.textContent='Saving…';
-    call({action:'set_tracking',row:o.row,order_id:o.order_id,tracking:val.trim()}).then(function(d){if(d&&d.ok){o.tracking=val.trim()}draw()}).catch(function(){draw()});
+    call({action:'set_tracking',row:o.row,order_id:o.order_id,tracking:val.trim()}).then(function(d){if(d&&d.ok){o.tracking=val.trim();
+      /* a tracking number means the parcel is with the courier: mark the order Shipped by itself (the customer gets the shipped email) */
+      if(val.trim()&&/^(new|confirmed|packed|)$/i.test(String(o.order_status||'').trim())){return call({action:'set_status',row:o.row,order_id:o.order_id,status:'Shipped'}).then(function(r){if(r&&r.ok)o.order_status='Shipped';draw();var n=$('#n'+o.row);if(n)n.textContent=r&&r.ok?'Marked Shipped automatically · '+(r.notified||''):'Tracking saved, but could not set Shipped. Set it by hand.'})}}draw()}).catch(function(){draw()});
   }});
 }
 })();
