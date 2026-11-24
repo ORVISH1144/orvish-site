@@ -84,13 +84,15 @@
     "whatsapp": ""
   },
   "low_stock": 5,
-  "courier": "Delhivery",
   "shiprocket": {
     "pickup_location": "Primary",
     "weight_kg": 0.4,
     "length_cm": 15,
     "breadth_cm": 10,
     "height_cm": 8,
+    "auto_create": true,
+    "auto_mode": "create",
+    "auto_cod": true,
     "auto_status": true
   },
   "area_rules": [],
@@ -123,5 +125,6 @@
       "name": "Apple Pay",
       "image": "/images/uploads/pay-applepay.png"
     }
-  ]
+  ],
+  "courier": "Delhivery"
 }
