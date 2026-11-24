@@ -173,7 +173,7 @@
      the in-app browser of Instagram, Facebook and others, or the app/website the link was opened from */
   var SRC_CODES = { wa: 'WhatsApp', ws: 'WhatsApp status', wg: 'WhatsApp group', ig: 'Instagram', is: 'Instagram story', ib: 'Instagram bio', fb: 'Facebook', fs: 'Facebook story', yt: 'YouTube', em: 'Email', sms: 'SMS', qr: 'QR code', tg: 'Telegram' };
   function srcGuess() {
-    var c = String(qs.get('s') || '').toLowerCase(); if (SRC_CODES[c]) return SRC_CODES[c]; if (qs.get('by')) return 'Partner link';
+    var c = String(qs.get('s') || '').toLowerCase(); if (SRC_CODES[c]) return SRC_CODES[c]; if (qs.get('by')) return 'Influencer';
     var u = navigator.userAgent || '';
     if (/Instagram/i.test(u)) return 'Instagram'; if (/FBAN|FBAV|FB_IAB|FBIOS|Messenger/i.test(u)) return 'Facebook'; if (/WhatsApp/i.test(u)) return 'WhatsApp';
     if (/Snapchat/i.test(u)) return 'Snapchat'; if (/musical_ly|Bytedance|TikTok/i.test(u)) return 'TikTok'; if (/LinkedInApp/i.test(u)) return 'LinkedIn'; if (/Telegram/i.test(u)) return 'Telegram'; if (/Twitter/i.test(u)) return 'X (Twitter)';

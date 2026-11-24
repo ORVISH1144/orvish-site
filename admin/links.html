@@ -25,13 +25,13 @@ h1{margin:0 0 4px;font:600 24px Georgia,serif;color:var(--green)}p.sub{margin:0 
 <p class="note">Links you share without these codes are still recognised when they are opened inside Instagram, Facebook and most other apps. WhatsApp hides where a link came from, so for WhatsApp always use a link from this page.</p></div>
 <script>
 (function(){
-var W=[['ws','WhatsApp status'],['wa','WhatsApp chat'],['wg','WhatsApp group'],['is','Instagram story'],['ib','Instagram bio'],['ig','Instagram post / DM'],['fs','Facebook story'],['fb','Facebook post'],['yt','YouTube'],['em','Email'],['sms','SMS'],['qr','QR code / print']];
+var W=[['','Any place (name only)'],['ws','WhatsApp status'],['wa','WhatsApp chat'],['wg','WhatsApp group'],['is','Instagram story'],['ib','Instagram bio'],['ig','Instagram post / DM'],['fs','Facebook story'],['fb','Facebook post'],['yt','YouTube'],['em','Email'],['sms','SMS'],['qr','QR code / print']];
 var cur=W[0][0],P=[],by='',$=function(s){return document.querySelector(s)};
 function slug(t){return String(t||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30)}
 function recent(){try{return JSON.parse(localStorage.getItem('orvish_by')||'[]')}catch(e){return[]}}
 function remember(n){if(!n)return;var r=recent().filter(function(x){return x!==n});r.unshift(n);try{localStorage.setItem('orvish_by',JSON.stringify(r.slice(0,12)))}catch(e){}}
 function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function link(path){return 'https://www.orvish.com'+path+'?s='+cur+(by?'&by='+by:'')}
+function link(path){var q=[];if(cur)q.push('s='+cur);if(by)q.push('by='+by);return 'https://www.orvish.com'+path+(q.length?'?'+q.join('&'):'')}
 function img(p){var i=(p.images||[])[0]||'';return typeof i==='object'?(i.image||''):i}
 function draw(){
   var rc=recent();$('#recent').innerHTML=rc.length?'<span>Recent:</span>'+rc.map(function(n){return '<button data-by="'+esc(n)+'"'+(n===by?' class="on"':'')+'>'+esc(n)+'</button>'}).join(''):'';

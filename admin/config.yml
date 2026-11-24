@@ -666,6 +666,16 @@ collections:
       - {label: Parcel length in cm, name: length_cm, widget: number, default: 15}
       - {label: Parcel breadth in cm, name: breadth_cm, widget: number, default: 10}
       - {label: Parcel height in cm, name: height_cm, widget: number, default: 8}
+      - {label: Send every new order to Shiprocket automatically, name: auto_create, widget: boolean, default: false, required: false, hint: 'Each new website order appears in Shiprocket by itself. Orders whose payment needs checking are never sent automatically.'}
+      - label: What to do in Shiprocket automatically
+        name: auto_mode
+        widget: select
+        default: create
+        required: false
+        options:
+        - {label: 'Create the order only (you choose the courier in Shiprocket and press Ship)', value: create}
+        - {label: 'Create the order, book the recommended courier, request pickup and make the label', value: full}
+      - {label: Also send cash on delivery orders automatically, name: auto_cod, widget: boolean, default: true, required: false, hint: 'Switch off if you like to phone COD customers first.'}
       - {label: Update the order status automatically from Shiprocket tracking, name: auto_status, widget: boolean, default: false, required: false}
     - label: Delivery area rules (areas we do not deliver to, or charge extra for)
       name: area_rules
