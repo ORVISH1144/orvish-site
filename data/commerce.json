@@ -85,7 +85,7 @@
   },
   "low_stock": 5,
   "shiprocket": {
-    "pickup_location": "Primary",
+    "pickup_location": "warehouse",
     "weight_kg": 0.4,
     "length_cm": 15,
     "breadth_cm": 10,
