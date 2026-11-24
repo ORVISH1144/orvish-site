@@ -173,7 +173,7 @@
      the in-app browser of Instagram, Facebook and others, or the app/website the link was opened from */
   var SRC_CODES = { wa: 'WhatsApp', ws: 'WhatsApp status', wg: 'WhatsApp group', ig: 'Instagram', is: 'Instagram story', ib: 'Instagram bio', fb: 'Facebook', fs: 'Facebook story', yt: 'YouTube', em: 'Email', sms: 'SMS', qr: 'QR code', tg: 'Telegram' };
   function srcGuess() {
-    var c = String(qs.get('s') || '').toLowerCase(); if (SRC_CODES[c]) return SRC_CODES[c];
+    var c = String(qs.get('s') || '').toLowerCase(); if (SRC_CODES[c]) return SRC_CODES[c]; if (qs.get('by')) return 'Partner link';
     var u = navigator.userAgent || '';
     if (/Instagram/i.test(u)) return 'Instagram'; if (/FBAN|FBAV|FB_IAB|FBIOS|Messenger/i.test(u)) return 'Facebook'; if (/WhatsApp/i.test(u)) return 'WhatsApp';
     if (/Snapchat/i.test(u)) return 'Snapchat'; if (/musical_ly|Bytedance|TikTok/i.test(u)) return 'TikTok'; if (/LinkedInApp/i.test(u)) return 'LinkedIn'; if (/Telegram/i.test(u)) return 'Telegram'; if (/Twitter/i.test(u)) return 'X (Twitter)';
@@ -184,7 +184,7 @@
   }
   function utm() {
     var u = store.get('orvish_utm', null), g = function (k) { return String(qs.get(k) || '').slice(0, 60); };
-    var now = { s: g('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || (qs.get('fbclid') ? 'Facebook' : ''), m: g('utm_medium'), c: g('utm_campaign'), n: g('utm_content'), t: Date.now() };
+    var now = { s: g('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || (qs.get('fbclid') ? 'Facebook' : ''), m: g('utm_medium'), c: g('utm_campaign') || String(qs.get('by') || '').replace(/[^a-z0-9 _-]/gi, '').slice(0, 40), n: g('utm_content'), t: Date.now() };
     if (now.s || now.c) { store.set('orvish_utm', now); return now; }
     return u && Date.now() - u.t < 2592000000 ? u : { s: '', m: '', c: '', n: '' };
   }
@@ -403,7 +403,8 @@
       var did = store.get('orvish_did', ''); if (!/^[a-z0-9]{8}$/.test(did)) { did = (Math.random().toString(36) + '00000000').slice(2, 10); store.set('orvish_did', did); }
       var sid = sessionStorage.getItem('orvish_sid'); if (!sid || sid.indexOf(did + '.') !== 0) { sid = did + '.' + (Math.random().toString(36) + '00000000').slice(2, 10); sessionStorage.setItem('orvish_sid', sid); }
       var ref = ''; try { ref = document.referrer && new URL(document.referrer).hostname.replace(/^www\./, ''); if (ref === location.hostname.replace(/^www\./, '')) ref = ''; } catch (e) {}
-      var src = (qs.get('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || (qs.get('fbclid') ? 'Facebook' : '') || sessionStorage.getItem('orvish_src') || '').slice(0, 40); if (src) sessionStorage.setItem('orvish_src', src);
+      var by0 = String(qs.get('by') || '').replace(/[^a-z0-9 _-]/gi, '').slice(0, 30);
+      var src = ((qs.get('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || (qs.get('fbclid') ? 'Facebook' : '')) ? (qs.get('utm_source') || (qs.get('gclid') ? 'google-ads' : '') || srcGuess() || 'Facebook') + (by0 ? ' · ' + by0 : '') : (sessionStorage.getItem('orvish_src') || '')).slice(0, 60); if (src) sessionStorage.setItem('orvish_src', src);
       var cfg = S.firebase_config, wait = new Promise(function (ok) { setTimeout(function () { ok(store.get('orvish_geo', null) || { c: '', r: '', city: '' }); }, 2500); });
       Promise.race([geo(), wait]).then(function (g) {
         var sv = function (v) { return { stringValue: String(v || '') }; };
