@@ -583,7 +583,7 @@ collections:
       required: false
       collapsed: true
       minimize_collapsed: true
-      summary: '{{fields.code}} – {{fields.percent}}%{{fields.amount}}'
+      summary: '{{fields.code}}'
       fields:
       - label: Code
         name: code
