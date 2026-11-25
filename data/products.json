@@ -526,8 +526,8 @@
     {
       "id": "cristiano-ronaldo-cr7-for-men-edt-100ml",
       "title": "Cristiano Ronaldo CR7 – Eau de Toilette for Men, 100 ml",
-      "price": 1299,
-      "compare_at_price": 1999,
+      "price": 2299,
+      "compare_at_price": 2499,
       "collection": "signature",
       "images": [
         "/images/uploads/cr7_bottle_1200.png",
@@ -535,6 +535,7 @@
       ],
       "hidden": false,
       "in_stock": true,
+      "stock": null,
       "hsn": "3303",
       "gst_rate": 18,
       "featured": true,
@@ -577,7 +578,8 @@
         }
       ],
       "faqs": [],
-      "auto_faq": true
+      "auto_faq": true,
+      "reviews": []
     },
     {
       "id": "gucci-intense-oud-for-unisex-edp-90ml",
