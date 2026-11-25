@@ -4,7 +4,9 @@
   "price": 19999,
   "compare_at_price": 24999,
   "collection": "signature",
-  "images": [],
+  "images": [
+    "/images/uploads/kilian_good_girl_gone_bad_1200.png"
+  ],
   "hidden": false,
   "in_stock": true,
   "hsn": "3303",
