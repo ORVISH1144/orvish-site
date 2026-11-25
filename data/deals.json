@@ -6,14 +6,17 @@
     {
       "name": "White Friday Deal",
       "badge": "White Friday Deal",
-      "enabled": false,
+      "enabled": true,
       "start": "2026-11-27",
       "end": "2026-11-30",
       "show_upcoming": true,
       "percent_off": 0,
       "all_products": false,
-      "products": [],
-      "description": "Example deal – fill in the products, switch it on and save."
+      "products": [
+        "bristol-zest-edp-50ml",
+        "bristol-topaz-edp-50ml"
+      ],
+      "description": ""
     }
   ]
 }
