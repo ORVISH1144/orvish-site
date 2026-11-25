@@ -149,6 +149,8 @@ collections:
     widget: list
     required: false
     summary: Buy {{fields.qty}} save {{fields.percent}}%
+    collapsed: true
+    minimize_collapsed: true
     fields:
     - label: Quantity (e.g. 2)
       name: qty
@@ -579,6 +581,9 @@ collections:
       name: discount_codes
       widget: list
       required: false
+      collapsed: true
+      minimize_collapsed: true
+      summary: '{{fields.code}} – {{fields.percent}}%{{fields.amount}}'
       fields:
       - label: Code
         name: code
