@@ -255,6 +255,23 @@ collections:
       widget: boolean
       default: false
       required: false
+  - label: Customers also bought – choose up to 2 products to show under this product (leave empty = chosen automatically)
+    name: bought_with
+    widget: relation
+    collection: products
+    value_field: id
+    search_fields:
+    - title
+    display_fields:
+    - title
+    multiple: true
+    max: 2
+    required: false
+  - label: Hide "Customers also bought" on this product
+    name: hide_bought_with
+    widget: boolean
+    default: false
+    required: false
   - label: Display order on the website (1 = shown first, 2 = second, and so on)
     name: position
     widget: number
@@ -518,6 +535,93 @@ collections:
         widget: string
         required: false
   icon: home
+- name: deals
+  label: Deals
+  icon: sell
+  files:
+  - name: deals
+    label: Deals – tags on products, Deals menu, coming and ongoing deals
+    file: data/deals.json
+    format: json
+    fields:
+    - label: Show deals on the website (switch off to hide every deal tag and the Deals menu)
+      name: enabled
+      widget: boolean
+      default: true
+    - label: Menu name
+      name: menu_label
+      widget: string
+      default: Deals
+    - label: Deals page heading
+      name: page_title
+      widget: string
+      default: Deals
+    - label: Deals
+      name: deals
+      widget: list
+      required: false
+      collapsed: true
+      summary: '{{fields.name}}'
+      fields:
+      - label: Deal name (e.g. White Friday Deal)
+        name: name
+        widget: string
+      - label: Tag shown on the products (leave empty to use the deal name)
+        name: badge
+        widget: string
+        required: false
+      - label: Switch this deal on
+        name: enabled
+        widget: boolean
+        default: true
+      - label: Starts on (leave empty = already started)
+        name: start
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+        required: false
+      - label: Ends on (the whole day is included; leave empty = no end date)
+        name: end
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+        required: false
+      - label: Show it as "Coming soon" before it starts
+        name: show_upcoming
+        widget: boolean
+        default: true
+        required: false
+      - label: Price drop % while the deal is running (0 = tag only, prices stay the same)
+        name: percent_off
+        widget: number
+        value_type: int
+        min: 0
+        max: 90
+        default: 0
+        required: false
+        hint: When above 0, the product price drops by this % during the deal and the old price is shown struck out.
+      - label: Include every product
+        name: all_products
+        widget: boolean
+        default: false
+        required: false
+      - label: Products in this deal
+        name: products
+        widget: relation
+        collection: products
+        value_field: id
+        search_fields:
+        - title
+        display_fields:
+        - title
+        multiple: true
+        required: false
+      - label: Short text shown on the Deals page (optional)
+        name: description
+        widget: string
+        required: false
 - name: nav
   label: Menu & footer
   files:

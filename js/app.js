@@ -632,7 +632,7 @@
   function navHTML() {
     return (S.menu || []).map(function (m) {
       var c = m.children || [];
-      return '<div class="ni' + (c.length ? ' has' : '') + '"><a href="' + esc(m.url) + '">' + esc(m.label) + (c.length ? ico('down') : '') + '</a>' +
+      return '<div class="ni' + (c.length ? ' has' : '') + (m.deal ? ' dl' : '') + '"><a href="' + esc(m.url) + '">' + esc(m.label) + (c.length ? ico('down') : '') + '</a>' +
         (c.length ? '<div class="dd">' + c.map(function (x) { return '<a href="' + esc(x.url) + '">' + esc(x.label) + '</a>'; }).join('') + '</div>' : '') + '</div>';
     }).join('');
   }
@@ -763,7 +763,7 @@
   }
   function cardHTML(p) {
     var sale = pct(p), so = !inStock(p), href = '' + purl(p.id), multi = vs(p);
-    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (p.best_seller && !so ? '<span class="badge l">Best seller</span>' : '') +
+    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (!so && p._deal ? '<span class="badge deal' + (p._deal.live ? '' : ' soon') + '">' + esc(p._deal.badge) + (p._deal.live ? '' : ' · Soon') + '</span>' : '') + (p.best_seller && !so && !p._deal ? '<span class="badge l">Best seller</span>' : '') +
       '<img loading="lazy" ' + oa(p.images[0], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" ' + oa(p.images[1], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
@@ -820,12 +820,13 @@
     var tb = $('#tabs'); if (tb) tb.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; $$('#tabs button').forEach(function (x) { x.classList.toggle('on', x === b); }); var c = b.dataset.c; $('#best-rail').innerHTML = (bl.filter(function (p) { return !c || p.collection === c; })).map(cardHTML).join('') || '<p class="empty">No products here yet.</p>'; });
   }
   function shop() {
-    var f = { q: qs.get('q') || '', c: qs.get('c') || '', gender: qs.get('gender') || '', type: qs.get('type') || '', note: qs.get('note') || '', best: qs.get('best') === '1', stock: false, min: '', max: '', sort: '' };
+    var f = { q: qs.get('q') || '', c: qs.get('c') || '', gender: qs.get('gender') || '', type: qs.get('type') || '', note: qs.get('note') || '', best: qs.get('best') === '1', deals: qs.get('deals') === '1', stock: false, min: '', max: '', sort: '' };
     var uniq = function (a) { return Array.from(new Set(a.filter(Boolean))); };
     var cols = uniq(P.map(function (p) { return p.collection; })).filter(function (x) { return x !== 'all'; }), types = uniq(P.map(function (p) { return p.type; })), notes = uniq([].concat.apply([], P.map(function (p) { return p.notes || []; })));
     var sel = function (id, lab, opts, val) { return '<label class="fl">' + lab + '<select id="' + id + '"><option value="">All</option>' + opts.map(function (o) { var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; return '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select></label>'; };
-    var title = f.best ? (S.best_sellers_title || 'Best Sellers') : f.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[f.gender] || 'Shop') : f.note ? f.note : f.type ? f.type : f.c ? f.c : 'All products';
+    var title = f.deals ? DEALS.title : f.best ? (S.best_sellers_title || 'Best Sellers') : f.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[f.gender] || 'Shop') : f.note ? f.note : f.type ? f.type : f.c ? f.c : 'All products';
     $('#shop-title').textContent = title.charAt(0).toUpperCase() + title.slice(1);
+    if (f.deals) $('#toolbar').insertAdjacentHTML('beforebegin', dealsInfo());
     $('#toolbar').innerHTML = '<button class="btn secondary" id="open-f">' + ico('filter') + 'Filter</button><span class="cnt" id="cnt"></span><label class="sortl">Sort <select id="f-s"><option value="">Featured</option><option value="best">Best selling</option><option value="pa">Price: low to high</option><option value="pd">Price: high to low</option><option value="az">A–Z</option></select></label>';
     document.body.insertAdjacentHTML('beforeend', '<aside class="drawer left" id="fpanel"><div class="d-head"><h4>Filter</h4><button class="icon-btn" style="color:var(--ink)" id="close-f">' + ico('close') + '</button></div><div class="d-body">' +
       '<label class="fl chk"><input type="checkbox" id="f-stock"> In stock only</label><label class="fl">Search<input id="f-q" value="' + esc(f.q) + '" placeholder="Name or notes"></label>' +
@@ -835,7 +836,7 @@
     function draw() {
       var qq = f.q.toLowerCase().trim();
       var l = P.filter(function (p) {
-        return (!f.c || p.collection === f.c) && (!f.gender || p.gender === f.gender) && (!f.type || p.type === f.type) && (!f.note || (p.notes || []).indexOf(f.note) > -1) && (!f.best || p.best_seller) && (!f.stock || inStock(p)) &&
+        return (!f.c || p.collection === f.c) && (!f.gender || p.gender === f.gender) && (!f.type || p.type === f.type) && (!f.note || (p.notes || []).indexOf(f.note) > -1) && (!f.best || p.best_seller) && (!f.deals || p._deal) && (!f.stock || inStock(p)) &&
           (f.min === '' || p.price >= Number(f.min)) && (f.max === '' || p.price <= Number(f.max)) && (!qq || (p.title + ' ' + (p.short_description || '') + ' ' + (p.notes || []).join(' ')).toLowerCase().indexOf(qq) > -1);
       });
       if (f.sort === 'pa') l.sort(function (a, b) { return a.price - b.price; }); if (f.sort === 'pd') l.sort(function (a, b) { return b.price - a.price; }); if (f.sort === 'az') l.sort(function (a, b) { return a.title.localeCompare(b.title); });
@@ -846,7 +847,7 @@
     var fp = $('#fpanel');
     $('#open-f').onclick = function () { fp.classList.add('open'); $('#ov').classList.add('on'); };
     $('#close-f').onclick = $('#f-apply').onclick = function () { read(); draw(); closeAll(); };
-    $('#f-clear').onclick = function () { $$('#fpanel input').forEach(function (i) { i.type === 'checkbox' ? i.checked = false : i.value = ''; }); $$('#fpanel select').forEach(function (s) { s.value = ''; }); f.best = false; read(); draw(); closeAll(); };
+    $('#f-clear').onclick = function () { $$('#fpanel input').forEach(function (i) { i.type === 'checkbox' ? i.checked = false : i.value = ''; }); $$('#fpanel select').forEach(function (s) { s.value = ''; }); f.best = false; f.deals = false; read(); draw(); closeAll(); };
     $('#f-s').onchange = function () { read(); draw(); };
     $('#f-q').addEventListener('input', function () { read(); draw(); });
     draw();
@@ -873,7 +874,7 @@
     function priceHTML() { var i = info(); return money(i.u.price) + (i.s ? '<s>' + money(i.u.old) + '</s> <span class="badge" style="position:static;display:inline-block;margin-left:6px">' + Math.round((1 - i.u.price / i.u.old) * 100) + '% off</span>' : '') + '<small class="tax">' + (i.u.bp ? 'each when you buy ' + q + ' · you save ' + money((i.u.base - i.u.price) * q) + ' · ' : '') + 'Inclusive of all taxes</small>'; }
     var tags = [(p.type || ''), p.gender ? ({ men: 'For Him', women: 'For Her', unisex: 'Unisex' }[p.gender]) : ''].concat(p.notes || []).filter(Boolean);
     el.innerHTML = '<div class="gallery"><div class="main"><img id="mi" ' + oa(p.images[0], 800, '(max-width:820px) 100vw, 50vw', [400, 600, 800, 1200]) + ' width="800" height="800" fetchpriority="high" decoding="async" alt="' + esc(p.title) + '"></div>' + (p.images.length > 1 ? '<div class="thumbs">' + p.images.map(function (im, i) { return '<img class="' + (i ? '' : 'on') + '" ' + oa(im, 400) + ' data-full="' + esc(im) + '" loading="' + (i ? 'lazy' : 'eager') + '" alt="">'; }).join('') + '</div>' : '') + '</div>' +
-      '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id, true) + '</a><div class="price" id="pp"></div><div class="stockline" id="stockline" data-pid="' + esc(p.id) + '"></div>' +
+      '<div class="info"><div class="tags big">' + tags.map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' + (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + dealBar(p) + '<h1>' + esc(p.title) + '</h1><a class="rating big" href="#reviews" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id, true) + '</a><div class="price" id="pp"></div><div class="stockline" id="stockline" data-pid="' + esc(p.id) + '"></div>' +
       (v ? '<div class="vgrp"><b>Size</b><div id="vopts">' + v.map(function (x) { return '<button class="vopt' + (x.label === cur ? ' on' : '') + (x.in_stock === false ? ' off' : '') + '" data-v="' + esc(x.label) + '">' + esc(x.label) + '</button>'; }).join('') + '</div></div>' : '') +
       '<div id="buyarea"></div><div id="pdx"></div><div class="pay-note"><b>Secure checkout</b> – pay by card, UPI, net banking or cash on delivery</div>' + payLogos() + '<div class="badges">' + (S.product_badges || []).map(function (b) { return '<div>' + ico(b.icon) + '<span>' + esc(b.text) + '</span></div>'; }).join('') + '</div>' +
       highlights(p) + '<h4 class="dh">About this item</h4><div class="desc">' + md(p.description) + '</div>' +
@@ -966,6 +967,7 @@
     var fq = (p.faqs || []).filter(function (d) { return d && d.q && d.a; }).map(function (d) { return { title: d.q, body: d.a }; }).concat(p.auto_faq === false ? [] : auto, S.faq || []); if (fq.length) $('#faq').innerHTML = '<h3>Frequently asked questions</h3>' + fq.map(function (d, i) { return '<details class="fq"' + (i < 2 ? ' open' : '') + '><summary>' + esc(d.title) + '</summary><div>' + md(d.body) + '</div></details>'; }).join('');
     var rel = P.filter(function (x) { return x.id !== p.id; }).slice(0, 4);
     if (rel.length) $('#related').innerHTML = rel.map(cardHTML).join(''); else $('#related-wrap').style.display = 'none';
+    try { fbt(p, function () { return cur; }); } catch (e) {}
   }
   function page() {
     var im = /^\/info\/([^\/]+)/.exec(location.pathname), slug = qs.get('p') || (im ? decodeURIComponent(im[1]) : '');
@@ -1230,9 +1232,73 @@
     }
   }
 
+  /* Deals: tags on products, a Deals menu and page, optional price drop. Set in Admin > Deals (data/deals.json) */
+  var DEALS = { list: [], menu: 'Deals', title: 'Deals' };
+  function dealTime(d, end) { if (!d) return null; var t = new Date(String(d).slice(0, 10) + (end ? 'T23:59:59+05:30' : 'T00:00:00+05:30')).getTime(); return isNaN(t) ? null : t; }
+  function dealPrep(cfg) {
+    DEALS = { list: [], menu: (cfg && cfg.menu_label) || 'Deals', title: (cfg && cfg.page_title) || 'Deals' };
+    if (!cfg || cfg.enabled === false) return;
+    var now = Date.now();
+    (cfg.deals || []).forEach(function (d) {
+      if (!d || d.enabled === false || !d.name) return;
+      var s = dealTime(d.start, false), e = dealTime(d.end, true), live = !s || now >= s;
+      if (e && now > e) return;
+      if (!live && d.show_upcoming === false) return;
+      var ids = d.all_products ? P.map(function (p) { return p.id; }) : (d.products || []);
+      if (!ids.length) return;
+      DEALS.list.push({ name: d.name, badge: d.badge || d.name, live: live, start: d.start ? String(d.start).slice(0, 10) : '', end: d.end ? String(d.end).slice(0, 10) : '', percent: Number(d.percent_off) || 0, ids: ids, text: d.description || '' });
+    });
+  }
+  function dealApply() {
+    P.forEach(function (p) {
+      var best = null;
+      DEALS.list.forEach(function (d) {
+        if (d.ids.indexOf(p.id) < 0) return;
+        if (!best || (d.live && !best.live) || (d.live === best.live && d.percent > best.percent)) best = d;
+      });
+      if (!best) return;
+      p._deal = best;
+      if (best.live && best.percent > 0) {
+        var orig = Number(p.price) || 0;
+        p.compare_at_price = Math.max(Number(p.compare_at_price) || 0, orig); p.price = Math.round(orig * (100 - best.percent) / 100);
+        (p.variants || []).forEach(function (v) { if (v.price != null && v.price !== '') { var vo = Number(v.price); v.compare_at_price = Math.max(Number(v.compare_at_price) || 0, vo); v.price = Math.round(vo * (100 - best.percent) / 100); } });
+      }
+    });
+  }
+  function dealMenu() {
+    if (!DEALS.list.length || (S.menu || []).some(function (m) { return /deals=1/.test(m.url || ''); })) return;
+    S.menu = (S.menu || []).slice(); S.menu.splice(Math.min(1, S.menu.length), 0, { label: DEALS.menu, url: '/shop?deals=1', children: [], deal: true });
+  }
+  function dealWhen(d) { return d.live ? (d.end ? 'Ends ' + etaDay(d.end) : 'Limited time') : (d.start ? 'Starts ' + etaDay(d.start) : 'Coming soon'); }
+  function dealBar(p) { var d = p._deal; return d ? '<div class="dealbar' + (d.live ? '' : ' soon') + '"><b>' + esc(d.badge) + '</b><span>' + esc(dealWhen(d)) + (d.live && d.percent ? ' · ' + d.percent + '% off' : '') + '</span></div>' : ''; }
+  function dealsInfo() { return DEALS.list.length ? '<div class="dealsinfo">' + DEALS.list.map(function (d) { return '<div class="di' + (d.live ? '' : ' soon') + '"><b>' + esc(d.name) + '</b><span>' + (d.live ? 'Ongoing' : 'Coming soon') + ' · ' + esc(dealWhen(d)) + '</span>' + (d.text ? '<p>' + esc(d.text) + '</p>' : '') + '</div>'; }).join('') + '</div>' : ''; }
+
+  /* "Customers also bought": the product plus two suggestions, tick what you want and add them all together */
+  function fbtLabel(p) { var v = vs(p), f = v && v.filter(function (x) { return x.in_stock !== false; })[0]; return f ? f.label : ''; }
+  function fbtPick(p) {
+    var chosen = (p.bought_with || []).filter(function (i) { return i !== p.id; }).map(findP).filter(function (x) { return x && inStock(x); });
+    if ((p.bought_with || []).length) return chosen.slice(0, 2);
+    var rest = P.filter(function (x) { return x.id !== p.id && inStock(x); }), sc = function (x) { return (x.gender && x.gender === p.gender ? 3 : x.gender === 'unisex' || p.gender === 'unisex' ? 1 : 0) + (x.best_seller ? 1 : 0); };
+    return rest.map(function (x, i) { return { x: x, i: i }; }).sort(function (a, b) { return sc(b.x) - sc(a.x) || a.i - b.i; }).map(function (o) { return o.x; }).slice(0, 2);
+  }
+  function fbt(p, getCur) {
+    if (p.hide_bought_with) return;
+    var items = (inStock(p, getCur()) ? [p] : []).concat(fbtPick(p));
+    if (items.length < 2) return;
+    var host = $('#reviews'); if (!host) return;
+    var price = function (x) { return unit({ id: x.id, v: x.id === p.id ? getCur() : fbtLabel(x), q: 1 }).price; };
+    host.insertAdjacentHTML('beforebegin', '<section class="fbt" id="fbt"><h3>Customers also bought</h3><div class="fbt-in"><div class="fbt-row">' + items.map(function (x, i) {
+      return (i ? '<span class="fbt-plus">+</span>' : '') + '<label class="fbt-it"><input type="checkbox" checked data-id="' + esc(x.id) + '" aria-label="Include ' + esc(x.title) + '"><a class="fbt-img" href="' + purl(x.id) + '"><img loading="lazy" ' + oa(x.images[0], 400, '170px', [400]) + ' alt="' + esc(x.title) + '"></a>' + (x.brand ? '<small>' + esc(x.brand) + '</small>' : '') + '<a class="t" href="' + purl(x.id) + '">' + esc(x.title) + '</a><b>' + money(price(x)) + '</b></label>';
+    }).join('') + '</div><div class="fbt-sum"><div>Total Price: <b id="fbt-t"></b></div><button class="btn" id="fbt-add" type="button"></button></div></div></section>');
+    function upd() { var on = $$('#fbt input:checked'), t = 0; on.forEach(function (c) { var x = findP(c.dataset.id); if (x) t += price(x); }); $('#fbt-t').textContent = money(t); var b = $('#fbt-add'); b.disabled = !on.length; b.innerHTML = ico('bag') + (on.length ? 'Add ' + on.length + (on.length === 1 ? ' item' : ' items') + ' to cart' : 'Select an item'); }
+    $$('#fbt input').forEach(function (c) { c.addEventListener('change', upd); });
+    $('#fbt-add').onclick = function () { $$('#fbt input:checked').forEach(function (c) { var x = findP(c.dataset.id); if (x) addToCart(x.id, 1, x.id === p.id ? getCur() : fbtLabel(x)); }); openCart(true); };
+    upd();
+  }
+
   /* boot */
-  Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json')]).then(function (r) {
-    S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; if (S.bundles_enabled !== true) p.bundles = []; return p; }); PAGES = r[2].pages || [];
+  Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json'), fetchJSON('/data/deals.json').catch(function () { return {}; })]).then(function (r) {
+    S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; if (S.bundles_enabled !== true) p.bundles = []; return p; }); PAGES = r[2].pages || []; try { dealPrep(r[6] || {}); dealApply(); dealMenu(); } catch (e) {}
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     [2500, 8000].forEach(function (ms) { setTimeout(function () { (S.discount_codes || []).filter(usedUp).slice(0, 4).forEach(function (d) { recheckUsed(d, function (free) { if (free) { try { renderCart(); } catch (e) {} try { onCoupon(); } catch (e2) {} } }); }); }, ms); });   /* a coupon the owner has opened again */
     S.discount_codes = (S.discount_codes || []).concat(store.get('orvish_dyn', []));
