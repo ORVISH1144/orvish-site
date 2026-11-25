@@ -723,6 +723,12 @@ collections:
     - label: Free shipping above (₹)
       name: free_shipping_above
       widget: number
+    - label: Bundle offers (Buy 2 / Buy 3 save %) – switch on to show them on every product that has bundle offers set
+      name: bundles_enabled
+      widget: boolean
+      default: false
+      required: false
+      hint: Off = no bundle prices anywhere on the site. The bundle settings stay saved on each product, so switching this on brings them back exactly as they were.
     - label: Razorpay Key ID (paste later to switch on online payment, starts with rzp_)
       name: razorpay_key_id
       widget: string

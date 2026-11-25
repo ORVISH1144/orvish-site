@@ -236,5 +236,6 @@
       "image": "/images/uploads/pay-applepay.png"
     }
   ],
-  "courier": "Delhivery"
+  "courier": "Delhivery",
+  "bundles_enabled": false
 }

@@ -1232,7 +1232,7 @@
 
   /* boot */
   Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json')]).then(function (r) {
-    S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; return p; }); PAGES = r[2].pages || [];
+    S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; if (S.bundles_enabled !== true) p.bundles = []; return p; }); PAGES = r[2].pages || [];
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     [2500, 8000].forEach(function (ms) { setTimeout(function () { (S.discount_codes || []).filter(usedUp).slice(0, 4).forEach(function (d) { recheckUsed(d, function (free) { if (free) { try { renderCart(); } catch (e) {} try { onCoupon(); } catch (e2) {} } }); }); }, ms); });   /* a coupon the owner has opened again */
     S.discount_codes = (S.discount_codes || []).concat(store.get('orvish_dyn', []));
