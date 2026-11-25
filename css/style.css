@@ -1163,10 +1163,9 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .co-eta b{color:#137333}.co-eta small{display:block;margin-left:21px;color:#5d6a66;font-size:12.5px}.etar .no,.co-eta .no{color:#b3261e}.etar .no svg,.co-eta .no svg{stroke:#b3261e}
 
 /* v86 – deals (tags, menu, Deals page) and "Customers also bought" */
-.badge.deal{right:auto;left:10px;top:10px;background:#b78a2a;color:#fff;max-width:calc(100% - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge.deal.soon{background:#2f4a3b}
-.dealbar{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;padding:6px 12px;border-radius:100px;background:#b78a2a1f;border:1px solid #b78a2a66;font:500 12px var(--font-accent);color:var(--ink)}
-.dealbar b{color:#8a6416;text-transform:uppercase;letter-spacing:.06em;font-size:11px}.dealbar.soon{background:#2f4a3b14;border-color:#2f4a3b55}.dealbar.soon b{color:#2f4a3b}
+.badge.deal,.badge.deal.soon{right:auto;left:0;top:0;padding:4px 10px;border-radius:0 0 6px 0;background:#b5942c;color:#fff;font:500 11px/1.25 var(--font-accent);letter-spacing:0;text-transform:none;max-width:85%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dealbar{display:flex;align-items:center;gap:8px;margin:0 0 8px;font:400 12px var(--font-accent);color:var(--ink)}
+.dealbar b{padding:3px 10px;border-radius:0 0 6px 0;background:#b5942c;color:#fff;font:500 11px/1.25 var(--font-accent)}.dealbar span{opacity:.75}
 .dealsinfo{display:grid;gap:10px;margin:0 0 18px}
 .dealsinfo .di{border:1px solid #b78a2a66;background:#b78a2a14;border-radius:12px;padding:12px 14px}.dealsinfo .di.soon{border-color:#2f4a3b55;background:#2f4a3b0f}
 .dealsinfo b{display:block;font:600 15px var(--font-accent)}.dealsinfo span{font:400 13px var(--font-accent);opacity:.8}.dealsinfo p{margin:6px 0 0;font:400 13px var(--font-accent)}

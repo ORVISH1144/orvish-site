@@ -763,7 +763,7 @@
   }
   function cardHTML(p) {
     var sale = pct(p), so = !inStock(p), href = '' + purl(p.id), multi = vs(p);
-    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (!so && p._deal ? '<span class="badge deal' + (p._deal.live ? '' : ' soon') + '">' + esc(p._deal.badge) + (p._deal.live ? '' : ' · Soon') + '</span>' : '') + (p.best_seller && !so && !p._deal ? '<span class="badge l">Best seller</span>' : '') +
+    return '<div class="card"><a class="img" href="' + href + '">' + (so ? '' : sale ? '<span class="badge">' + sale + '% off</span>' : (p.badge ? '<span class="badge">' + esc(p.badge) + '</span>' : '')) + (!so && p._deal ? '<span class="badge deal">' + esc(p._deal.badge) + '</span>' : '') + (p.best_seller && !so && !p._deal ? '<span class="badge l">Best seller</span>' : '') +
       '<img loading="lazy" ' + oa(p.images[0], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="' + esc(p.title) + '">' + (p.images[1] ? '<img class="alt" loading="lazy" ' + oa(p.images[1], 400, '(max-width:820px) 50vw, 25vw', [400, 800]) + ' alt="">' : '') + '</a>' +
       '<div class="meta">' + ((p.notes || []).length ? '<div class="tags">' + p.notes.slice(0, 3).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join('') + '</div>' : '') +
       (p.brand ? '<div class="brand">' + esc(p.brand) + '</div>' : '') + '<h5><a href="' + href + '">' + esc(p.title) + '</a></h5><div class="rating" data-pid="' + esc(p.id) + '">' + ratingHTML(p.id) + '</div><div class="price">' + (multi ? '<small>From </small>' : '') + money(p.price) + (sale ? '<s>' + money(p.compare_at_price) + '</s>' : '') + '</div>' +
