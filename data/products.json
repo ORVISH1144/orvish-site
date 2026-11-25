@@ -638,14 +638,15 @@
     {
       "id": "kilian-paris-good-girl-gone-bad-edp-100ml",
       "title": "Kilian Paris Good Girl Gone Bad – Eau de Parfum for Women, 100 ml",
-      "price": 19999,
-      "compare_at_price": 24999,
+      "price": 7999,
+      "compare_at_price": 12999,
       "collection": "signature",
       "images": [
         "/images/uploads/kilian_good_girl_gone_bad_1200.png"
       ],
       "hidden": false,
-      "in_stock": true,
+      "in_stock": false,
+      "stock": null,
       "hsn": "3303",
       "gst_rate": 18,
       "featured": true,
@@ -688,7 +689,8 @@
         }
       ],
       "faqs": [],
-      "auto_faq": true
+      "auto_faq": true,
+      "reviews": []
     }
   ]
 }
