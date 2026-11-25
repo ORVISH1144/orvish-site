@@ -21,8 +21,8 @@
       "hidden": false
     },
     {
-      "code": "WELCOME40",
-      "percent": 20,
+      "code": "WELCOME15",
+      "percent": 15,
       "min_items": 2,
       "max_uses": 1,
       "stack_with_bundles": true,
