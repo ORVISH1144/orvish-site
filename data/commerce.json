@@ -59,6 +59,116 @@
       "max_discount": null,
       "amount": 69,
       "hidden": true
+    },
+    {
+      "code": "AKHIL20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "SHAMIL20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "ADIL20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "ATHUL20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "FLEMIN20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "GOKUL20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "ABIN20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "ALBIN20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "MILEN20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "SOUMYA20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
+    },
+    {
+      "code": "TOM20",
+      "percent": 20,
+      "min_items": 1,
+      "max_uses": null,
+      "stack_with_bundles": true,
+      "max_discount": null,
+      "amount": null,
+      "hidden": true
     }
   ],
   "referral": {
