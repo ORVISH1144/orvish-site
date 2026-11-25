@@ -1155,3 +1155,9 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 #loc-msg:has(.lochelp){color:inherit}
 .pc-pin.q svg{fill:#b89519}
 .news-ok{display:flex;align-items:center;gap:8px;margin:6px 0 0;color:#f1ece1;font:500 14px var(--font-accent)}.news-ok svg{width:18px;height:18px;stroke:var(--gold);fill:none;stroke-width:2.4;flex:none}
+/* delivery date check */
+.eta small{display:block;color:#137333;font-size:12px;margin-top:2px}
+.etaf{display:flex;gap:8px;margin:8px 0 0}.etaf input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;font:400 14px var(--font-accent);background:#fff}.etaf .btn{padding:9px 16px;white-space:nowrap;min-height:0}
+.etar,.co-eta{margin:6px 0 0;font-size:13.5px;line-height:1.45}.etar:empty,.co-eta:empty{display:none}
+.etar span,.co-eta span{display:block}.etar svg,.co-eta svg{width:15px;height:15px;vertical-align:-3px;margin-right:6px;stroke:#137333;fill:none;stroke-width:1.8}
+.co-eta b{color:#137333}.co-eta small{display:block;margin-left:21px;color:#5d6a66;font-size:12.5px}.etar .no,.co-eta .no{color:#b3261e}.etar .no svg,.co-eta .no svg{stroke:#b3261e}
