@@ -38,7 +38,7 @@
   var ROUTE = 'M125 875 L375 875 L375 625 L625 625 L625 375 L875 375 L875 250';
 
   /* scene order and length (seconds); each scene overlaps the next a little */
-  var SCENES = [['intro', 1.6], ['logo', 3.3], ['home', 2.4], ['search', 2.6], ['cards', 2.6], ['product', 3.0], ['order', 1.8], ['map', 3.9], ['box', 3.4], ['headline', 2.4], ['tagline', 2.4], ['end', 3.0]];
+  var SCENES = [['intro', 1.6], ['logo', 3.6], ['home', 2.4], ['search', 2.6], ['cards', 2.6], ['product', 3.0], ['order', 1.8], ['map', 3.9], ['box', 3.4], ['headline', 2.4], ['tagline', 2.4], ['end', 3.5]];
 
   function build(d, o) {
     var S = d.site || {}, F = d.film || {}, th = S.theme || {}, sc = F.scenes || {};

@@ -42,10 +42,11 @@
 
 /* logo: the wings icon unfolds in gold, turns white, then the name appears */
 .of-brand{position:absolute;inset:0}
-.of-icon{position:absolute;left:174px;top:157px;width:252px;height:119px;perspective:700px}
-.fin .of-icon{top:102px}
-.play .of-icon{animation:of-lift .8s cubic-bezier(.6,0,.2,1) calc(var(--s) + 1.6s) both}
-@keyframes of-lift{from{transform:translateY(70px) scale(1.18)}}
+/* the icon unfolds big in the centre, then shrinks and slides left of the name (like the header logo) */
+.of-icon{position:absolute;left:174px;top:225px;width:252px;height:119px;perspective:700px;transform:translate(-137px,15px) scale(.556)}
+.fin .of-icon{top:180px}
+.play .of-icon{animation:of-dock .9s cubic-bezier(.65,0,.25,1) calc(var(--s) + 1.75s) both}
+@keyframes of-dock{from{transform:none}}
 .of-wl,.of-wr,.of-shine{position:absolute;inset:0;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
 .of-wl{clip-path:inset(0 50% 0 0)}.of-wr{clip-path:inset(0 0 0 50%)}
 .of-wl.g,.of-wr.g{background:linear-gradient(140deg,#fff6c4,var(--g1) 38%,var(--a) 100%);opacity:0}
@@ -65,10 +66,10 @@
 .of-halo{position:absolute;left:50%;top:50%;width:380px;height:380px;margin:-190px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--g1) 55%,transparent),transparent);opacity:0}
 .play .of-halo{animation:of-halo 1.9s ease-out calc(var(--s) + .2s) both}
 @keyframes of-halo{0%{opacity:0;transform:scale(.3)}35%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
-.of-word{position:absolute;left:185px;top:300px;width:230px;height:67px;background:var(--c);-webkit-mask:var(--word) center/contain no-repeat;mask:var(--word) center/contain no-repeat}
-.fin .of-word{top:248px}
-.play .of-word{animation:of-word .9s cubic-bezier(.6,0,.2,1) calc(var(--s) + 1.75s) both}
-@keyframes of-word{from{clip-path:inset(0 50% 0 50%);opacity:0;transform:translateY(10px)}to{clip-path:inset(0 0 0 0)}}
+.of-word{position:absolute;left:257px;top:264px;width:250px;height:73px;background:var(--c);-webkit-mask:var(--word) center/contain no-repeat;mask:var(--word) center/contain no-repeat}
+.fin .of-word{top:219px}
+.play .of-word{animation:of-word .9s cubic-bezier(.5,0,.2,1) calc(var(--s) + 2.2s) both}
+@keyframes of-word{from{clip-path:inset(0 100% 0 0);opacity:0;transform:translateX(-18px)}to{clip-path:inset(0 0 0 0)}}
 .of-hw{width:64px;height:18px;background:var(--c);-webkit-mask:var(--word) center/contain no-repeat;mask:var(--word) center/contain no-repeat}
 .of-so{position:absolute;left:4px;top:4px;background:#4d4d4d;color:#fff;font:700 7.5px var(--bf);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px}
 .of-tile .im,.of-ci .im{position:relative}
@@ -260,8 +261,8 @@
 .of-chips span{font:600 12px var(--bf);letter-spacing:.06em;padding:7px 12px;border-radius:20px;border:1px solid color-mix(in srgb,var(--a) 60%,transparent);color:var(--a2)}
 
 /* 12 end */
-.of-cta{position:absolute;left:200px;top:388px;width:200px;height:50px;border-radius:26px;background:var(--a);color:#fff;font:600 13px/50px var(--bf);letter-spacing:.16em;text-transform:uppercase;text-align:center;text-decoration:none;box-shadow:0 0 26px color-mix(in srgb,var(--a) 55%,transparent)}
-.play .of-cta{animation:of-up .7s cubic-bezier(.2,.8,.2,1) calc(var(--s) + 2.2s) both}
+.of-cta{position:absolute;left:200px;top:330px;width:200px;height:50px;border-radius:26px;background:var(--a);color:#fff;font:600 13px/50px var(--bf);letter-spacing:.16em;text-transform:uppercase;text-align:center;text-decoration:none;box-shadow:0 0 26px color-mix(in srgb,var(--a) 55%,transparent)}
+.play .of-cta{animation:of-up .7s cubic-bezier(.2,.8,.2,1) calc(var(--s) + 2.7s) both}
 .of-replay{position:absolute;right:14px;bottom:12px;z-index:5;border:0;background:rgba(255,255,255,.1);color:var(--c);font:600 12px var(--bf);padding:8px 13px;border-radius:18px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .4s}
 .ended .of-replay,.static .of-replay{opacity:1;pointer-events:auto}
 @media (prefers-reduced-motion:reduce){.orv-film *{animation:none!important}}
