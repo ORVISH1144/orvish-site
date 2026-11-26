@@ -761,7 +761,7 @@
     {
       "id": "bristol-zenith-edp-50ml",
       "title": "Bristol Zenith – Eau de Parfum, 50 ml",
-      "price": 949,
+      "price": 899,
       "compare_at_price": 1199,
       "collection": "signature",
       "images": [
@@ -771,6 +771,7 @@
       ],
       "hidden": false,
       "in_stock": true,
+      "stock": null,
       "hsn": "3303",
       "gst_rate": 18,
       "featured": true,
@@ -818,7 +819,9 @@
       ],
       "faqs": [],
       "auto_faq": true,
-      "reviews": []
+      "reviews": [],
+      "bought_with": [],
+      "hide_bought_with": false
     }
   ]
 }
