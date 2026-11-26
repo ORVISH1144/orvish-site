@@ -24,7 +24,7 @@
     "Amber",
     "Woody"
   ],
-  "best_seller": true,
+  "best_seller": false,
   "badge": "New",
   "variants": [],
   "bundles": [
@@ -65,5 +65,7 @@
   "faqs": [],
   "auto_faq": true,
   "reviews": [],
+  "bought_with": [],
+  "hide_bought_with": false,
   "position": 2
 }
