@@ -213,6 +213,64 @@
       "reviews": []
     },
     {
+      "id": "cristiano-ronaldo-cr7-for-men-edt-100ml",
+      "title": "Cristiano Ronaldo CR7 – Eau de Toilette for Men, 100 ml",
+      "price": 2299,
+      "compare_at_price": 2499,
+      "collection": "signature",
+      "images": [
+        "/images/uploads/cr7_bottle_1200.png",
+        "/images/uploads/cr7_set_1200.png"
+      ],
+      "hidden": false,
+      "in_stock": true,
+      "stock": null,
+      "hsn": "3303",
+      "gst_rate": 18,
+      "featured": true,
+      "brand": "Cristiano Ronaldo",
+      "gender": "men",
+      "type": "Eau de Toilette",
+      "notes": [
+        "Spicy",
+        "Woody",
+        "Amber"
+      ],
+      "best_seller": false,
+      "badge": "New",
+      "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
+      "note_pyramid": {
+        "top": "Bergamot, Cardamom, Artemisia",
+        "heart": "Tobacco, Cinnamon, Cedar, Iris",
+        "base": "Sandalwood, Amber, Musk, Vanilla"
+      },
+      "short_description": "A strong, spicy and woody men's fragrance with tobacco, amber and vanilla.",
+      "description": "Cristiano Ronaldo CR7 is a bold, masculine fragrance with a strong spicy character. It opens with bergamot, cardamom and artemisia, warms into tobacco, cinnamon, cedar and iris, and dries down to sandalwood, amber, musk and vanilla. Long-lasting.\n\n**Size:** 100 ml\n\n**Concentration:** Eau de Toilette\n\n**Best for:** daily wear and all occasions.",
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        }
+      ],
+      "faqs": [],
+      "auto_faq": true,
+      "reviews": []
+    },
+    {
       "id": "hawas-kobra-edp-100ml",
       "title": "Hawas Kobra – Eau de Parfum for Men, 100 ml",
       "price": 899,
@@ -509,64 +567,6 @@
       },
       "short_description": "A rich, spicy oud fragrance with rose, amber and a deep leathery sandalwood base.",
       "description": "Chopard Oud Malaki is a rich, evening fragrance for men. It opens with warm saffron, cardamom and nutmeg, deepens into oud wood, rose and amber, and settles into a long-lasting base of agarwood, sandalwood, patchouli, leather and musk. Long-lasting with moderate sillage.\n\n**Size:** 80 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** evenings, parties and special occasions, especially in autumn and winter.",
-      "details": [
-        {
-          "title": "How to use",
-          "body": "Spray on pulse points – wrists, neck and behind the ears – from about 15 cm away. Do not rub. Store away from sunlight and heat."
-        },
-        {
-          "title": "Shipping and returns",
-          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
-        }
-      ],
-      "faqs": [],
-      "auto_faq": true,
-      "reviews": []
-    },
-    {
-      "id": "cristiano-ronaldo-cr7-for-men-edt-100ml",
-      "title": "Cristiano Ronaldo CR7 – Eau de Toilette for Men, 100 ml",
-      "price": 2299,
-      "compare_at_price": 2499,
-      "collection": "signature",
-      "images": [
-        "/images/uploads/cr7_bottle_1200.png",
-        "/images/uploads/cr7_set_1200.png"
-      ],
-      "hidden": false,
-      "in_stock": true,
-      "stock": null,
-      "hsn": "3303",
-      "gst_rate": 18,
-      "featured": true,
-      "brand": "Cristiano Ronaldo",
-      "gender": "men",
-      "type": "Eau de Toilette",
-      "notes": [
-        "Spicy",
-        "Woody",
-        "Amber"
-      ],
-      "best_seller": false,
-      "badge": "New",
-      "variants": [],
-      "bundles": [
-        {
-          "qty": 2,
-          "percent": 10
-        },
-        {
-          "qty": 3,
-          "percent": 15
-        }
-      ],
-      "note_pyramid": {
-        "top": "Bergamot, Cardamom, Artemisia",
-        "heart": "Tobacco, Cinnamon, Cedar, Iris",
-        "base": "Sandalwood, Amber, Musk, Vanilla"
-      },
-      "short_description": "A strong, spicy and woody men's fragrance with tobacco, amber and vanilla.",
-      "description": "Cristiano Ronaldo CR7 is a bold, masculine fragrance with a strong spicy character. It opens with bergamot, cardamom and artemisia, warms into tobacco, cinnamon, cedar and iris, and dries down to sandalwood, amber, musk and vanilla. Long-lasting.\n\n**Size:** 100 ml\n\n**Concentration:** Eau de Toilette\n\n**Best for:** daily wear and all occasions.",
       "details": [
         {
           "title": "How to use",
