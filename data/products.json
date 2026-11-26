@@ -102,7 +102,7 @@
         "Amber",
         "Woody"
       ],
-      "best_seller": true,
+      "best_seller": false,
       "badge": "New",
       "variants": [],
       "bundles": [
@@ -142,7 +142,9 @@
       ],
       "faqs": [],
       "auto_faq": true,
-      "reviews": []
+      "reviews": [],
+      "bought_with": [],
+      "hide_bought_with": false
     },
     {
       "id": "bristol-flash-edp-50ml",
