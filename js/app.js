@@ -234,8 +234,19 @@
   }
   function timesText(n) { return n === 1 ? 'once' : n === 2 ? 'twice' : n + ' times'; }
   function pickedCoupon() { return discount ? discount.code : store.get('orvish_coupon', ''); }
+  /* every coupon a customer types or taps goes to the "Coupon tries" tab of the order sheet, in the background */
+  function couponLog(code, result, good, how) {
+    try {
+      if (!S.order_webhook_url || !code || store.get('orvish_notrack', false) || navigator.webdriver) return;
+      var k = code + '|' + result, now = Date.now(); if (couponLog.last === k && now - couponLog.t < 4000) return; couponLog.last = k; couponLog.t = now;
+      var fm = $('#co-form'), fv = function (n) { return fm && fm.elements[n] ? String(fm.elements[n].value || '').trim() : ''; }, tt = totals();
+      var q = { action: 'coupon_log', code: code, result: result, ok: good ? 1 : 0, how: how || '', email: (USER && USER.email) || fv('email') || saved('email'), name: (USER && USER.displayName) || fv('name') || saved('name'), phone: last10(fv('phone') || saved('phone')), items: tt.items, value: tt.sub || tt.total || 0, page: location.pathname, dev: store.get('orvish_did', '') };
+      fetch(S.order_webhook_url + '?' + Object.keys(q).map(function (x) { return x + '=' + encodeURIComponent(q[x]); }).join('&'), { mode: 'no-cors', keepalive: true }).catch(function () {});
+    } catch (e) {}
+  }
   function applyCode(c, pending) {
-    c = String(c || '').trim().toUpperCase(); var say = function (x) { var m = $('#dc-msg'); if (m && $('#cart').classList.contains('open')) m.textContent = x; else toast(x); };
+    var how = applyCode.how; applyCode.how = null;
+    c = String(c || '').trim().toUpperCase(); var say = function (x, good) { var m = $('#dc-msg'); if (m && $('#cart').classList.contains('open')) m.textContent = x; else toast(x); if (how && !/^Checking|^Could not/.test(x)) couponLog(c, x, good, how); };
     var f = (S.discount_codes || []).filter(function (d) { return d.code.toUpperCase() === c; })[0], tt = totals(), ok = false;
     if (!c) { discount = null; store.set('orvish_coupon', ''); saveCart(); }
     else if (!f && /^(ORV|TY)[A-Z0-9]{5,8}$/.test(c) && S.order_webhook_url) {   /* a friend's referral code or a thank-you code: the order sheet knows if it is good */
@@ -243,18 +254,18 @@
       fetch(S.order_webhook_url + '?action=ref_check&code=' + encodeURIComponent(c) + '&phone=' + encodeURIComponent(last10(saved('phone'))) + '&_=' + Date.now()).then(function (x) { return x.json(); }).then(function (d) {
         if (!d || !d.ok) { say(d && d.reason === 'own' ? 'You cannot use your own referral code' : d && d.reason === 'not_new' ? 'Referral codes are for a first order only' : 'This code is not valid'); return; }
         var nd = { code: c, amount: Number(d.amount) || 0, min_items: 1, max_uses: 1, hidden: true, stack_with_bundles: true }, dy = store.get('orvish_dyn', []).filter(function (z) { return z.code !== c; }); dy.push(nd); store.set('orvish_dyn', dy.slice(-5));
-        S.discount_codes = (S.discount_codes || []).concat([nd]); applyCode(c, pending);
+        S.discount_codes = (S.discount_codes || []).concat([nd]); applyCode.how = how; applyCode(c, pending);
       }).catch(function () { say('Could not check this code. Please try again.'); });
     }
     else if (!f) say('This code is not valid');
-    else if (usedUp(f) && !applyCode.re) { say('Checking ' + f.code + '…'); recheckUsed(f, function (free) { applyCode.re = true; try { applyCode(c, pending); } finally { applyCode.re = false; } }); }
+    else if (usedUp(f) && !applyCode.re) { say('Checking ' + f.code + '…'); recheckUsed(f, function (free) { applyCode.re = true; applyCode.how = how; try { applyCode(c, pending); } finally { applyCode.re = false; } }); }
     else if (usedUp(f)) { discount = null; store.set('orvish_coupon', ''); saveCart(); say(f.code + ' can be used ' + timesText(Number(f.max_uses)) + ' per customer and you have already used it'); }
     else {
       store.set('orvish_coupon', f.code);   /* remembered, so it applies as soon as the cart qualifies */
       var min = f.min_items || 1, will = tt.items + (pending || 0);
       if (tt.items < min && will < min) { discount = null; saveCart(); say('Add ' + (min - will) + ' more to use ' + f.code); }
-      else if (tt.items < min) { discount = null; saveCart(); toast(f.code + ' selected. It applies when you add to cart'); ok = true; }
-      else { discount = f; if (!totals().off) { discount = null; saveCart(); say(f.code + ' cannot be used together with bundle prices'); } else { saveCart(); toast(f.code + ' applied'); ok = true; } }
+      else if (tt.items < min) { discount = null; saveCart(); toast(f.code + ' selected. It applies when you add to cart'); if (how) couponLog(c, 'Selected, applies when added to cart', true, how); ok = true; }
+      else { discount = f; if (!totals().off) { discount = null; saveCart(); say(f.code + ' cannot be used together with bundle prices'); } else { saveCart(); toast(f.code + ' applied'); if (how) couponLog(c, 'Applied', true, how); ok = true; } }
     }
     if (onCoupon) onCoupon();
     return ok;
@@ -683,8 +694,8 @@
       else if (t.dataset.rm) { cart = cart.filter(function (l) { return key(l) !== t.dataset.rm; }); saveCart(); }
       else if (t.dataset.notify) { e.preventDefault(); e.stopPropagation(); notifyGo(t.dataset.notify, t); }
       else if (t.dataset.add) { e.preventDefault(); e.stopPropagation(); addToCart(t.dataset.add, 1); openCart(true); }
-      else if (t.id === 'dc-apply') { if (($('#dc').value || '').trim()) applyCode($('#dc').value); else { $('#dc-msg').textContent = 'Type a coupon code first'; $('#dc').focus(); } }
-      else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} } applyCode(pickedCoupon() === t.dataset.coupon ? '' : t.dataset.coupon, t.dataset.copy ? pendingQty : 0); }
+      else if (t.id === 'dc-apply') { if (($('#dc').value || '').trim()) { applyCode.how = 'Typed'; applyCode($('#dc').value); } else { $('#dc-msg').textContent = 'Type a coupon code first'; $('#dc').focus(); } }
+      else if (t.dataset.coupon) { if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.coupon).catch(function () {}); } catch (x) {} } if (pickedCoupon() !== t.dataset.coupon) applyCode.how = 'Tapped from list'; applyCode(pickedCoupon() === t.dataset.coupon ? '' : t.dataset.coupon, t.dataset.copy ? pendingQty : 0); }
       else if (t.dataset.rail) { var rl = t.parentNode.querySelector('.rail'); if (rl) rl.scrollBy({ left: Number(t.dataset.rail) * rl.clientWidth * .8, behavior: 'smooth' }); }
       else if (t.id === 'checkout') openCheckout();
     });
