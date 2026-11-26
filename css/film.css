@@ -42,8 +42,8 @@
 
 /* logo: the wings icon unfolds in gold, turns white, then the name appears */
 .of-brand{position:absolute;inset:0}
-.of-icon{position:absolute;left:167px;top:153px;width:266px;height:125px;perspective:700px}
-.fin .of-icon{top:100px}
+.of-icon{position:absolute;left:174px;top:157px;width:252px;height:119px;perspective:700px}
+.fin .of-icon{top:102px}
 .play .of-icon{animation:of-lift .8s cubic-bezier(.6,0,.2,1) calc(var(--s) + 1.6s) both}
 @keyframes of-lift{from{transform:translateY(70px) scale(1.18)}}
 .of-wl,.of-wr,.of-shine{position:absolute;inset:0;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
@@ -62,11 +62,11 @@
 .of-shine b{position:absolute;top:0;bottom:0;left:0;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.95),transparent);transform:translateX(-120%)}
 .play .of-shine b{animation:of-shine .7s ease-in-out calc(var(--s) + .75s) both}
 @keyframes of-shine{to{transform:translateX(260%)}}
-.of-halo{position:absolute;left:50%;top:50%;width:400px;height:400px;margin:-200px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--g1) 55%,transparent),transparent);opacity:0}
+.of-halo{position:absolute;left:50%;top:50%;width:380px;height:380px;margin:-190px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--g1) 55%,transparent),transparent);opacity:0}
 .play .of-halo{animation:of-halo 1.9s ease-out calc(var(--s) + .2s) both}
 @keyframes of-halo{0%{opacity:0;transform:scale(.3)}35%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
-.of-word{position:absolute;left:191px;top:296px;width:218px;height:64px;background:var(--c);-webkit-mask:var(--word) center/contain no-repeat;mask:var(--word) center/contain no-repeat}
-.fin .of-word{top:242px}
+.of-word{position:absolute;left:185px;top:300px;width:230px;height:67px;background:var(--c);-webkit-mask:var(--word) center/contain no-repeat;mask:var(--word) center/contain no-repeat}
+.fin .of-word{top:248px}
 .play .of-word{animation:of-word .9s cubic-bezier(.6,0,.2,1) calc(var(--s) + 1.75s) both}
 @keyframes of-word{from{clip-path:inset(0 50% 0 50%);opacity:0;transform:translateY(10px)}to{clip-path:inset(0 0 0 0)}}
 .of-hw{width:64px;height:18px;background:var(--c);-webkit-mask:var(--word) center/contain no-repeat;mask:var(--word) center/contain no-repeat}
