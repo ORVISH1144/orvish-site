@@ -775,7 +775,7 @@ collections:
       name: button_link
       widget: string
       default: /shop
-    - label: Where a tap on the film goes (empty = the product page scene's product)
+    - label: Where a tap on the film goes (empty = nowhere; only the end button is a link)
       name: tap_link
       widget: string
       required: false

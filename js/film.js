@@ -131,6 +131,7 @@
     root.setAttribute('role', 'img');
     root.setAttribute('aria-label', F.alt_text || 'ORVISH: find your perfume, order in a tap, delivered to your door');
     root.innerHTML = b.html;
+    if (F.tap_link) root.classList.add('tap');
     el.appendChild(root);
     var stage = root.querySelector('.of-stage'), glow = root.querySelector('.of-glow'), last = root.querySelector('.of-sc.last');
     function fit() { var w = root.clientWidth, h = root.clientHeight; if (!w || !h) return; var k = Math.min(w / 600, h / 600); stage.style.setProperty('--k', k); root.style.setProperty('--zy', h > w * 1.1 ? '-110px' : '-185px'); glow.style.setProperty('--k', k); }
@@ -150,9 +151,9 @@
     document.addEventListener('visibilitychange', sync);
     root.addEventListener('click', function (e) {
       if (e.target.closest('.of-replay')) { e.preventDefault(); loops = 0; reduce = false; root.classList.remove('static'); start(); sync(); return; }
-      if (e.target.closest('[data-go]')) return;
-      var u = F.tap_link || (opts.productUrl ? opts.productUrl(b.hero) : '/shop');
-      if (opts.go) opts.go(u); else location.href = u;
+      /* only the end button is a link; a tap elsewhere goes somewhere only if a link is set in the admin */
+      if (e.target.closest('[data-go]') || !F.tap_link) return;
+      location.href = F.tap_link;
     });
     return root;
   }

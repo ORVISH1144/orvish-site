@@ -1192,4 +1192,4 @@ main>.crumbs a{text-decoration:none;color:#14211f}main>.crumbs a:last-child{colo
 .section.film-sec{padding-top:0;margin-top:-20px}
 .film-sec .film-head{margin-bottom:10px}
 @media(min-width:768px){.film-slot{aspect-ratio:16/9;max-height:640px}.film-sec.only-phone{display:none}}
-@media(max-width:767px){.film-sec.only-computer{display:none}.film-sec .wrap{padding-left:6px;padding-right:6px}.film-slot{border-radius:14px}.section.film-sec{margin-top:-12px}}
+@media(max-width:767px){.film-slot{max-height:calc(100vh - 245px);max-height:calc(100svh - 245px);min-height:330px}.film-sec.only-computer{display:none}.film-sec .wrap{padding-left:6px;padding-right:6px}.film-slot{border-radius:14px}.section.film-sec{margin-top:-12px}}
