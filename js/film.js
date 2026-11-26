@@ -15,6 +15,7 @@
     search: '<svg width="S" height="S" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
     pin: '<svg width="S" height="S" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>',
     arrow: '<svg width="S" height="S" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"/></svg>',
+    user: '<svg width="S" height="S" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
     bag: '<svg width="S" height="S" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>'
   };
   function ico(n, s) { return ICO[n].replace(/S/g, s); }
@@ -80,7 +81,7 @@
     var parts = {
       intro: '<i class="of-streak" style="--r:-22deg"></i><i class="of-streak" style="--r:16deg;--t:.25s"></i><i class="of-flare"></i>',
       logo: brand(),
-      home: '<div class="of-ph of-ph3"><div class="of-scr">' + status + '<div class="of-hdr"><i class="of-hw"></i></div><div class="of-sbar">' + ico('search', 10) + 'Search perfumes</div><div class="of-hh">' + esc(S.home_heading || 'Our products') + '</div><div class="of-grid">' +
+      home: '<div class="of-ph of-ph3"><div class="of-scr">' + status + '<div class="of-hdr"><i class="of-mn"><b></b><b></b><b></b></i>' + (o.logo ? '<img class="of-hl" src="' + esc(o.logo) + '" alt="">' : '<i class="of-hw"></i>') + '<span class="of-hi">' + ico('user', 11) + ico('bag', 11) + '</span></div><div class="of-sbar"><div>Search for perfumes, brands…' + ico('search', 10) + '</div></div><div class="of-hh">' + esc(S.home_heading || 'Our products') + '</div><div class="of-grid">' +
         pool.slice(0, 4).map(function (p, i) { return '<div class="of-tile of-up' + (inStock(p) ? '' : ' so') + '" style="--t:' + (.55 + i * .1) + 's"><div class="im">' + imgT(p) + '' + soChip(p) + '</div>' + esc(nameOf(p)) + '<b>' + money(p.price) + '</b></div>'; }).join('') + '</div><i class="of-sweep" style="--t:1.1s"></i></div></div>',
       search: '<div class="of-ph of-ph4"><div class="of-scr">' + status + '<div class="of-field">' + ico('search', 22) + '<span class="of-typed">' + q.split('').map(function (ch, i) { return '<span style="--i:' + i + '">' + esc(ch) + '</span>'; }).join('') + '</span><i class="of-caret"></i><i class="of-prog"></i></div><div class="of-loc">' + ico('pin', 16) + esc(F.location_text || 'Delivering across India') + ' · ' + esc(free) + '</div>' +
         (hits.length ? hits : pool).slice(0, 4).map(function (p, i) {
@@ -132,7 +133,7 @@
     root.innerHTML = b.html;
     el.appendChild(root);
     var stage = root.querySelector('.of-stage'), glow = root.querySelector('.of-glow'), last = root.querySelector('.of-sc.last');
-    function fit() { var w = root.clientWidth, h = root.clientHeight; if (!w || !h) return; var k = Math.min(w / 600, h / 600); stage.style.setProperty('--k', k); glow.style.setProperty('--k', k); }
+    function fit() { var w = root.clientWidth, h = root.clientHeight; if (!w || !h) return; var k = Math.min(w / 600, h / 600); stage.style.setProperty('--k', k); root.style.setProperty('--zy', h > w * 1.1 ? '-110px' : '-185px'); glow.style.setProperty('--k', k); }
     fit();
     if (window.ResizeObserver) new ResizeObserver(fit).observe(root); else window.addEventListener('resize', fit);
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;

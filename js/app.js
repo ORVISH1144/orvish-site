@@ -800,11 +800,11 @@
     if (getComputedStyle(sec).display === 'none') return;
     var go = function () {
       if (done) return; done = true; if (io) io.disconnect();
-      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/css/film.css?v=1';
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/css/film.css?v=2';
       var css = new Promise(function (ok) { l.onload = ok; l.onerror = ok; }); document.head.appendChild(l);
-      Promise.all([css, loadJS('/js/film.js?v=1')]).then(function () {
+      Promise.all([css, loadJS('/js/film.js?v=2')]).then(function () {
         var r = window.OrvFilm && OrvFilm.mount(slot, { site: S, products: P, film: FILM }, {
-          img: function (p) { return oi(p.images[0], 400); }, orig: function (p) { return p.images[0]; },
+          img: function (p) { return oi(p.images[0], 400); }, logo: S.logo ? oi(S.logo, 400) : '', orig: function (p) { return p.images[0]; },
           rating: rateOf, inStock: inStock, productUrl: function (p) { return purl(p.id); }
         });
         if (!r) sec.style.display = 'none';
