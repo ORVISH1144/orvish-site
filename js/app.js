@@ -1280,9 +1280,8 @@
     if (!DEALS.list.length || (S.menu || []).some(function (m) { return /deals=1/.test(m.url || ''); })) return;
     S.menu = (S.menu || []).slice(); S.menu.splice(Math.min(1, S.menu.length), 0, { label: DEALS.menu, url: '/shop?deals=1', children: [], deal: true });
   }
-  function dealWhen(d) { return d.live ? (d.end ? 'Ends ' + etaDay(d.end) : 'Limited time') : (d.start ? 'Starts ' + etaDay(d.start) : 'Coming soon'); }
-  function dealBar(p) { var d = p._deal; return d ? '<div class="dealbar' + (d.live ? '' : ' soon') + '"><b>' + esc(d.badge) + '</b><span>' + esc(dealWhen(d)) + (d.live && d.percent ? ' · ' + d.percent + '% off' : '') + '</span></div>' : ''; }
-  function dealsInfo() { return DEALS.list.length ? '<div class="dealsinfo">' + DEALS.list.map(function (d) { return '<div class="di' + (d.live ? '' : ' soon') + '"><b>' + esc(d.name) + '</b><span>' + (d.live ? 'Ongoing' : 'Coming soon') + ' · ' + esc(dealWhen(d)) + '</span>' + (d.text ? '<p>' + esc(d.text) + '</p>' : '') + '</div>'; }).join('') + '</div>' : ''; }
+  function dealBar(p) { var d = p._deal; return d ? '<div class="dealbar"><b>' + esc(d.badge) + '</b></div>' : ''; }
+  function dealsInfo() { var l = DEALS.list.filter(function (d) { return d.text; }); return l.length ? '<div class="dealsinfo">' + l.map(function (d) { return '<div class="di"><b>' + esc(d.name) + '</b><p>' + esc(d.text) + '</p></div>'; }).join('') + '</div>' : ''; }
 
   /* "Customers also bought": the product plus two suggestions, tick what you want and add them all together */
   function fbtLabel(p) { var v = vs(p), f = v && v.filter(function (x) { return x.in_stock !== false; })[0]; return f ? f.label : ''; }
