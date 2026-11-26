@@ -237,7 +237,7 @@
   /* every coupon a customer types or taps goes to the "Coupon tries" tab of the order sheet, in the background */
   function couponLog(code, result, good, how) {
     try {
-      if (!S.order_webhook_url || !code || store.get('orvish_notrack', false) || navigator.webdriver) return;
+      if (!S.order_webhook_url || !code) return; if (store.get('orvish_notrack', false)) how = (how || '') + ' (owner device)';
       var k = code + '|' + result, now = Date.now(); if (couponLog.last === k && now - couponLog.t < 4000) return; couponLog.last = k; couponLog.t = now;
       var fm = $('#co-form'), fv = function (n) { return fm && fm.elements[n] ? String(fm.elements[n].value || '').trim() : ''; }, tt = totals();
       var q = { action: 'coupon_log', code: code, result: result, ok: good ? 1 : 0, how: how || '', email: (USER && USER.email) || fv('email') || saved('email'), name: (USER && USER.displayName) || fv('name') || saved('name'), phone: last10(fv('phone') || saved('phone')), items: tt.items, value: tt.sub || tt.total || 0, page: location.pathname, dev: store.get('orvish_did', '') };
