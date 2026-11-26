@@ -704,11 +704,11 @@
       "collection": "signature",
       "images": [
         "/images/uploads/bristol_zircon_bottle_1200.png",
-        "/images/uploads/bristol_zircon_set_1200.png",
-        "/images/uploads/bristol_zircon_back_1200.jpg"
+        "/images/uploads/bristol_zircon_set_1200.png"
       ],
       "hidden": false,
       "in_stock": true,
+      "stock": null,
       "hsn": "3303",
       "gst_rate": 18,
       "featured": true,
@@ -756,7 +756,9 @@
       ],
       "faqs": [],
       "auto_faq": true,
-      "reviews": []
+      "reviews": [],
+      "bought_with": [],
+      "hide_bought_with": false
     },
     {
       "id": "bristol-zenith-edp-50ml",
