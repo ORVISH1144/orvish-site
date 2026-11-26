@@ -754,6 +754,67 @@
       "faqs": [],
       "auto_faq": true,
       "reviews": []
+    },
+    {
+      "id": "bristol-zenith-edp-50ml",
+      "title": "Bristol Zenith – Eau de Parfum, 50 ml",
+      "price": 949,
+      "compare_at_price": 1199,
+      "collection": "signature",
+      "images": [
+        "/images/uploads/bristol_zenith_front_1200.jpg",
+        "/images/uploads/bristol_zenith_back_1200.jpg"
+      ],
+      "hidden": false,
+      "in_stock": true,
+      "hsn": "3303",
+      "gst_rate": 18,
+      "featured": true,
+      "brand": "Bristol",
+      "gender": "unisex",
+      "type": "Eau de Parfum",
+      "notes": [],
+      "best_seller": false,
+      "badge": "New",
+      "variants": [],
+      "bundles": [
+        {
+          "qty": 2,
+          "percent": 10
+        },
+        {
+          "qty": 3,
+          "percent": 15
+        }
+      ],
+      "note_pyramid": {
+        "top": "",
+        "heart": "",
+        "base": ""
+      },
+      "short_description": "A refined Bristol Eau de Parfum in a sleek black and gold pack, made in France.",
+      "description": "Bristol Zenith is an elegant Eau de Parfum from Bristol Perfumes, presented in a sleek black and gold box. Fragrance made in France.\n\n**Size:** 50 ml\n\n**Concentration:** Eau de Parfum\n\n**Best for:** daily wear, evenings and gifting. Suits both men and women.",
+      "details": [
+        {
+          "title": "How to use",
+          "body": "Hold the bottle upright and spray on the body or clothing from 15–20 cm away. For best results, apply to pulse points – wrists, neck and behind the ears. Do not rub."
+        },
+        {
+          "title": "Caution and storage",
+          "body": "Highly flammable. For external use only. Avoid contact with eyes. Keep away from heat, sparks and open flames. Store in a cool, dry place away from direct sunlight. Keep out of reach of children."
+        },
+        {
+          "title": "Ingredients",
+          "body": "Alcohol Denat, Fragrance (Parfum), Limonene, Linalool, Citronellol, Geraniol, Coumarin, Eugenol, Alpha-Isomethyl Ionone."
+        },
+        {
+          "title": "Shipping and returns",
+          "body": "Express shipping across India. Easy replacement if the product arrives damaged or incorrect."
+        }
+      ],
+      "faqs": [],
+      "auto_faq": true,
+      "reviews": []
     }
   ]
 }
