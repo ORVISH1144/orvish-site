@@ -784,6 +784,34 @@
     if (!list.length) return '';
     return '<section class="section"><div class="wrap"><div class="sec-head"><h3>' + esc(title) + '</h3>' + (link ? '<a class="link" href="' + esc(link) + '">View all</a>' : '') + '</div><div class="rail">' + list.map(cardHTML).join('') + '</div></div></section>';
   }
+  /* Brand film under Best Sellers. Everything is set in Admin > Brand film (data/film.json).
+     Its code (js/film.js + css/film.css, about 11 KB) loads only when the section comes near the screen. */
+  var FILM = {};
+  function filmSlot() {
+    var F = FILM || {}; if (F.enabled === false || !P.length) return '';
+    var w = F.show_on || 'both';
+    return '<section class="section film-sec' + (w === 'phone' ? ' only-phone' : w === 'computer' ? ' only-computer' : '') + '"><div class="wrap">' +
+      (F.section_title || F.section_kicker ? '<div class="film-head">' + (F.section_kicker ? '<small>' + esc(F.section_kicker) + '</small>' : '') + (F.section_title ? '<h3>' + esc(F.section_title) + '</h3>' : '') + '</div>' : '') +
+      '<div class="film-slot" id="film-slot"></div></div></section>';
+  }
+  function filmInit() {
+    var slot = $('#film-slot'); if (!slot) return;
+    var sec = slot.closest('.film-sec'), io = null, done = false;
+    if (getComputedStyle(sec).display === 'none') return;
+    var go = function () {
+      if (done) return; done = true; if (io) io.disconnect();
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/css/film.css?v=1';
+      var css = new Promise(function (ok) { l.onload = ok; l.onerror = ok; }); document.head.appendChild(l);
+      Promise.all([css, loadJS('/js/film.js?v=1')]).then(function () {
+        var r = window.OrvFilm && OrvFilm.mount(slot, { site: S, products: P, film: FILM }, {
+          img: function (p) { return oi(p.images[0], 400); }, orig: function (p) { return p.images[0]; },
+          rating: rateOf, inStock: inStock, productUrl: function (p) { return purl(p.id); }
+        });
+        if (!r) sec.style.display = 'none';
+      }).catch(function () { sec.style.display = 'none'; });
+    };
+    if ('IntersectionObserver' in window) { io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) go(); }, { rootMargin: '700px 0px' }); io.observe(slot); } else go();
+  }
   function home() {
     var sl = S.slides || []; if (!sl.length) $('#slider').style.display = 'none';
     $('#slider').innerHTML = sl.map(function (s, i) {
@@ -809,6 +837,7 @@
     var bl = best.length ? best : P;
     h += '<section class="section"><div class="wrap"><div class="sec-head"><h3>' + esc(S.best_sellers_title || 'Best Sellers') + '</h3><a class="link" href="/shop?best=1">View all</a></div>' +
       (tabs.length ? '<div class="tabs" id="tabs"><button class="on" data-c="">All</button>' + tabs.map(function (t) { return '<button data-c="' + esc(t.collection) + '">' + esc(t.label) + '</button>'; }).join('') + '</div>' : '') + '<div class="rail" id="best-rail">' + bl.map(cardHTML).join('') + '</div></div></section>';
+    h += filmSlot();
     var ct = (S.collection_tiles || []);
     if (ct.length) h += '<section class="section" style="padding-top:8px"><div class="wrap"><div class="tiles">' + ct.map(function (c) { return '<a class="tile" href="' + esc(c.url) + '"><img loading="lazy" src="' + esc(c.image) + '" alt=""><div><h4>' + esc(c.title) + '</h4><p>' + esc(c.text || '') + '</p><span class="btn">' + esc(c.button || 'View products') + '</span></div></a>'; }).join('') + '</div></div></section>';
     /* products picked in the admin come first, then every other product marked for that gender (and unisex ones) */
@@ -828,6 +857,7 @@
     var bb = S.bottom_banner;
     if (bb && (bb.image || bb.title)) h += '<section class="bigbanner"' + (bb.image ? ' style="background-image:url(\'' + esc(bb.image) + '\')"' : '') + '><div class="bb-in">' + (bb.title ? '<h2>' + esc(bb.title) + '</h2>' : '') + (bb.text ? '<p>' + esc(bb.text) + '</p>' : '') + (bb.button_label ? '<a class="btn" href="' + esc(bb.button_link || '/shop') + '">' + esc(bb.button_label) + '</a>' : '') + '</div></section>';
     $('#home-main').innerHTML = h;
+    filmInit();
     var tb = $('#tabs'); if (tb) tb.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; $$('#tabs button').forEach(function (x) { x.classList.toggle('on', x === b); }); var c = b.dataset.c; $('#best-rail').innerHTML = (bl.filter(function (p) { return !c || p.collection === c; })).map(cardHTML).join('') || '<p class="empty">No products here yet.</p>'; });
   }
   function shop() {
@@ -1307,8 +1337,8 @@
   }
 
   /* boot */
-  Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json'), fetchJSON('/data/deals.json').catch(function () { return {}; })]).then(function (r) {
-    S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; if (S.bundles_enabled !== true) p.bundles = []; return p; }); PAGES = r[2].pages || []; try { dealPrep(r[6] || {}); dealApply(); dealMenu(); } catch (e) {}
+  Promise.all([fetchJSON('/data/site.json'), fetchJSON('/data/products.json'), fetchJSON('/data/pages.json'), fetchJSON('/data/home.json'), fetchJSON('/data/nav.json'), fetchJSON('/data/commerce.json'), fetchJSON('/data/deals.json').catch(function () { return {}; }), (document.body.dataset.page === 'home' ? fetchJSON('/data/film.json') : Promise.resolve({})).catch(function () { return {}; })]).then(function (r) {
+    S = Object.assign({}, r[0], r[3], r[4], r[5]); P = (r[1].products || []).filter(function (p) { return !p.hidden; }).map(function (p) { p.images = (p.images && p.images.length) ? p.images : ['/images/perfume-1.svg']; if (S.bundles_enabled !== true) p.bundles = []; return p; }); PAGES = r[2].pages || []; FILM = r[7] || {}; try { dealPrep(r[6] || {}); dealApply(); dealMenu(); } catch (e) {}
     cart = store.get('orvish_cart', []).map(function (l) { return { id: l.id, v: l.v || '', q: l.q }; });
     [2500, 8000].forEach(function (ms) { setTimeout(function () { (S.discount_codes || []).filter(usedUp).slice(0, 4).forEach(function (d) { recheckUsed(d, function (free) { if (free) { try { renderCart(); } catch (e) {} try { onCoupon(); } catch (e2) {} } }); }); }, ms); });   /* a coupon the owner has opened again */
     S.discount_codes = (S.discount_codes || []).concat(store.get('orvish_dyn', []));

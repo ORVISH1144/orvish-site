@@ -622,6 +622,163 @@ collections:
         name: description
         widget: string
         required: false
+- name: film
+  label: Brand film
+  icon: movie
+  files:
+  - name: film
+    label: Brand film – animated film on the home page, under Best Sellers
+    file: data/film.json
+    format: json
+    fields:
+    - label: Show the film on the website
+      name: enabled
+      widget: boolean
+      default: true
+    - label: Small line above the heading (optional)
+      name: section_kicker
+      widget: string
+      required: false
+    - label: Heading above the film (optional)
+      name: section_title
+      widget: string
+      required: false
+    - label: Show it on
+      name: show_on
+      widget: select
+      default: both
+      options:
+      - label: Phones and computers
+        value: both
+      - label: Phones only
+        value: phone
+      - label: Computers only
+        value: computer
+    - label: How many times it plays (then it rests on the last frame with a Replay button)
+      name: plays
+      widget: number
+      value_type: int
+      min: 1
+      max: 5
+      default: 2
+    - label: Scenes (switch off any you do not want; the logo end frame always shows)
+      name: scenes
+      widget: object
+      collapsed: true
+      fields:
+      - {label: 1. Gold light streak, name: intro, widget: boolean, default: true}
+      - {label: 2. Logo – icon unfolds in gold, turns white, then the name appears, name: logo, widget: boolean, default: true}
+      - {label: 3. Phone showing the home page, name: home, widget: boolean, default: true}
+      - {label: 4. Search being typed, name: search, widget: boolean, default: true}
+      - {label: 5. Product cards floating around the phone, name: cards, widget: boolean, default: true}
+      - {label: 6. Product page – Add to cart / Buy it now, name: product, widget: boolean, default: true}
+      - {label: 7. Order placed, name: order, widget: boolean, default: true}
+      - {label: 8. Delivery map, name: map, widget: boolean, default: true}
+      - {label: 9. ORVISH box delivered, name: box, widget: boolean, default: true}
+      - {label: 10. Headline, name: headline, widget: boolean, default: true}
+      - {label: 11. Tagline and trust points, name: tagline, widget: boolean, default: true}
+    - label: Logo icon (white on transparent PNG; shown big, first in gold then white)
+      name: icon
+      widget: image
+      default: /images/film/orvish-icon.png
+    - label: Gold colour of the icon before it turns white
+      name: icon_color
+      widget: color
+      default: '#f3cf45'
+    - label: Logo name / wordmark (white on transparent PNG)
+      name: wordmark
+      widget: image
+      default: /images/film/orvish-wordmark.png
+    - label: Products shown in the film (leave empty = your products in their shop order)
+      name: products
+      widget: relation
+      collection: products
+      value_field: id
+      search_fields:
+      - title
+      display_fields:
+      - title
+      multiple: true
+      required: false
+    - label: Include out-of-stock products (shown with a label, never on the product page scene)
+      name: show_out_of_stock
+      widget: boolean
+      default: false
+    - label: Label on out-of-stock products
+      name: out_of_stock_label
+      widget: string
+      default: Sold out
+    - label: Product on the product page scene (must be in stock; empty = first in-stock best seller)
+      name: hero_product
+      widget: relation
+      collection: products
+      value_field: id
+      search_fields:
+      - title
+      display_fields:
+      - title
+      required: false
+    - label: Word typed in the search (empty = most common scent note in stock)
+      name: search_word
+      widget: string
+      required: false
+    - label: Delivery line under the search
+      name: location_text
+      widget: string
+      default: Delivering across India
+      required: false
+    - label: Shipping text (empty = "Free shipping" when your announcement bar says free shipping)
+      name: shipping_text
+      widget: string
+      required: false
+    - label: Order placed message
+      name: order_text
+      widget: string
+      default: Order placed, thank you!
+    - label: Line under the order message
+      name: order_subtext
+      widget: string
+      required: false
+    - label: Delivery card heading
+      name: track_title
+      widget: string
+      default: Arriving today
+    - label: Delivery card line
+      name: track_subtext
+      widget: string
+      required: false
+    - label: Delivered notification – heading
+      name: delivered_title
+      widget: string
+      default: Delivered
+    - label: Delivered notification – text
+      name: delivered_text
+      widget: string
+      required: false
+    - label: Headline (the last word gets a gold underline)
+      name: headline
+      widget: string
+      default: Every scent you love.
+    - label: Tagline (empty = the store tagline in Site settings)
+      name: tagline
+      widget: string
+      required: false
+    - label: Show the trust points from the home page strip under the tagline
+      name: show_trust_points
+      widget: boolean
+      default: true
+    - label: End button text
+      name: button_label
+      widget: string
+      default: Shop now
+    - label: End button link
+      name: button_link
+      widget: string
+      default: /shop
+    - label: Where a tap on the film goes (empty = the product page scene's product)
+      name: tap_link
+      widget: string
+      required: false
 - name: nav
   label: Menu & footer
   files:
