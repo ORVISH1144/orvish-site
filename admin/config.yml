@@ -900,6 +900,12 @@ collections:
       fields:
       - {label: Switch referral codes on, name: enabled, widget: boolean, default: true, required: false}
       - {label: Amount off for each of them (₹), name: amount, widget: number, value_type: int, default: 100}
+    - label: Accounts register (profit, costs, GST to pay)
+      name: accounts
+      widget: object
+      collapsed: true
+      fields:
+      - {label: Link of your Accounts Google Sheet, name: sheet_url, widget: string, required: false, hint: "Upload ORVISH-Accounts-Register.xlsx to Google Drive, choose File > Save as Google Sheets, then paste that sheet's link here. Every hour the order script fills its Shiprocket tab (status and charges), a Razorpay tab (real fees) and the live wallet balance."}
     - label: GST and invoice details (printed on every invoice and used in the GST register)
       name: gst
       widget: object
