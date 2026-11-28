@@ -802,7 +802,15 @@
       if (done) return; done = true; if (io) io.disconnect();
       var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/css/film.css?v=6';
       var css = new Promise(function (ok) { l.onload = ok; l.onerror = ok; }); document.head.appendChild(l);
-      Promise.all([css, loadJS('/js/film.js?v=6')]).then(function () {
+      Promise.all([css, loadJS('/js/film.js?v=7')]).then(function () {
+        /* how much of the film this visitor watched goes next to their Home visit in the Traffic Log: "Home (watched full - x2)" */
+        var fulls = 0, began = false, sentPart = false, tell = function (n) {
+          try { if (!S.order_webhook_url || store.get('orvish_notrack', false) || navigator.webdriver) return; var sid = sessionStorage.getItem('orvish_sid') || ''; if (!sid) return;
+            fetch(S.order_webhook_url + '?action=film&sid=' + encodeURIComponent(sid) + '&n=' + n, { mode: 'no-cors', keepalive: true }).catch(function () {}); } catch (x) {}
+        };
+        slot.addEventListener('orvfilm', function (e) { if (e.detail.start) began = true; if (e.detail.full) { fulls++; tell(fulls); } });
+        var part = function () { if (began && !fulls && !sentPart) { sentPart = true; tell(0); } };
+        addEventListener('pagehide', part); document.addEventListener('visibilitychange', function () { if (document.hidden) part(); });
         var r = window.OrvFilm && OrvFilm.mount(slot, { site: S, products: P, film: FILM }, {
           img: function (p) { return oi(p.images[0], 400); }, logo: S.logo ? oi(S.logo, 400) : '', orig: function (p) { return p.images[0]; },
           rating: rateOf, inStock: inStock, productUrl: function (p) { return purl(p.id); }

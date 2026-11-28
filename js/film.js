@@ -139,11 +139,12 @@
     if (window.ResizeObserver) new ResizeObserver(fit).observe(root); else window.addEventListener('resize', fit);
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) root.classList.add('static');
-    function start() { root.classList.remove('play', 'ended'); void root.offsetWidth; root.classList.add('play'); started = true; }
+    function start() { root.classList.remove('play', 'ended'); void root.offsetWidth; root.classList.add('play'); started = true; try { el.dispatchEvent(new CustomEvent('orvfilm', { detail: { start: true } })); } catch (x) {} }
     function sync() { var run = visible && !document.hidden; root.classList.toggle('paused', !run); if (run && !started && !reduce) start(); }
     last.addEventListener('animationend', function (e) {
       if (e.target !== last) return;
       loops++; root.classList.add('ended');
+      try { el.dispatchEvent(new CustomEvent('orvfilm', { detail: { full: true } })); } catch (x) {}
       if (loops < plays) setTimeout(start, 2500);
     });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; sync(); }, { threshold: .35 }).observe(root);
