@@ -38,5 +38,7 @@
   "show_trust_points": true,
   "button_label": "Shop now",
   "button_link": "/shop",
-  "tap_link": ""
+  "tap_link": "",
+  "box_color": "#f0a035",
+  "box_logo_color": "#2a1f14"
 }

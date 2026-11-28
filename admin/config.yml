@@ -689,6 +689,14 @@ collections:
       name: wordmark
       widget: image
       default: /images/film/orvish-wordmark.png
+    - label: Delivery box colour
+      name: box_color
+      widget: color
+      default: '#f0a035'
+    - label: Colour of the logo printed on the box
+      name: box_logo_color
+      widget: color
+      default: '#2a1f14'
     - label: Products shown in the film (leave empty = your products in their shop order)
       name: products
       widget: relation
