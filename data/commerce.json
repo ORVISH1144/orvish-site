@@ -175,6 +175,9 @@
     "enabled": true,
     "amount": 100
   },
+  "accounts": {
+    "sheet_url": "https://docs.google.com/spreadsheets/d/1nBcsCSvBUye1Yij-Onm1M78spo6lPJbv50cAEBQvUEI/edit?usp=sharing"
+  },
   "gst": {
     "sheet_url": "https://docs.google.com/spreadsheets/d/1tPJbUtnvcMVeq5hqw8Mk55uKox3IKI43Cq94ba_BNT8/edit?usp=sharing",
     "gstin": "32HKZPK6976F1ZA",
